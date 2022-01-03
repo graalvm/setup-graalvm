@@ -15,5 +15,7 @@ export const GRAALVM_GH_USER = 'graalvm'
 export const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform
 export const JDK_HOME_SUFFIX = IS_MACOS ? '/Contents/Home' : ''
 
+export const MANDREL_NAMESPACE = 'mandrel-'
+
 export type LatestReleaseResponse =
   otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']

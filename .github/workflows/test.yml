@@ -41,6 +41,14 @@ jobs:
             java-version: '17'
             components: 'native-image'
             os: windows-2016
+          - version: 'mandrel-latest'
+            java-version: '11'
+            components: ''
+            os: ubuntu-latest
+          - version: 'mandrel-21.3.0.0-Final'
+            java-version: '17'
+            components: ''
+            os: windows-latest
     steps:
       - uses: actions/checkout@v2
       - name: Run setup-graalvm action
