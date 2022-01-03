@@ -7,7 +7,7 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_BASE = exports.VERSION_TRUNK = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = void 0;
+exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_BASE = exports.VERSION_TRUNK = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = void 0;
 const os_1 = __nccwpck_require__(2037);
 const path_1 = __nccwpck_require__(1017);
 exports.IS_MACOS = process.platform === 'darwin';
@@ -20,6 +20,7 @@ exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
 exports.GRAALVM_GH_USER = 'graalvm';
 exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
 exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
+exports.MANDREL_NAMESPACE = 'mandrel-';
 
 
 /***/ }),
@@ -400,6 +401,7 @@ const io_1 = __nccwpck_require__(7436);
 const dependencies_1 = __nccwpck_require__(6031);
 const gu_1 = __nccwpck_require__(3466);
 const graalvm_trunk_1 = __nccwpck_require__(7538);
+const mandrel_1 = __nccwpck_require__(438);
 const msvc_1 = __nccwpck_require__(4765);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -427,7 +429,12 @@ function run() {
                     graalVMHome = yield (0, graalvm_trunk_1.setUpGraalVMTrunk)(javaVersion, components);
                     break;
                 default:
-                    graalVMHome = yield graalvm.setUpGraalVMRelease(graalvmVersion, javaVersion);
+                    if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+                        graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalvmVersion, javaVersion);
+                    }
+                    else {
+                        graalVMHome = yield graalvm.setUpGraalVMRelease(graalvmVersion, javaVersion);
+                    }
                     break;
             }
             // Activate GraalVM
@@ -442,6 +449,9 @@ function run() {
                 if (graalvmVersion === c.VERSION_TRUNK) {
                     // components built from source, nothing to do
                 }
+                else if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+                    core.warning(`Mandrel does not support GraalVM components: ${componentsString}`);
+                }
                 else {
                     yield (0, gu_1.setUpGUComponents)(graalVMHome, components);
                 }
@@ -454,6 +464,87 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 438:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.setUpMandrel = void 0;
+const c = __importStar(__nccwpck_require__(5105));
+const utils_1 = __nccwpck_require__(918);
+const MANDREL_REPO = 'mandrel';
+const MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE;
+const MANDREL_DL_BASE = 'https://github.com/graalvm/mandrel/releases/download';
+function setUpMandrel(graalvmVersion, javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const mandrelVersion = graalvmVersion.substring(c.MANDREL_NAMESPACE.length, graalvmVersion.length);
+        let mandrelHome;
+        switch (mandrelVersion) {
+            case 'latest':
+                mandrelHome = yield setUpMandrelLatest(javaVersion);
+                break;
+            default:
+                mandrelHome = yield setUpMandrelRelease(mandrelVersion, javaVersion);
+                break;
+        }
+        return mandrelHome;
+    });
+}
+exports.setUpMandrel = setUpMandrel;
+function setUpMandrelLatest(javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const latestRelease = yield (0, utils_1.getLatestRelease)(MANDREL_REPO);
+        const tag_name = latestRelease.tag_name;
+        if (tag_name.startsWith(MANDREL_TAG_PREFIX)) {
+            const latestVersion = tag_name.substring(MANDREL_TAG_PREFIX.length, tag_name.length);
+            return setUpMandrelRelease(latestVersion, javaVersion);
+        }
+        throw new Error(`Could not find latest Mandrel release: ${tag_name}`);
+    });
+}
+function setUpMandrelRelease(version, javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const identifier = determineMandrelIdentifier(version, javaVersion);
+        const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`;
+        return (0, utils_1.downloadAndExtractJDK)(downloadUrl);
+    });
+}
+function determineMandrelIdentifier(version, javaVersion) {
+    return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`;
+}
 
 
 /***/ }),

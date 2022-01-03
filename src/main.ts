@@ -6,6 +6,7 @@ import {mkdirP} from '@actions/io'
 import {setUpDependencies} from './dependencies'
 import {setUpGUComponents} from './gu'
 import {setUpGraalVMTrunk} from './graalvm-trunk'
+import {setUpMandrel} from './mandrel'
 import {setUpWindowsEnvironment} from './msvc'
 
 async function run(): Promise<void> {
@@ -37,10 +38,14 @@ async function run(): Promise<void> {
         graalVMHome = await setUpGraalVMTrunk(javaVersion, components)
         break
       default:
-        graalVMHome = await graalvm.setUpGraalVMRelease(
-          graalvmVersion,
-          javaVersion
-        )
+        if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+          graalVMHome = await setUpMandrel(graalvmVersion, javaVersion)
+        } else {
+          graalVMHome = await graalvm.setUpGraalVMRelease(
+            graalvmVersion,
+            javaVersion
+          )
+        }
         break
     }
 
@@ -56,6 +61,10 @@ async function run(): Promise<void> {
     if (components.length > 0) {
       if (graalvmVersion === c.VERSION_TRUNK) {
         // components built from source, nothing to do
+      } else if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+        core.warning(
+          `Mandrel does not support GraalVM components: ${componentsString}`
+        )
       } else {
         await setUpGUComponents(graalVMHome, components)
       }
