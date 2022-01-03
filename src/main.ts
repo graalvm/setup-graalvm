@@ -3,6 +3,7 @@ import * as core from '@actions/core'
 import * as graalvm from './graalvm'
 import {join} from 'path'
 import {mkdirP} from '@actions/io'
+import {setUpDependencies} from './dependencies'
 import {setUpGraalVMTrunk} from './graalvm-trunk'
 import {setUpWindowsEnvironment} from './msvc'
 
@@ -18,6 +19,7 @@ async function run(): Promise<void> {
     if (c.IS_WINDOWS) {
       setUpWindowsEnvironment()
     }
+    setUpDependencies(components)
 
     await mkdirP(c.GRAALVM_BASE)
 
