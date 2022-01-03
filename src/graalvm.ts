@@ -3,7 +3,7 @@ import {downloadAndExtractJDK, getLatestRelease} from './utils'
 
 const GRAALVM_CE_DL_BASE =
   'https://github.com/graalvm/graalvm-ce-builds/releases/download'
-const GRAALVM_REPO_NIGHTLY = 'graalvm-ce-dev-builds'
+const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds'
 const GRAALVM_REPO_RELEASES = 'graalvm-ce-builds'
 const GRAALVM_TAG_PREFIX = 'vm-'
 
@@ -20,18 +20,18 @@ export async function setUpGraalVMLatest(javaVersion: string): Promise<string> {
   throw new Error(`Could not find latest GraalVM release: ${tag_name}`)
 }
 
-export async function setUpGraalVMNightly(
+export async function setUpGraalVMDevBuild(
   javaVersion: string
 ): Promise<string> {
-  const latestNightly = await getLatestRelease(GRAALVM_REPO_NIGHTLY)
+  const latestDevBuild = await getLatestRelease(GRAALVM_REPO_DEV_BUILDS)
   const graalVMIdentifier = determineGraalVMIdentifier('dev', javaVersion)
   const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
-  for (const asset of latestNightly.assets) {
+  for (const asset of latestDevBuild.assets) {
     if (asset.name === expectedFileName) {
       return downloadAndExtractJDK(asset.browser_download_url)
     }
   }
-  throw new Error('Could not find GraalVM nightly build')
+  throw new Error('Could not find GraalVM dev build')
 }
 
 export async function setUpGraalVMRelease(

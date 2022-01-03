@@ -5,8 +5,8 @@ import {join} from 'path'
 export const IS_MACOS = process.platform === 'darwin'
 export const IS_WINDOWS = process.platform === 'win32'
 
+export const VERSION_DEV = 'dev'
 export const VERSION_LATEST = 'latest'
-export const VERSION_NIGHTLY = 'nightly'
 export const VERSION_TRUNK = 'trunk'
 
 export const GRAALVM_BASE = join(homedir(), '.graalvm')

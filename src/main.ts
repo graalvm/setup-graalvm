@@ -30,8 +30,8 @@ async function run(): Promise<void> {
       case c.VERSION_LATEST:
         graalVMHome = await graalvm.setUpGraalVMLatest(javaVersion)
         break
-      case c.VERSION_NIGHTLY:
-        graalVMHome = await graalvm.setUpGraalVMNightly(javaVersion)
+      case c.VERSION_DEV:
+        graalVMHome = await graalvm.setUpGraalVMDevBuild(javaVersion)
         break
       case c.VERSION_TRUNK:
         graalVMHome = await setUpGraalVMTrunk(javaVersion, components)

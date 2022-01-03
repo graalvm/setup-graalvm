@@ -5,7 +5,7 @@ This GitHub action sets up [GraalVM Community Edition][repo] and GraalVM compone
 
 This action:
 
-- supports GraalVM CE [releases], [nightly builds][nightly], and building from [source][repo] (see [options](#options))
+- supports GraalVM CE [releases], [dev builds][dev-builds], and building from [source][repo] (see [options](#options))
 - has built-in support for GraalVM components and the [GraalVM updater][gu]
 - exports a `$GRAALVM_HOME` environment variable
 - adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(GraalVM tools such as `gu` and GraalVM languages can be invoked directly)
@@ -51,7 +51,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: [latest, nightly, '21.3.0']
+        version: [latest, dev, '21.3.0']
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
@@ -89,7 +89,7 @@ jobs:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `version`<br>*(required)* | n/a | `X.Y.Z` (e.g., `22.0.0`) for a specific [GraalVM release][releases]<br>`latest` for [latest stable release][stable],<br>`nightly` for [latest nightly build][nightly],<br>`trunk` for building GraalVM from [source][repo] (slow, can take several minutes). |
+| `version`<br>*(required)* | n/a | `X.Y.Z` (e.g., `22.0.0`) for a specific [GraalVM release][releases]<br>`latest` for [latest stable release][stable],<br>`dev` for [latest dev build][dev-build],<br>`trunk` for building GraalVM from [source][repo] (slow, can take several minutes). |
 | `java-version`<br>*(required)* | n/a | `'11'` or `'17'` for a specific Java version.<br>(`'8'` and `'16'` are supported for GraalVM 21.2 and earlier.) |
 | `components`    | `''`     | Comma-spearated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
 | `github-token`  | `''`     | Token for communication with the GitHub API. Please set to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps to reduce rate limiting issues. |
@@ -102,10 +102,11 @@ We welcome code contributions. To get started, you will need to sign the [Oracle
 Only pull requests from committers that can be verified as having signed the OCA can be accepted.
 
 
+[dev-build]: https://github.com/graalvm/graalvm-ce-dev-builds/releases/latest
+[dev-builds]: https://github.com/graalvm/graalvm-ce-dev-builds
 [graalvm-languages]: https://www.graalvm.org/reference-manual/languages/
 [gu]: https://www.graalvm.org/reference-manual/graalvm-updater/
 [native-image]: https://www.graalvm.org/native-image/
-[nightly]: https://github.com/graalvm/graalvm-ce-dev-builds/releases/latest
 [oca]: https://oca.opensource.oracle.com
 [releases]: https://github.com/graalvm/graalvm-ce-builds/releases
 [repo]: https://github.com/oracle/graal

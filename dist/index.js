@@ -7,13 +7,13 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_BASE = exports.VERSION_TRUNK = exports.VERSION_NIGHTLY = exports.VERSION_LATEST = exports.IS_WINDOWS = exports.IS_MACOS = void 0;
+exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_BASE = exports.VERSION_TRUNK = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = void 0;
 const os_1 = __nccwpck_require__(2037);
 const path_1 = __nccwpck_require__(1017);
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
+exports.VERSION_DEV = 'dev';
 exports.VERSION_LATEST = 'latest';
-exports.VERSION_NIGHTLY = 'nightly';
 exports.VERSION_TRUNK = 'trunk';
 exports.GRAALVM_BASE = (0, path_1.join)((0, os_1.homedir)(), '.graalvm');
 exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
@@ -255,11 +255,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpGraalVMRelease = exports.setUpGraalVMNightly = exports.setUpGraalVMLatest = void 0;
+exports.setUpGraalVMRelease = exports.setUpGraalVMDevBuild = exports.setUpGraalVMLatest = void 0;
 const c = __importStar(__nccwpck_require__(5105));
 const utils_1 = __nccwpck_require__(918);
 const GRAALVM_CE_DL_BASE = 'https://github.com/graalvm/graalvm-ce-builds/releases/download';
-const GRAALVM_REPO_NIGHTLY = 'graalvm-ce-dev-builds';
+const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds';
 const GRAALVM_REPO_RELEASES = 'graalvm-ce-builds';
 const GRAALVM_TAG_PREFIX = 'vm-';
 function setUpGraalVMLatest(javaVersion) {
@@ -274,20 +274,20 @@ function setUpGraalVMLatest(javaVersion) {
     });
 }
 exports.setUpGraalVMLatest = setUpGraalVMLatest;
-function setUpGraalVMNightly(javaVersion) {
+function setUpGraalVMDevBuild(javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const latestNightly = yield (0, utils_1.getLatestRelease)(GRAALVM_REPO_NIGHTLY);
+        const latestDevBuild = yield (0, utils_1.getLatestRelease)(GRAALVM_REPO_DEV_BUILDS);
         const graalVMIdentifier = determineGraalVMIdentifier('dev', javaVersion);
         const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
-        for (const asset of latestNightly.assets) {
+        for (const asset of latestDevBuild.assets) {
             if (asset.name === expectedFileName) {
                 return (0, utils_1.downloadAndExtractJDK)(asset.browser_download_url);
             }
         }
-        throw new Error('Could not find GraalVM nightly build');
+        throw new Error('Could not find GraalVM dev build');
     });
 }
-exports.setUpGraalVMNightly = setUpGraalVMNightly;
+exports.setUpGraalVMDevBuild = setUpGraalVMDevBuild;
 function setUpGraalVMRelease(version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const graalVMIdentifier = determineGraalVMIdentifier(version, javaVersion);
@@ -420,8 +420,8 @@ function run() {
                 case c.VERSION_LATEST:
                     graalVMHome = yield graalvm.setUpGraalVMLatest(javaVersion);
                     break;
-                case c.VERSION_NIGHTLY:
-                    graalVMHome = yield graalvm.setUpGraalVMNightly(javaVersion);
+                case c.VERSION_DEV:
+                    graalVMHome = yield graalvm.setUpGraalVMDevBuild(javaVersion);
                     break;
                 case c.VERSION_TRUNK:
                     graalVMHome = yield (0, graalvm_trunk_1.setUpGraalVMTrunk)(javaVersion, components);
