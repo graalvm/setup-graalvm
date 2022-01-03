@@ -4,6 +4,7 @@ import * as graalvm from './graalvm'
 import {join} from 'path'
 import {mkdirP} from '@actions/io'
 import {setUpDependencies} from './dependencies'
+import {setUpGUComponents} from './gu'
 import {setUpGraalVMTrunk} from './graalvm-trunk'
 import {setUpWindowsEnvironment} from './msvc'
 
@@ -49,6 +50,15 @@ async function run(): Promise<void> {
     core.addPath(join(graalVMHome, 'bin'))
     if (setJavaHome) {
       core.exportVariable('JAVA_HOME', graalVMHome)
+    }
+
+    // Set up GraalVM components (if any)
+    if (components.length > 0) {
+      if (graalvmVersion === c.VERSION_TRUNK) {
+        // components built from source, nothing to do
+      } else {
+        await setUpGUComponents(graalVMHome, components)
+      }
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
