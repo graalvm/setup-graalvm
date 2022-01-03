@@ -4,6 +4,7 @@ import * as graalvm from './graalvm'
 import {join} from 'path'
 import {mkdirP} from '@actions/io'
 import {setUpGraalVMTrunk} from './graalvm-trunk'
+import {setUpWindowsEnvironment} from './msvc'
 
 async function run(): Promise<void> {
   try {
@@ -13,6 +14,10 @@ async function run(): Promise<void> {
     const components: string[] =
       componentsString.length > 0 ? componentsString.split(',') : []
     const setJavaHome = core.getInput('set-java-home') === 'true'
+
+    if (c.IS_WINDOWS) {
+      setUpWindowsEnvironment()
+    }
 
     await mkdirP(c.GRAALVM_BASE)
 
