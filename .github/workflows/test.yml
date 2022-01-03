@@ -1,0 +1,114 @@
+name: 'build-test'
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
+
+jobs:
+  build: # make sure build/ci work properly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          npm install
+      - run: |
+          npm run all
+  test: # make sure the action works on a clean machine without building
+    name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        version: [latest, nightly, trunk]
+        java-version: ['11']
+        components: ['native-image']
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - version: '21.3.0'
+            java-version: '17'
+            components: 'native-image'
+            os: ubuntu-18.04
+          - version: '21.3.0'
+            java-version: '17'
+            components: 'native-image'
+            os: macos-11
+          - version: '21.3.0'
+            java-version: '17'
+            components: 'native-image'
+            os: windows-2022
+          - version: '21.3.0'
+            java-version: '17'
+            components: 'native-image'
+            os: windows-2016
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          version: ${{ matrix.version }}
+          java-version: ${{ matrix.java-version }}
+          components: ${{ matrix.components }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check environment
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          echo "JAVA_HOME: $JAVA_HOME"
+          java --version
+          native-image --version
+        if: runner.os != 'Windows'
+      - name: Check Windows environment
+        run: |
+          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+          echo "JAVA_HOME: $env:JAVA_HOME"
+          java --version
+          native-image.cmd --version
+        if: runner.os == 'Windows'
+  test-additional:
+    name: Extensive tests on ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          version: 'latest'
+          java-version: '17'
+          components: 'espresso,llvm-toolchain,native-image,nodejs,python,R,ruby,wasm'
+          set-java-home: 'false'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check environment
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          echo "JAVA_HOME: $JAVA_HOME"
+          [[ "$GRAALVM_HOME" != "$JAVA_HOME" ]] || exit 12
+          [[ $(which java) == *"graalvm"* ]] || exit 23
+          java --version
+          java -truffle --version
+          gu --version
+          gu list
+          [[ $(which lli) == *"graalvm"* ]] || exit 34
+          lli --version
+          native-image --version
+          [[ $(which node) == *"graalvm"* ]] || exit 45
+          node --version
+          graalpython --version
+          [[ $(which R) == *"graalvm"* ]] || exit 56
+          R --version
+          truffleruby --version
+          wasm --version
+      - name: Build HelloWorld.java with Native Image
+        run: |
+          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
+          javac HelloWorld.java
+          native-image HelloWorld
+          ./helloworld
+      # [GR-36108]: Liquid does not build on TruffleRuby 
+      # - name: Build Shopify/liquid with TruffleRuby
+      #   run: |
+      #     [[ $(which bundle) == *"graalvm"* ]] || exit 57
+      #     git clone --depth 1 https://github.com/Shopify/liquid.git
+      #     pushd liquid > /dev/null
+      #     bundle install --jobs=3 --retry=3 --path=vendor/bundle
+      #     bundle exec rake
+      #     popd > /dev/null
