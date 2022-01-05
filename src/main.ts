@@ -35,6 +35,9 @@ async function run(): Promise<void> {
         graalVMHome = await graalvm.setUpGraalVMDevBuild(javaVersion)
         break
       case c.VERSION_TRUNK:
+        core.warning(
+          "Building GraalVM from source is deprecated and will be removed on Jan 10, 2022. Please use the latest dev build instead (version: 'dev'). For more details see https://github.com/graalvm/setup-graalvm/issues/3"
+        )
         graalVMHome = await setUpGraalVMTrunk(javaVersion, components)
         break
       default:
