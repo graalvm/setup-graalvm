@@ -37,10 +37,6 @@ jobs:
             java-version: '17'
             components: 'native-image'
             os: windows-2022
-          - version: '21.3.0'
-            java-version: '17'
-            components: 'native-image'
-            os: windows-2016
           - version: 'mandrel-latest'
             java-version: '11'
             components: ''
