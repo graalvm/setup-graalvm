@@ -185,6 +185,7 @@ function setUpGraalVMTrunk(javaVersion, components) {
             '--no-download-progress',
             '--disable-installables=true',
             '--force-bash-launchers=true',
+            '--disable-libpolyglot',
             '--exclude-components=LibGraal',
             '--dynamicimports',
             dynamicImports

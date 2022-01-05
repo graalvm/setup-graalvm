@@ -67,6 +67,7 @@ export async function setUpGraalVMTrunk(
     '--no-download-progress', // avoid cluttering the build log
     '--disable-installables=true', // installables not needed
     '--force-bash-launchers=true', // disable native launchers
+    '--disable-libpolyglot', // avoid building libpolyglot to save time
     '--exclude-components=LibGraal', // avoid building libgraal to save time
     '--dynamicimports',
     dynamicImports
