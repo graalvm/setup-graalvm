@@ -1,5 +1,5 @@
 # GitHub Action for GraalVM [![build-test](https://github.com/graalvm/setup-graalvm/actions/workflows/test.yml/badge.svg)](https://github.com/graalvm/setup-graalvm/actions/workflows/test.yml)
-This GitHub action sets up [GraalVM Community Edition][repo] and GraalVM components such as [Native Image][native-image] and [GraalVM languages][graalvm-languages].
+This GitHub action sets up [GraalVM Community Edition][repo] and GraalVM components such as [Native Image][native-image] and [Truffle languages][truffle-languages].
 
 ## Key Features
 
@@ -8,7 +8,7 @@ This action:
 - supports GraalVM CE [releases], [dev builds][dev-builds], and [Mandrel][mandrel] (see [options](#options))
 - has built-in support for GraalVM components and the [GraalVM updater][gu]
 - exports a `$GRAALVM_HOME` environment variable
-- adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(GraalVM tools such as `gu` and GraalVM languages can be invoked directly)
+- adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(Truffle languages and tools can be invoked directly)
 - sets `$JAVA_HOME` to `$GRAALVM_HOME` by default<br>(can be disabled via `set-java-home: 'false'`, see [options](#options))
 - sets up Windows environments with build tools using [vcvarsall.bat][vcvarsall]
 
@@ -104,7 +104,6 @@ Only pull requests from committers that can be verified as having signed the OCA
 
 [dev-build]: https://github.com/graalvm/graalvm-ce-dev-builds/releases/latest
 [dev-builds]: https://github.com/graalvm/graalvm-ce-dev-builds
-[graalvm-languages]: https://www.graalvm.org/reference-manual/languages/
 [gu]: https://www.graalvm.org/reference-manual/graalvm-updater/
 [mandrel]: https://github.com/graalvm/mandrel
 [mandrel-releases]: https://github.com/graalvm/mandrel/releases
@@ -114,4 +113,5 @@ Only pull requests from committers that can be verified as having signed the OCA
 [releases]: https://github.com/graalvm/graalvm-ce-builds/releases
 [repo]: https://github.com/oracle/graal
 [stable]: https://github.com/graalvm/graalvm-ce-builds/releases/latest
+[truffle-languages]: https://www.graalvm.org/reference-manual/languages/
 [vcvarsall]: https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line
