@@ -7,7 +7,6 @@ export const IS_WINDOWS = process.platform === 'win32'
 
 export const VERSION_DEV = 'dev'
 export const VERSION_LATEST = 'latest'
-export const VERSION_TRUNK = 'trunk'
 
 export const GRAALVM_BASE = join(homedir(), '.graalvm')
 export const GRAALVM_FILE_EXTENSION = IS_WINDOWS ? '.zip' : '.tar.gz'

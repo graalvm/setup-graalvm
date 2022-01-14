@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: [latest, dev, trunk]
+        version: [latest, dev]
         java-version: ['11']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]

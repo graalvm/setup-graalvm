@@ -7,14 +7,13 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_BASE = exports.VERSION_TRUNK = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = void 0;
+exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_BASE = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = void 0;
 const os_1 = __nccwpck_require__(2037);
 const path_1 = __nccwpck_require__(1017);
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
 exports.VERSION_DEV = 'dev';
 exports.VERSION_LATEST = 'latest';
-exports.VERSION_TRUNK = 'trunk';
 exports.GRAALVM_BASE = (0, path_1.join)((0, os_1.homedir)(), '.graalvm');
 exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
 exports.GRAALVM_GH_USER = 'graalvm';
@@ -94,131 +93,6 @@ function setUpDependencies(components) {
     });
 }
 exports.setUpDependencies = setUpDependencies;
-
-
-/***/ }),
-
-/***/ 7538:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpGraalVMTrunk = void 0;
-const c = __importStar(__nccwpck_require__(5105));
-const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
-const child_process_1 = __nccwpck_require__(2081);
-const io_1 = __nccwpck_require__(7436);
-const utils_1 = __nccwpck_require__(918);
-const path_1 = __nccwpck_require__(1017);
-const GRAALVM_TRUNK_DL = 'https://github.com/oracle/graal/archive/refs/heads/master.zip';
-const GRAALVM_MX_DL = 'https://github.com/graalvm/mx/archive/refs/heads/master.zip';
-const DEFAULT_SUITES = '/compiler,/regex,/sdk,/tools,/truffle';
-const GRAAL_REPO_DIR = (0, path_1.join)(c.GRAALVM_BASE, 'graal');
-const VM_DIR = (0, path_1.join)(GRAAL_REPO_DIR, 'vm');
-const MX_DIR = (0, path_1.join)(c.GRAALVM_BASE, 'mx');
-const MX_EXEC = c.IS_WINDOWS ? 'mx.cmd' : 'mx';
-const SPAWN_OPTIONS = {
-    cwd: VM_DIR,
-    encoding: 'utf8',
-    stdio: 'inherit'
-};
-const COMPONENTS_TO_SUITE_NAME = new Map([
-    ['espresso', '/espresso'],
-    ['js', '/graal-js'],
-    ['llvm-toolchain', '/sulong'],
-    ['native-image', '/substratevm'],
-    ['nodejs', '/graal-nodejs'],
-    ['python', 'graalpython'],
-    ['R', 'fastr'],
-    ['ruby', 'truffleruby'],
-    ['wasm', '/wasm']
-]);
-function setUpGraalVMTrunk(javaVersion, components) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const jdkId = `labsjdk-ce-${javaVersion}`;
-        core.startGroup(`Downloading GraalVM sources, mx, and ${jdkId}...`);
-        yield tc.extractZip(yield tc.downloadTool(GRAALVM_TRUNK_DL), c.GRAALVM_BASE);
-        yield (0, io_1.mv)((0, path_1.join)(c.GRAALVM_BASE, 'graal-master'), GRAAL_REPO_DIR);
-        yield tc.extractZip(yield tc.downloadTool(GRAALVM_MX_DL), c.GRAALVM_BASE);
-        yield (0, io_1.mv)((0, path_1.join)(c.GRAALVM_BASE, 'mx-master'), MX_DIR);
-        core.addPath(MX_DIR);
-        core.debug(`"${MX_DIR}" added to $PATH`);
-        const labsJDKDir = (0, path_1.join)(c.GRAALVM_BASE, 'labsjdk');
-        yield (0, io_1.mkdirP)(labsJDKDir);
-        (0, child_process_1.spawnSync)(MX_EXEC, ['--java-home=', 'fetch-jdk', '--jdk-id', jdkId, '--to', labsJDKDir], SPAWN_OPTIONS);
-        const labsJDKHome = (0, utils_1.findJavaHomeInSubfolder)(labsJDKDir);
-        core.exportVariable('JAVA_HOME', labsJDKHome);
-        core.debug(`$JAVA_HOME set to "${labsJDKHome}"`);
-        core.endGroup();
-        const dynamicImports = toSuiteNames(components).join(',');
-        const mxArgs = [
-            '--no-download-progress',
-            '--disable-installables=true',
-            '--force-bash-launchers=true',
-            '--disable-libpolyglot',
-            '--exclude-components=LibGraal',
-            '--dynamicimports',
-            dynamicImports
-        ];
-        if (core.isDebug()) {
-            (0, child_process_1.spawnSync)(MX_EXEC, mxArgs.concat('graalvm-show'), SPAWN_OPTIONS);
-        }
-        const graalvmHome = (0, child_process_1.spawnSync)(MX_EXEC, mxArgs.concat(['graalvm-home']), Object.assign(Object.assign({}, SPAWN_OPTIONS), { stdio: 'pipe' }));
-        core.startGroup('Building GraalVM CE from source...');
-        (0, child_process_1.spawnSync)(MX_EXEC, mxArgs.concat(['build']), SPAWN_OPTIONS);
-        core.endGroup();
-        const graalvmHomePath = graalvmHome.stdout.trim();
-        if (core.isDebug()) {
-            const cmd = c.IS_WINDOWS ? 'dir' : 'ls';
-            (0, child_process_1.spawnSync)(cmd, [graalvmHomePath], { stdio: 'inherit' });
-        }
-        return graalvmHomePath;
-    });
-}
-exports.setUpGraalVMTrunk = setUpGraalVMTrunk;
-function toSuiteNames(components) {
-    const names = [DEFAULT_SUITES];
-    for (const component of components) {
-        const suiteName = COMPONENTS_TO_SUITE_NAME.get(component);
-        if (suiteName) {
-            names.push(suiteName);
-        }
-        else {
-            throw new Error(`Unsupported component: ${component}`);
-        }
-    }
-    return names;
-}
 
 
 /***/ }),
@@ -401,7 +275,6 @@ const path_1 = __nccwpck_require__(1017);
 const io_1 = __nccwpck_require__(7436);
 const dependencies_1 = __nccwpck_require__(6031);
 const gu_1 = __nccwpck_require__(3466);
-const graalvm_trunk_1 = __nccwpck_require__(7538);
 const mandrel_1 = __nccwpck_require__(438);
 const msvc_1 = __nccwpck_require__(4765);
 function run() {
@@ -426,10 +299,6 @@ function run() {
                 case c.VERSION_DEV:
                     graalVMHome = yield graalvm.setUpGraalVMDevBuild(javaVersion);
                     break;
-                case c.VERSION_TRUNK:
-                    core.warning("Building GraalVM from source is deprecated and will be removed on Jan 10, 2022. Please use the latest dev build instead (version: 'dev'). For more details see https://github.com/graalvm/setup-graalvm/issues/3");
-                    graalVMHome = yield (0, graalvm_trunk_1.setUpGraalVMTrunk)(javaVersion, components);
-                    break;
                 default:
                     if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
                         graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalvmVersion, javaVersion);
@@ -448,10 +317,7 @@ function run() {
             }
             // Set up GraalVM components (if any)
             if (components.length > 0) {
-                if (graalvmVersion === c.VERSION_TRUNK) {
-                    // components built from source, nothing to do
-                }
-                else if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+                if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
                     core.warning(`Mandrel does not support GraalVM components: ${componentsString}`);
                 }
                 else {

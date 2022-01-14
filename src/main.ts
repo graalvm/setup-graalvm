@@ -5,7 +5,6 @@ import {join} from 'path'
 import {mkdirP} from '@actions/io'
 import {setUpDependencies} from './dependencies'
 import {setUpGUComponents} from './gu'
-import {setUpGraalVMTrunk} from './graalvm-trunk'
 import {setUpMandrel} from './mandrel'
 import {setUpWindowsEnvironment} from './msvc'
 
@@ -34,12 +33,6 @@ async function run(): Promise<void> {
       case c.VERSION_DEV:
         graalVMHome = await graalvm.setUpGraalVMDevBuild(javaVersion)
         break
-      case c.VERSION_TRUNK:
-        core.warning(
-          "Building GraalVM from source is deprecated and will be removed on Jan 10, 2022. Please use the latest dev build instead (version: 'dev'). For more details see https://github.com/graalvm/setup-graalvm/issues/3"
-        )
-        graalVMHome = await setUpGraalVMTrunk(javaVersion, components)
-        break
       default:
         if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
           graalVMHome = await setUpMandrel(graalvmVersion, javaVersion)
@@ -62,9 +55,7 @@ async function run(): Promise<void> {
 
     // Set up GraalVM components (if any)
     if (components.length > 0) {
-      if (graalvmVersion === c.VERSION_TRUNK) {
-        // components built from source, nothing to do
-      } else if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+      if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
         core.warning(
           `Mandrel does not support GraalVM components: ${componentsString}`
         )
