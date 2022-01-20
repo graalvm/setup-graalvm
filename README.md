@@ -94,6 +94,8 @@ jobs:
 | `components`    | `''`     | Comma-spearated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
 | `github-token`  | `''`     | Token for communication with the GitHub API. Please set to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps to reduce rate limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. |
+| `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] for building [static images][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
+
 
 ## Contributing
 
@@ -108,7 +110,10 @@ Only pull requests from committers that can be verified as having signed the OCA
 [mandrel]: https://github.com/graalvm/mandrel
 [mandrel-releases]: https://github.com/graalvm/mandrel/releases
 [mandrel-stable]: https://github.com/graalvm/mandrel/releases/latest
+[musl]: https://musl.libc.org/
 [native-image]: https://www.graalvm.org/native-image/
+[native-image-musl-build]: https://github.com/graalvm/setup-graalvm/blob/main/.github/workflows/test.yml
+[native-image-static]: https://github.com/oracle/graal/blob/fa6f4a974dedacf4688dcc430dd100849d9882f2/docs/reference-manual/native-image/StaticImages.md
 [oca]: https://oca.opensource.oracle.com
 [releases]: https://github.com/graalvm/graalvm-ce-builds/releases
 [repo]: https://github.com/oracle/graal

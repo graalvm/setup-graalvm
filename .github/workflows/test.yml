@@ -71,8 +71,27 @@ jobs:
           java --version
           native-image.cmd --version
         if: runner.os == 'Windows'
+  test-native-image-musl:
+    name: native-image-musl on ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          version: 'latest'
+          java-version: '17'
+          components: 'native-image'
+          native-image-musl: 'true'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build static HelloWorld image with Native Image and musl
+        run: |
+          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
+          javac HelloWorld.java
+          native-image --static --libc=musl HelloWorld
+          ./helloworld
   test-additional:
-    name: Extensive tests on ubuntu-latest
+    name: extensive tests on ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

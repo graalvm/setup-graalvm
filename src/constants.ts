@@ -2,6 +2,7 @@ import * as otypes from '@octokit/types'
 import {homedir} from 'os'
 import {join} from 'path'
 
+export const IS_LINUX = process.platform === 'linux'
 export const IS_MACOS = process.platform === 'darwin'
 export const IS_WINDOWS = process.platform === 'win32'
 
