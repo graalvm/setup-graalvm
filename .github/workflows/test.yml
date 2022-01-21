@@ -77,7 +77,7 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: 'latest'
+          version: 'dev'
           java-version: '17'
           components: 'espresso,llvm-toolchain,native-image,nodejs,python,R,ruby,wasm'
           set-java-home: 'false'
@@ -108,12 +108,11 @@ jobs:
           javac HelloWorld.java
           native-image HelloWorld
           ./helloworld
-      # [GR-36108]: Liquid does not build on TruffleRuby 
-      # - name: Build Shopify/liquid with TruffleRuby
-      #   run: |
-      #     [[ $(which bundle) == *"graalvm"* ]] || exit 57
-      #     git clone --depth 1 https://github.com/Shopify/liquid.git
-      #     pushd liquid > /dev/null
-      #     bundle install --jobs=3 --retry=3 --path=vendor/bundle
-      #     bundle exec rake
-      #     popd > /dev/null
+      - name: Build Shopify/liquid with TruffleRuby
+        run: |
+          [[ $(which bundle) == *"graalvm"* ]] || exit 57
+          git clone --depth 1 https://github.com/Shopify/liquid.git
+          pushd liquid > /dev/null
+          bundle install --jobs=3 --retry=3 --path=vendor/bundle
+          # bundle exec rake (LIQUID C tests take very long to run)
+          popd > /dev/null
