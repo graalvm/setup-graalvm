@@ -112,7 +112,7 @@ Only pull requests from committers that can be verified as having signed the OCA
 [mandrel-stable]: https://github.com/graalvm/mandrel/releases/latest
 [musl]: https://musl.libc.org/
 [native-image]: https://www.graalvm.org/native-image/
-[native-image-musl-build]: https://github.com/graalvm/setup-graalvm/blob/main/.github/workflows/test.yml
+[native-image-musl-build]: https://github.com/graalvm/setup-graalvm/blob/778131f1d6837ccd4b2e91382c31830896a2d56e/.github/workflows/test.yml#L74-L92
 [native-image-static]: https://github.com/oracle/graal/blob/fa6f4a974dedacf4688dcc430dd100849d9882f2/docs/reference-manual/native-image/StaticImages.md
 [oca]: https://oca.opensource.oracle.com
 [releases]: https://github.com/graalvm/graalvm-ce-builds/releases
