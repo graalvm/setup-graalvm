@@ -108,11 +108,14 @@ jobs:
           javac HelloWorld.java
           native-image HelloWorld
           ./helloworld
-      - name: Build Shopify/liquid with TruffleRuby
+      - name: Build Ruby-FFI with TruffleRuby
         run: |
           [[ $(which bundle) == *"graalvm"* ]] || exit 57
-          git clone --depth 1 https://github.com/Shopify/liquid.git
-          pushd liquid > /dev/null
-          bundle install --jobs=3 --retry=3 --path=vendor/bundle
-          # bundle exec rake (LIQUID C tests take very long to run)
+          git clone --depth 1 https://github.com/ffi/ffi.git
+          pushd ffi > /dev/null
+          # https://github.com/ffi/ffi/blob/447845cb3030194c79700c86fb388a12e6f81386/.github/workflows/ci.yml#L58-L62
+          bundle install
+          bundle exec rake libffi
+          bundle exec rake compile
+          bundle exec rake test
           popd > /dev/null
