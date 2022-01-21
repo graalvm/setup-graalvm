@@ -1,11 +1,13 @@
 name: 'build-test'
-on: # rebuild any PRs and main/dev branch changes
-  pull_request:
+
+on:
   push:
-    branches:
-      - main
-      - dev
-      - 'releases/*'
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
 
 jobs:
   build: # make sure build/ci work properly
