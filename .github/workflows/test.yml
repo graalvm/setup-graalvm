@@ -28,15 +28,15 @@ jobs:
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
         include:
-          - version: '21.3.0'
+          - version: '22.0.0.2'
             java-version: '17'
             components: 'native-image'
             os: ubuntu-18.04
-          - version: '21.3.0'
+          - version: '22.0.0.2'
             java-version: '17'
             components: 'native-image'
             os: macos-11
-          - version: '21.3.0'
+          - version: '22.0.0.2'
             java-version: '17'
             components: 'native-image'
             os: windows-2022
