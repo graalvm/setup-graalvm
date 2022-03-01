@@ -2,20 +2,17 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 5105:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_BASE = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = void 0;
-const os_1 = __nccwpck_require__(2037);
-const path_1 = __nccwpck_require__(1017);
+exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = void 0;
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
 exports.VERSION_DEV = 'dev';
 exports.VERSION_LATEST = 'latest';
-exports.GRAALVM_BASE = (0, path_1.join)((0, os_1.homedir)(), '.graalvm');
 exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
 exports.GRAALVM_GH_USER = 'graalvm';
 exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
@@ -244,12 +241,16 @@ function setUpGraalVMRelease(version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const graalVMIdentifier = determineGraalVMIdentifier(version, javaVersion);
         const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
-        return (0, utils_1.downloadAndExtractJDK)(downloadUrl);
+        const toolName = determineToolName(javaVersion);
+        return (0, utils_1.downloadExtractAndCacheJDK)(downloadUrl, toolName, version);
     });
 }
 exports.setUpGraalVMRelease = setUpGraalVMRelease;
 function determineGraalVMIdentifier(version, javaVersion) {
     return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`;
+}
+function determineToolName(javaVersion) {
+    return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
 }
 
 
@@ -348,7 +349,6 @@ const c = __importStar(__nccwpck_require__(5105));
 const core = __importStar(__nccwpck_require__(2186));
 const graalvm = __importStar(__nccwpck_require__(1763));
 const path_1 = __nccwpck_require__(1017);
-const io_1 = __nccwpck_require__(7436);
 const dependencies_1 = __nccwpck_require__(6031);
 const gu_1 = __nccwpck_require__(3466);
 const mandrel_1 = __nccwpck_require__(438);
@@ -370,7 +370,6 @@ function run() {
             if (enableNativeImageMusl) {
                 yield (0, features_1.setUpNativeImageMusl)();
             }
-            yield (0, io_1.mkdirP)(c.GRAALVM_BASE);
             // Download or build GraalVM
             let graalVMHome;
             switch (graalvmVersion) {
@@ -488,11 +487,15 @@ function setUpMandrelRelease(version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const identifier = determineMandrelIdentifier(version, javaVersion);
         const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`;
-        return (0, utils_1.downloadAndExtractJDK)(downloadUrl);
+        const toolName = determineToolName(javaVersion);
+        return (0, utils_1.downloadExtractAndCacheJDK)(downloadUrl, toolName, version);
     });
 }
 function determineMandrelIdentifier(version, javaVersion) {
     return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`;
+}
+function determineToolName(javaVersion) {
+    return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
 }
 
 
@@ -615,7 +618,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findJavaHomeInSubfolder = exports.downloadAndExtractJDK = exports.getLatestRelease = void 0;
+exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = void 0;
 const c = __importStar(__nccwpck_require__(5105));
 const core = __importStar(__nccwpck_require__(2186));
 const httpClient = __importStar(__nccwpck_require__(9925));
@@ -645,20 +648,39 @@ function getLatestRelease(repo) {
 exports.getLatestRelease = getLatestRelease;
 function downloadAndExtractJDK(downloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
+        return findJavaHomeInSubfolder(yield downloadAndExtract(downloadUrl));
+    });
+}
+exports.downloadAndExtractJDK = downloadAndExtractJDK;
+function downloadExtractAndCacheJDK(downloadUrl, toolName, version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let toolPath = tc.find(toolName, version);
+        if (toolPath) {
+            core.info(`Found ${toolName} ${version} in tool-cache @ ${toolPath}`);
+        }
+        else {
+            const extractDir = yield downloadAndExtract(downloadUrl);
+            core.info(`Adding ${toolName} ${version} to tool-cache ...`);
+            toolPath = yield tc.cacheDir(extractDir, toolName, version);
+        }
+        return findJavaHomeInSubfolder(toolPath);
+    });
+}
+exports.downloadExtractAndCacheJDK = downloadExtractAndCacheJDK;
+function downloadAndExtract(downloadUrl) {
+    return __awaiter(this, void 0, void 0, function* () {
         const downloadPath = yield tc.downloadTool(downloadUrl);
         if (downloadUrl.endsWith('.tar.gz')) {
-            yield tc.extractTar(downloadPath, c.GRAALVM_BASE);
+            return yield tc.extractTar(downloadPath);
         }
         else if (downloadUrl.endsWith('.zip')) {
-            yield tc.extractZip(downloadPath, c.GRAALVM_BASE);
+            return yield tc.extractZip(downloadPath);
         }
         else {
             throw new Error(`Unexpected filetype downloaded: ${downloadUrl}`);
         }
-        return findJavaHomeInSubfolder(c.GRAALVM_BASE);
     });
 }
-exports.downloadAndExtractJDK = downloadAndExtractJDK;
 function findJavaHomeInSubfolder(searchPath) {
     const baseContents = (0, fs_1.readdirSync)(searchPath);
     if (baseContents.length === 1) {
@@ -668,7 +690,6 @@ function findJavaHomeInSubfolder(searchPath) {
         throw new Error(`Unexpected amount of directory items found: ${baseContents.length}`);
     }
 }
-exports.findJavaHomeInSubfolder = findJavaHomeInSubfolder;
 
 
 /***/ }),

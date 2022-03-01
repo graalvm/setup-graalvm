@@ -1,5 +1,5 @@
 import * as c from './constants'
-import {downloadAndExtractJDK, getLatestRelease} from './utils'
+import {downloadExtractAndCacheJDK, getLatestRelease} from './utils'
 
 const MANDREL_REPO = 'mandrel'
 const MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE
@@ -46,7 +46,8 @@ async function setUpMandrelRelease(
 ): Promise<string> {
   const identifier = determineMandrelIdentifier(version, javaVersion)
   const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`
-  return downloadAndExtractJDK(downloadUrl)
+  const toolName = determineToolName(javaVersion)
+  return downloadExtractAndCacheJDK(downloadUrl, toolName, version)
 }
 
 function determineMandrelIdentifier(
@@ -54,4 +55,8 @@ function determineMandrelIdentifier(
   javaVersion: string
 ): string {
   return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`
+}
+
+function determineToolName(javaVersion: string): string {
+  return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}`
 }

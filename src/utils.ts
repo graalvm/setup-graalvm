@@ -32,18 +32,37 @@ export async function getLatestRelease(
 export async function downloadAndExtractJDK(
   downloadUrl: string
 ): Promise<string> {
+  return findJavaHomeInSubfolder(await downloadAndExtract(downloadUrl))
+}
+
+export async function downloadExtractAndCacheJDK(
+  downloadUrl: string,
+  toolName: string,
+  version: string
+): Promise<string> {
+  let toolPath = tc.find(toolName, version)
+  if (toolPath) {
+    core.info(`Found ${toolName} ${version} in tool-cache @ ${toolPath}`)
+  } else {
+    const extractDir = await downloadAndExtract(downloadUrl)
+    core.info(`Adding ${toolName} ${version} to tool-cache ...`)
+    toolPath = await tc.cacheDir(extractDir, toolName, version)
+  }
+  return findJavaHomeInSubfolder(toolPath)
+}
+
+async function downloadAndExtract(downloadUrl: string): Promise<string> {
   const downloadPath = await tc.downloadTool(downloadUrl)
   if (downloadUrl.endsWith('.tar.gz')) {
-    await tc.extractTar(downloadPath, c.GRAALVM_BASE)
+    return await tc.extractTar(downloadPath)
   } else if (downloadUrl.endsWith('.zip')) {
-    await tc.extractZip(downloadPath, c.GRAALVM_BASE)
+    return await tc.extractZip(downloadPath)
   } else {
     throw new Error(`Unexpected filetype downloaded: ${downloadUrl}`)
   }
-  return findJavaHomeInSubfolder(c.GRAALVM_BASE)
 }
 
-export function findJavaHomeInSubfolder(searchPath: string): string {
+function findJavaHomeInSubfolder(searchPath: string): string {
   const baseContents = readdirSync(searchPath)
   if (baseContents.length === 1) {
     return join(searchPath, baseContents[0], c.JDK_HOME_SUFFIX)

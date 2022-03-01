@@ -2,7 +2,6 @@ import * as c from './constants'
 import * as core from '@actions/core'
 import * as graalvm from './graalvm'
 import {join} from 'path'
-import {mkdirP} from '@actions/io'
 import {setUpDependencies} from './dependencies'
 import {setUpGUComponents} from './gu'
 import {setUpMandrel} from './mandrel'
@@ -26,8 +25,6 @@ async function run(): Promise<void> {
     if (enableNativeImageMusl) {
       await setUpNativeImageMusl()
     }
-
-    await mkdirP(c.GRAALVM_BASE)
 
     // Download or build GraalVM
     let graalVMHome

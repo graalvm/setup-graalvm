@@ -1,5 +1,9 @@
 import * as c from './constants'
-import {downloadAndExtractJDK, getLatestRelease} from './utils'
+import {
+  downloadAndExtractJDK,
+  downloadExtractAndCacheJDK,
+  getLatestRelease
+} from './utils'
 
 const GRAALVM_CE_DL_BASE =
   'https://github.com/graalvm/graalvm-ce-builds/releases/download'
@@ -40,7 +44,8 @@ export async function setUpGraalVMRelease(
 ): Promise<string> {
   const graalVMIdentifier = determineGraalVMIdentifier(version, javaVersion)
   const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
-  return downloadAndExtractJDK(downloadUrl)
+  const toolName = determineToolName(javaVersion)
+  return downloadExtractAndCacheJDK(downloadUrl, toolName, version)
 }
 
 function determineGraalVMIdentifier(
@@ -48,4 +53,8 @@ function determineGraalVMIdentifier(
   javaVersion: string
 ): string {
   return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`
+}
+
+function determineToolName(javaVersion: string): string {
+  return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}`
 }
