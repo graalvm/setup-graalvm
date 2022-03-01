@@ -134,35 +134,40 @@ const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const constants_1 = __nccwpck_require__(5105);
 const exec_1 = __nccwpck_require__(1514);
-const os_1 = __nccwpck_require__(2037);
 const path_1 = __nccwpck_require__(1017);
-const io_1 = __nccwpck_require__(7436);
+const MUSL_NAME = 'x86_64-linux-musl-native';
+const MUSL_VERSION = '10.2.1';
 function setUpNativeImageMusl() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!constants_1.IS_LINUX) {
             core.warning('musl is only supported on Linux');
             return;
         }
-        core.startGroup(`Setting up musl for GraalVM Native Image...`);
-        const basePath = (0, path_1.join)((0, os_1.homedir)(), '.musl_feature');
-        yield (0, io_1.mkdirP)(basePath);
-        const muslName = 'x86_64-linux-musl-native';
-        const muslDownloadPath = yield tc.downloadTool(`http://more.musl.cc/10/x86_64-linux-musl/${muslName}.tgz`);
-        yield tc.extractTar(muslDownloadPath, basePath);
-        const muslPath = (0, path_1.join)(basePath, muslName);
-        core.addPath((0, path_1.join)(muslPath, 'bin'));
-        const zlibVersion = '1.2.11';
-        const zlibDownloadPath = yield tc.downloadTool(`https://zlib.net/zlib-${zlibVersion}.tar.gz`);
-        yield tc.extractTar(zlibDownloadPath, basePath);
-        const zlibPath = (0, path_1.join)(basePath, `zlib-${zlibVersion}`);
-        const zlibBuildOptions = {
-            cwd: zlibPath,
-            env: Object.assign(Object.assign({}, process.env), { CC: (0, path_1.join)(muslPath, 'bin', 'gcc') })
-        };
-        yield (0, exec_1.exec)('./configure', [`--prefix=${muslPath}`, '--static'], zlibBuildOptions);
-        yield (0, exec_1.exec)('make', [], zlibBuildOptions);
-        yield (0, exec_1.exec)('make', ['install'], { cwd: zlibPath });
-        core.endGroup();
+        let toolPath = tc.find(MUSL_NAME, MUSL_VERSION);
+        if (toolPath) {
+            core.info(`Found ${MUSL_NAME} ${MUSL_VERSION} in tool-cache @ ${toolPath}`);
+        }
+        else {
+            core.startGroup(`Setting up musl for GraalVM Native Image...`);
+            const muslDownloadPath = yield tc.downloadTool(`http://more.musl.cc/10/x86_64-linux-musl/${MUSL_NAME}.tgz`);
+            const muslExtractPath = yield tc.extractTar(muslDownloadPath);
+            const muslPath = (0, path_1.join)(muslExtractPath, MUSL_NAME);
+            const zlibVersion = '1.2.11';
+            const zlibDownloadPath = yield tc.downloadTool(`https://zlib.net/zlib-${zlibVersion}.tar.gz`);
+            const zlibExtractPath = yield tc.extractTar(zlibDownloadPath);
+            const zlibPath = (0, path_1.join)(zlibExtractPath, `zlib-${zlibVersion}`);
+            const zlibBuildOptions = {
+                cwd: zlibPath,
+                env: Object.assign(Object.assign({}, process.env), { CC: (0, path_1.join)(muslPath, 'bin', 'gcc') })
+            };
+            yield (0, exec_1.exec)('./configure', [`--prefix=${muslPath}`, '--static'], zlibBuildOptions);
+            yield (0, exec_1.exec)('make', [], zlibBuildOptions);
+            yield (0, exec_1.exec)('make', ['install'], { cwd: zlibPath });
+            core.info(`Adding ${MUSL_NAME} ${MUSL_VERSION} to tool-cache ...`);
+            toolPath = yield tc.cacheDir(muslPath, MUSL_NAME, MUSL_VERSION);
+            core.endGroup();
+        }
+        core.addPath((0, path_1.join)(toolPath, 'bin'));
     });
 }
 exports.setUpNativeImageMusl = setUpNativeImageMusl;
