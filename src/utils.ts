@@ -2,9 +2,10 @@ import * as c from './constants'
 import * as core from '@actions/core'
 import * as httpClient from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
+import {readFileSync, readdirSync} from 'fs'
 import {Octokit} from '@octokit/core'
+import {createHash} from 'crypto'
 import {join} from 'path'
-import {readdirSync} from 'fs'
 
 // Set up Octokit in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = process.env['GITHUB_API_URL'] || 'https://api.github.com'
@@ -32,11 +33,13 @@ export async function getLatestRelease(
 export async function downloadAndExtractJDK(
   downloadUrl: string
 ): Promise<string> {
-  return findJavaHomeInSubfolder(await downloadAndExtract(downloadUrl))
+  return findJavaHomeInSubfolder(
+    await extract(await tc.downloadTool(downloadUrl))
+  )
 }
 
 export async function downloadExtractAndCacheJDK(
-  downloadUrl: string,
+  downloader: () => Promise<string>,
   toolName: string,
   version: string
 ): Promise<string> {
@@ -45,21 +48,28 @@ export async function downloadExtractAndCacheJDK(
   if (toolPath) {
     core.info(`Found ${toolName} ${version} in tool-cache @ ${toolPath}`)
   } else {
-    const extractDir = await downloadAndExtract(downloadUrl)
+    const extractDir = await extract(await downloader())
     core.info(`Adding ${toolName} ${version} to tool-cache ...`)
     toolPath = await tc.cacheDir(extractDir, toolName, semVersion)
   }
   return findJavaHomeInSubfolder(toolPath)
 }
 
-async function downloadAndExtract(downloadUrl: string): Promise<string> {
-  const downloadPath = await tc.downloadTool(downloadUrl)
-  if (downloadUrl.endsWith('.tar.gz')) {
+export function calculateSHA256(filePath: string): string {
+  const hashSum = createHash('sha256')
+  hashSum.update(readFileSync(filePath))
+  return hashSum.digest('hex')
+}
+
+async function extract(downloadPath: string): Promise<string> {
+  if (c.GRAALVM_FILE_EXTENSION === '.tar.gz') {
     return await tc.extractTar(downloadPath)
-  } else if (downloadUrl.endsWith('.zip')) {
+  } else if (c.GRAALVM_FILE_EXTENSION === '.zip') {
     return await tc.extractZip(downloadPath)
   } else {
-    throw new Error(`Unexpected filetype downloaded: ${downloadUrl}`)
+    throw new Error(
+      `Unexpected filetype downloaded: ${c.GRAALVM_FILE_EXTENSION}`
+    )
   }
 }
 

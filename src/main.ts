@@ -11,6 +11,7 @@ import {setUpWindowsEnvironment} from './msvc'
 async function run(): Promise<void> {
   try {
     const graalvmVersion = core.getInput('version', {required: true})
+    const gdsToken = core.getInput('gds-token')
     const javaVersion = core.getInput('java-version', {required: true})
     const componentsString: string = core.getInput('components')
     const components: string[] =
@@ -30,16 +31,17 @@ async function run(): Promise<void> {
     let graalVMHome
     switch (graalvmVersion) {
       case c.VERSION_LATEST:
-        graalVMHome = await graalvm.setUpGraalVMLatest(javaVersion)
+        graalVMHome = await graalvm.setUpGraalVMLatest(gdsToken, javaVersion)
         break
       case c.VERSION_DEV:
-        graalVMHome = await graalvm.setUpGraalVMDevBuild(javaVersion)
+        graalVMHome = await graalvm.setUpGraalVMDevBuild(gdsToken, javaVersion)
         break
       default:
         if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
           graalVMHome = await setUpMandrel(graalvmVersion, javaVersion)
         } else {
           graalVMHome = await graalvm.setUpGraalVMRelease(
+            gdsToken,
             graalvmVersion,
             javaVersion
           )
@@ -62,7 +64,7 @@ async function run(): Promise<void> {
           `Mandrel does not support GraalVM components: ${componentsString}`
         )
       } else {
-        await setUpGUComponents(graalVMHome, components)
+        await setUpGUComponents(gdsToken, graalVMHome, components)
       }
     }
   } catch (error) {
