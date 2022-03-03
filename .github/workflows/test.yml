@@ -18,8 +18,8 @@ jobs:
           npm install
       - run: |
           npm run all
-  test: # make sure the action works on a clean machine without building
-    name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+  test-ce: # make sure the action works on a clean machine without building
+    name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -62,6 +62,7 @@ jobs:
           echo "GRAALVM_HOME: $GRAALVM_HOME"
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
+          java --version | grep "GraalVM CE" || exit 12
           native-image --version
         if: runner.os != 'Windows'
       - name: Check Windows environment
@@ -70,6 +71,41 @@ jobs:
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
           native-image.cmd --version
+        if: runner.os == 'Windows'
+  test-ee:
+    name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+    if: github.event_name != 'pull_request'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        version: ['21.3.0', 'latest']
+        java-version: ['11', '17']
+        components: [''] # ['native-image'] (activate after 22.1.0 is released)
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          version: ${{ matrix.version }}
+          gds-token: ${{ secrets.GDS_TOKEN }}
+          java-version: ${{ matrix.java-version }}
+          components: ${{ matrix.components }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check environment
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          echo "JAVA_HOME: $JAVA_HOME"
+          java --version
+          java --version | grep "GraalVM EE" || exit 12
+          # native-image --version (activate after 22.1.0 is released)
+        if: runner.os != 'Windows'
+      - name: Check Windows environment
+        run: |
+          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+          echo "JAVA_HOME: $env:JAVA_HOME"
+          java --version
+          # native-image.cmd --version (activate after 22.1.0 is released)
         if: runner.os == 'Windows'
   test-native-image-musl:
     name: native-image-musl on ubuntu-latest
@@ -90,7 +126,7 @@ jobs:
           javac HelloWorld.java
           native-image --static --libc=musl HelloWorld
           ./helloworld
-  test-additional:
+  test-extensive:
     name: extensive tests on ubuntu-latest
     runs-on: ubuntu-latest
     steps:

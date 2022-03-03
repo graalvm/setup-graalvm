@@ -1,5 +1,5 @@
 name: 'GitHub Action for GraalVM'
-description: 'Set up a specific version of GraalVM Community Edition'
+description: 'Set up a specific version of GraalVM Enterprise Edition (EE) or Community Edition (CE)'
 author: 'GraalVM Developers'
 branding:
   icon: 'terminal'  
@@ -8,6 +8,9 @@ inputs:
   version:
     required: true
     description: 'GraalVM version (release, latest, dev).'
+  gds-token:
+    required: false
+    description: 'Download token for the GraalVM Download Service. Set this to use GraalVM EE.'
   java-version:
     required: true
     description: 'Java version (11 or 17, 8 or 16 for older releases).'

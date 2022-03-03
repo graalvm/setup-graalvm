@@ -1,5 +1,6 @@
 import * as c from './constants'
 import {downloadExtractAndCacheJDK, getLatestRelease} from './utils'
+import {downloadTool} from '@actions/tool-cache'
 
 const MANDREL_REPO = 'mandrel'
 const MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE
@@ -47,7 +48,11 @@ async function setUpMandrelRelease(
   const identifier = determineMandrelIdentifier(version, javaVersion)
   const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`
   const toolName = determineToolName(javaVersion)
-  return downloadExtractAndCacheJDK(downloadUrl, toolName, version)
+  return downloadExtractAndCacheJDK(
+    async () => downloadTool(downloadUrl),
+    toolName,
+    version
+  )
 }
 
 function determineMandrelIdentifier(
