@@ -40,14 +40,6 @@ jobs:
             java-version: '17'
             components: 'native-image'
             os: windows-2022
-          - version: 'mandrel-latest'
-            java-version: '11'
-            components: ''
-            os: ubuntu-latest
-          - version: 'mandrel-21.3.0.0-Final'
-            java-version: '17'
-            components: ''
-            os: windows-latest
     steps:
       - uses: actions/checkout@v2
       - name: Run setup-graalvm action
@@ -60,9 +52,14 @@ jobs:
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
+          if [[ "${{ matrix.version }}" == "dev" ]]; then
+            [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
+          else
+            [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
+          fi
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
-          java --version | grep "GraalVM CE" || exit 12
+          java --version | grep "GraalVM CE" || exit 34
           native-image --version
         if: runner.os != 'Windows'
       - name: Check Windows environment
@@ -95,9 +92,10 @@ jobs:
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
+          [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
-          java --version | grep "GraalVM EE" || exit 12
+          java --version | grep "GraalVM EE" || exit 23
           # native-image --version (activate after 22.1.0 is released)
         if: runner.os != 'Windows'
       - name: Check Windows environment
@@ -106,6 +104,37 @@ jobs:
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
           # native-image.cmd --version (activate after 22.1.0 is released)
+        if: runner.os == 'Windows'
+  test-mandrel:
+    name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        version: ['mandrel-21.3.0.0-Final', 'mandrel-latest']
+        java-version: ['11', '17']
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          version: ${{ matrix.version }}
+          java-version: ${{ matrix.java-version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check environment
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
+          echo "JAVA_HOME: $JAVA_HOME"
+          java --version
+          native-image --version
+        if: runner.os != 'Windows'
+      - name: Check Windows environment
+        run: |
+          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+          echo "JAVA_HOME: $env:JAVA_HOME"
+          java --version
+          native-image.cmd --version
         if: runner.os == 'Windows'
   test-native-image-musl:
     name: native-image-musl on ubuntu-latest
