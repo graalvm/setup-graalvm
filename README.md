@@ -10,6 +10,7 @@ This action:
 - exports a `$GRAALVM_HOME` environment variable
 - adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(Truffle languages and tools can be invoked directly)
 - sets `$JAVA_HOME` to `$GRAALVM_HOME` by default<br>(can be disabled via `set-java-home: 'false'`, see [options](#options))
+- supports `amd64` and `aarch64` (requires a [self-hosted runner][gh-self-hosted-runners])
 - sets up Windows environments with build tools using [vcvarsall.bat][vcvarsall]
 
 
@@ -106,6 +107,7 @@ Only pull requests from committers that can be verified as having signed the OCA
 
 [dev-build]: https://github.com/graalvm/graalvm-ce-dev-builds/releases/latest
 [dev-builds]: https://github.com/graalvm/graalvm-ce-dev-builds
+[gh-self-hosted-runners]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [gu]: https://www.graalvm.org/reference-manual/graalvm-updater/
 [mandrel]: https://github.com/graalvm/mandrel
 [mandrel-releases]: https://github.com/graalvm/mandrel/releases
