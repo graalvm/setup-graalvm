@@ -40,13 +40,14 @@ export async function downloadExtractAndCacheJDK(
   toolName: string,
   version: string
 ): Promise<string> {
-  let toolPath = tc.find(toolName, version)
+  const semVersion = toSemVer(version)
+  let toolPath = tc.find(toolName, semVersion)
   if (toolPath) {
     core.info(`Found ${toolName} ${version} in tool-cache @ ${toolPath}`)
   } else {
     const extractDir = await downloadAndExtract(downloadUrl)
     core.info(`Adding ${toolName} ${version} to tool-cache ...`)
-    toolPath = await tc.cacheDir(extractDir, toolName, version)
+    toolPath = await tc.cacheDir(extractDir, toolName, semVersion)
   }
   return findJavaHomeInSubfolder(toolPath)
 }
@@ -71,4 +72,17 @@ function findJavaHomeInSubfolder(searchPath: string): string {
       `Unexpected amount of directory items found: ${baseContents.length}`
     )
   }
+}
+
+/**
+ * This helper turns GraalVM version numbers (e.g., `22.0.0.2`) into valid
+ * semver.org versions (e.g., `22.0.0-2`), which is needed because
+ * @actions/tool-cache uses `semver` to validate versions.
+ */
+function toSemVer(version: string): string {
+  const parts = version.split('.')
+  const major = parts[0]
+  const minor = parts.length > 1 ? parts[1] : '0'
+  const patch = parts.length > 2 ? parts.slice(2).join('-') : '0'
+  return `${major}.${minor}.${patch}`
 }

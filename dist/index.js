@@ -673,14 +673,15 @@ function downloadAndExtractJDK(downloadUrl) {
 exports.downloadAndExtractJDK = downloadAndExtractJDK;
 function downloadExtractAndCacheJDK(downloadUrl, toolName, version) {
     return __awaiter(this, void 0, void 0, function* () {
-        let toolPath = tc.find(toolName, version);
+        const semVersion = toSemVer(version);
+        let toolPath = tc.find(toolName, semVersion);
         if (toolPath) {
             core.info(`Found ${toolName} ${version} in tool-cache @ ${toolPath}`);
         }
         else {
             const extractDir = yield downloadAndExtract(downloadUrl);
             core.info(`Adding ${toolName} ${version} to tool-cache ...`);
-            toolPath = yield tc.cacheDir(extractDir, toolName, version);
+            toolPath = yield tc.cacheDir(extractDir, toolName, semVersion);
         }
         return findJavaHomeInSubfolder(toolPath);
     });
@@ -708,6 +709,18 @@ function findJavaHomeInSubfolder(searchPath) {
     else {
         throw new Error(`Unexpected amount of directory items found: ${baseContents.length}`);
     }
+}
+/**
+ * This helper turns GraalVM version numbers (e.g., `22.0.0.2`) into valid
+ * semver.org versions (e.g., `22.0.0-2`), which is needed because
+ * @actions/tool-cache uses `semver` to validate versions.
+ */
+function toSemVer(version) {
+    const parts = version.split('.');
+    const major = parts[0];
+    const minor = parts.length > 1 ? parts[1] : '0';
+    const patch = parts.length > 2 ? parts.slice(2).join('-') : '0';
+    return `${major}.${minor}.${patch}`;
 }
 
 
@@ -11255,14 +11268,16 @@ function bytesToUuid(buf, offset) {
   var i = offset || 0;
   var bth = byteToHex;
   // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-  return ([bth[buf[i++]], bth[buf[i++]], 
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]],
-	bth[buf[i++]], bth[buf[i++]],
-	bth[buf[i++]], bth[buf[i++]]]).join('');
+  return ([
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]]
+  ]).join('');
 }
 
 module.exports = bytesToUuid;
