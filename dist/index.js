@@ -7,17 +7,31 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = void 0;
+exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = void 0;
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
 exports.VERSION_DEV = 'dev';
 exports.VERSION_LATEST = 'latest';
+exports.GRAALVM_ARCH = determineGraalVMArchitecture();
 exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
 exports.GRAALVM_GH_USER = 'graalvm';
 exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
 exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
 exports.MANDREL_NAMESPACE = 'mandrel-';
+function determineGraalVMArchitecture() {
+    switch (process.arch) {
+        case 'x64': {
+            return 'amd64';
+        }
+        case 'arm64': {
+            return 'aarch64';
+        }
+        default: {
+            throw new Error(`Unsupported architecture: ${process.arch}`);
+        }
+    }
+}
 
 
 /***/ }),
@@ -252,7 +266,7 @@ function setUpGraalVMRelease(version, javaVersion) {
 }
 exports.setUpGraalVMRelease = setUpGraalVMRelease;
 function determineGraalVMIdentifier(version, javaVersion) {
-    return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`;
+    return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-${version}`;
 }
 function determineToolName(javaVersion) {
     return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
@@ -497,7 +511,7 @@ function setUpMandrelRelease(version, javaVersion) {
     });
 }
 function determineMandrelIdentifier(version, javaVersion) {
-    return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`;
+    return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-${version}`;
 }
 function determineToolName(javaVersion) {
     return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
@@ -11241,16 +11255,14 @@ function bytesToUuid(buf, offset) {
   var i = offset || 0;
   var bth = byteToHex;
   // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-  return ([
-    bth[buf[i++]], bth[buf[i++]],
-    bth[buf[i++]], bth[buf[i++]], '-',
-    bth[buf[i++]], bth[buf[i++]], '-',
-    bth[buf[i++]], bth[buf[i++]], '-',
-    bth[buf[i++]], bth[buf[i++]], '-',
-    bth[buf[i++]], bth[buf[i++]],
-    bth[buf[i++]], bth[buf[i++]],
-    bth[buf[i++]], bth[buf[i++]]
-  ]).join('');
+  return ([bth[buf[i++]], bth[buf[i++]], 
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]]]).join('');
 }
 
 module.exports = bytesToUuid;

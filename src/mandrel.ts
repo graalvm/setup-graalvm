@@ -54,7 +54,7 @@ function determineMandrelIdentifier(
   version: string,
   javaVersion: string
 ): string {
-  return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`
+  return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-${version}`
 }
 
 function determineToolName(javaVersion: string): string {

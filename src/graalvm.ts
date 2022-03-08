@@ -52,7 +52,7 @@ function determineGraalVMIdentifier(
   version: string,
   javaVersion: string
 ): string {
-  return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}-amd64-${version}`
+  return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-${version}`
 }
 
 function determineToolName(javaVersion: string): string {
