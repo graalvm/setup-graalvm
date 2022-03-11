@@ -1,5 +1,5 @@
 import {GRAALVM_PLATFORM} from './constants'
-import {exec} from '@actions/exec'
+import {exec} from './utils'
 import {join} from 'path'
 
 const BASE_FLAGS = ['--non-interactive', 'install', '--no-progress']

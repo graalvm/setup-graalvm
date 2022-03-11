@@ -2,6 +2,7 @@ import * as c from './constants'
 import * as core from '@actions/core'
 import * as httpClient from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
+import {ExecOptions, exec as e} from '@actions/exec'
 import {readFileSync, readdirSync} from 'fs'
 import {Octokit} from '@octokit/core'
 import {createHash} from 'crypto'
@@ -15,6 +16,21 @@ const GitHub = Octokit.defaults({
     agent: new httpClient.HttpClient().getAgent(baseUrl)
   }
 })
+
+export async function exec(
+  commandLine: string,
+  args?: string[],
+  options?: ExecOptions | undefined
+): Promise<void> {
+  const exitCode = await e(commandLine, args, options)
+  if (exitCode !== 0) {
+    throw new Error(
+      `'${[commandLine]
+        .concat(args || [])
+        .join(' ')}' exited with a non-zero code: ${exitCode}`
+    )
+  }
+}
 
 export async function getLatestRelease(
   repo: string
