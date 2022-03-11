@@ -7,7 +7,7 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = void 0;
+exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = void 0;
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
@@ -19,6 +19,8 @@ exports.GRAALVM_GH_USER = 'graalvm';
 exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
 exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
 exports.MANDREL_NAMESPACE = 'mandrel-';
+exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
+exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
 function determineGraalVMArchitecture() {
     switch (process.arch) {
         case 'x64': {
@@ -73,7 +75,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.setUpDependencies = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const constants_1 = __nccwpck_require__(5105);
-const exec_1 = __nccwpck_require__(1514);
+const utils_1 = __nccwpck_require__(918);
 const APT_GET_INSTALL_BASE = 'sudo apt-get -y --no-upgrade install';
 const COMPONENT_TO_DEPS = new Map([
     [
@@ -97,7 +99,7 @@ function setUpDependencies(components) {
                 const depCommand = platformDeps.get(component);
                 if (depCommand) {
                     core.startGroup(`Installing dependencies for ${component}...`);
-                    yield (0, exec_1.exec)(depCommand);
+                    yield (0, utils_1.exec)(depCommand);
                     core.endGroup();
                 }
             }
@@ -147,7 +149,7 @@ exports.setUpNativeImageMusl = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const constants_1 = __nccwpck_require__(5105);
-const exec_1 = __nccwpck_require__(1514);
+const utils_1 = __nccwpck_require__(918);
 const path_1 = __nccwpck_require__(1017);
 const MUSL_NAME = 'x86_64-linux-musl-native';
 const MUSL_VERSION = '10.2.1';
@@ -174,9 +176,9 @@ function setUpNativeImageMusl() {
                 cwd: zlibPath,
                 env: Object.assign(Object.assign({}, process.env), { CC: (0, path_1.join)(muslPath, 'bin', 'gcc') })
             };
-            yield (0, exec_1.exec)('./configure', [`--prefix=${muslPath}`, '--static'], zlibBuildOptions);
-            yield (0, exec_1.exec)('make', [], zlibBuildOptions);
-            yield (0, exec_1.exec)('make', ['install'], { cwd: zlibPath });
+            yield (0, utils_1.exec)('./configure', [`--prefix=${muslPath}`, '--static'], zlibBuildOptions);
+            yield (0, utils_1.exec)('make', [], zlibBuildOptions);
+            yield (0, utils_1.exec)('make', ['install'], { cwd: zlibPath });
             core.info(`Adding ${MUSL_NAME} ${MUSL_VERSION} to tool-cache ...`);
             toolPath = yield tc.cacheDir(muslPath, MUSL_NAME, MUSL_VERSION);
             core.endGroup();
@@ -185,6 +187,197 @@ function setUpNativeImageMusl() {
     });
 }
 exports.setUpNativeImageMusl = setUpNativeImageMusl;
+
+
+/***/ }),
+
+/***/ 253:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.fetchArtifact = exports.downloadGraalVMEE = void 0;
+const c = __importStar(__nccwpck_require__(5105));
+const core = __importStar(__nccwpck_require__(2186));
+const fs = __importStar(__nccwpck_require__(7147));
+const httpClient = __importStar(__nccwpck_require__(9925));
+const io = __importStar(__nccwpck_require__(7436));
+const path = __importStar(__nccwpck_require__(1017));
+const stream = __importStar(__nccwpck_require__(2781));
+const util = __importStar(__nccwpck_require__(3837));
+const retry_helper_1 = __nccwpck_require__(8279);
+const utils_1 = __nccwpck_require__(918);
+const assert_1 = __nccwpck_require__(9491);
+const v4_1 = __importDefault(__nccwpck_require__(824));
+function downloadGraalVMEE(gdsToken, version, javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const userAgent = `GraalVMGitHubAction/1.0.4 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`;
+        const baseArtifact = yield fetchArtifact(userAgent, 'isBase:True', version, javaVersion);
+        return downloadArtifact(gdsToken, userAgent, baseArtifact);
+    });
+}
+exports.downloadGraalVMEE = downloadGraalVMEE;
+function fetchArtifact(userAgent, metadata, version, javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const http = new httpClient.HttpClient(userAgent);
+        let filter;
+        if (version === c.VERSION_LATEST) {
+            filter = `sortBy=timeCreated&limit=1`; // latest and only one item
+        }
+        else {
+            filter = `metadata=version:${version}`;
+        }
+        const response = yield http.get(`${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&${filter}&metadata=java:jdk${javaVersion}&metadata=os:${c.GRAALVM_PLATFORM}&metadata=arch:${c.GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`, { accept: 'application/json' });
+        if (response.message.statusCode !== 200) {
+            throw new Error(`Unable to find JDK${javaVersion}-based GraalVM EE ${version}`);
+        }
+        const artifactResponse = JSON.parse(yield response.readBody());
+        if (artifactResponse.items.length !== 1) {
+            throw new Error(`Found more than one GDS artifact`);
+        }
+        return artifactResponse.items[0];
+    });
+}
+exports.fetchArtifact = fetchArtifact;
+function downloadArtifact(gdsToken, userAgent, artifact) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let downloadPath;
+        try {
+            downloadPath = yield downloadTool(`${c.GDS_BASE}/artifacts/${artifact.id}/content`, userAgent, {
+                accept: 'application/x-yaml',
+                'x-download-token': gdsToken
+            });
+        }
+        catch (err) {
+            if (err instanceof HTTPError && err.httpStatusCode) {
+                if (err.httpStatusCode === 401) {
+                    throw new Error(`The provided "gds-token" was rejected (reason: "${err.gdsError.message}", opc-request-id: ${err.headers['opc-request-id']})`);
+                }
+            }
+            throw err;
+        }
+        const sha256 = (0, utils_1.calculateSHA256)(downloadPath);
+        if (sha256.toLowerCase() !== artifact.checksum.toLowerCase()) {
+            throw new Error(`Checksum does not match (expected: "${artifact.checksum}", got: "${sha256}")`);
+        }
+        return downloadPath;
+    });
+}
+/**
+ * Simplified fork of tool-cache's downloadTool [1] with the ability to set a custom user agent.
+ * [1] https://github.com/actions/toolkit/blob/2f164000dcd42fb08287824a3bc3030dbed33687/packages/tool-cache/src/tool-cache.ts
+ */
+class HTTPError extends Error {
+    constructor(httpStatusCode, gdsError, headers) {
+        super(`Unexpected HTTP response: ${httpStatusCode}`);
+        this.httpStatusCode = httpStatusCode;
+        this.gdsError = gdsError;
+        this.headers = headers;
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
+}
+function downloadTool(url, userAgent, headers) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const dest = path.join(getTempDirectory(), (0, v4_1.default)());
+        yield io.mkdirP(path.dirname(dest));
+        core.debug(`Downloading ${url}`);
+        core.debug(`Destination ${dest}`);
+        const maxAttempts = 3;
+        const minSeconds = 10;
+        const maxSeconds = 20;
+        const retryHelper = new retry_helper_1.RetryHelper(maxAttempts, minSeconds, maxSeconds);
+        return yield retryHelper.execute(() => __awaiter(this, void 0, void 0, function* () {
+            return yield downloadToolAttempt(url, userAgent, dest || '', headers);
+        }), (err) => {
+            if (err instanceof HTTPError && err.httpStatusCode) {
+                // Don't retry anything less than 500, except 408 Request Timeout and 429 Too Many Requests
+                if (err.httpStatusCode < 500 &&
+                    err.httpStatusCode !== 408 &&
+                    err.httpStatusCode !== 429) {
+                    return false;
+                }
+            }
+            // Otherwise retry
+            return true;
+        });
+    });
+}
+function downloadToolAttempt(url, userAgent, dest, headers) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (fs.existsSync(dest)) {
+            throw new Error(`Destination file path ${dest} already exists`);
+        }
+        // Get the response headers
+        const http = new httpClient.HttpClient(userAgent, [], {
+            allowRetries: false
+        });
+        const response = yield http.get(url, headers);
+        if (response.message.statusCode !== 200) {
+            const errorResponse = JSON.parse(yield response.readBody());
+            const err = new HTTPError(response.message.statusCode, errorResponse, response.message.headers);
+            core.debug(`Failed to download from "${url}". Code(${response.message.statusCode}) Message(${response.message.statusMessage})`);
+            throw err;
+        }
+        // Download the response body
+        const pipeline = util.promisify(stream.pipeline);
+        let succeeded = false;
+        try {
+            yield pipeline(response.message, fs.createWriteStream(dest));
+            core.debug('Download complete');
+            succeeded = true;
+            return dest;
+        }
+        finally {
+            // Error, delete dest before retry
+            if (!succeeded) {
+                core.debug('Download failed');
+                try {
+                    yield io.rmRF(dest);
+                }
+                catch (err) {
+                    core.debug(`Failed to delete '${dest}'. ${err}`);
+                }
+            }
+        }
+    });
+}
+function getTempDirectory() {
+    const tempDirectory = process.env['RUNNER_TEMP'] || '';
+    (0, assert_1.ok)(tempDirectory, 'Expected RUNNER_TEMP to be defined');
+    return tempDirectory;
+}
 
 
 /***/ }),
@@ -226,26 +419,34 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.setUpGraalVMRelease = exports.setUpGraalVMDevBuild = exports.setUpGraalVMLatest = void 0;
 const c = __importStar(__nccwpck_require__(5105));
 const utils_1 = __nccwpck_require__(918);
+const gds_1 = __nccwpck_require__(253);
+const tool_cache_1 = __nccwpck_require__(7784);
 const GRAALVM_CE_DL_BASE = 'https://github.com/graalvm/graalvm-ce-builds/releases/download';
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds';
 const GRAALVM_REPO_RELEASES = 'graalvm-ce-builds';
 const GRAALVM_TAG_PREFIX = 'vm-';
-function setUpGraalVMLatest(javaVersion) {
+function setUpGraalVMLatest(gdsToken, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (gdsToken.length > 0) {
+            return setUpGraalVMRelease(gdsToken, c.VERSION_LATEST, javaVersion);
+        }
         const latestRelease = yield (0, utils_1.getLatestRelease)(GRAALVM_REPO_RELEASES);
         const tag_name = latestRelease.tag_name;
         if (tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
             const latestVersion = tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length);
-            return setUpGraalVMRelease(latestVersion, javaVersion);
+            return setUpGraalVMRelease(gdsToken, latestVersion, javaVersion);
         }
         throw new Error(`Could not find latest GraalVM release: ${tag_name}`);
     });
 }
 exports.setUpGraalVMLatest = setUpGraalVMLatest;
-function setUpGraalVMDevBuild(javaVersion) {
+function setUpGraalVMDevBuild(gdsToken, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (gdsToken.length > 0) {
+            throw new Error('Downloading GraalVM EE dev builds is not supported');
+        }
         const latestDevBuild = yield (0, utils_1.getLatestRelease)(GRAALVM_REPO_DEV_BUILDS);
-        const graalVMIdentifier = determineGraalVMIdentifier('dev', javaVersion);
+        const graalVMIdentifier = determineGraalVMIdentifier(false, 'dev', javaVersion);
         const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
         for (const asset of latestDevBuild.assets) {
             if (asset.name === expectedFileName) {
@@ -256,20 +457,28 @@ function setUpGraalVMDevBuild(javaVersion) {
     });
 }
 exports.setUpGraalVMDevBuild = setUpGraalVMDevBuild;
-function setUpGraalVMRelease(version, javaVersion) {
+function setUpGraalVMRelease(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const graalVMIdentifier = determineGraalVMIdentifier(version, javaVersion);
-        const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
-        const toolName = determineToolName(javaVersion);
-        return (0, utils_1.downloadExtractAndCacheJDK)(downloadUrl, toolName, version);
+        const isEE = gdsToken.length > 0;
+        const graalVMIdentifier = determineGraalVMIdentifier(isEE, version, javaVersion);
+        const toolName = determineToolName(isEE, javaVersion);
+        let downloader;
+        if (isEE) {
+            downloader = () => __awaiter(this, void 0, void 0, function* () { return (0, gds_1.downloadGraalVMEE)(gdsToken, version, javaVersion); });
+        }
+        else {
+            const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
+            downloader = () => __awaiter(this, void 0, void 0, function* () { return (0, tool_cache_1.downloadTool)(downloadUrl); });
+        }
+        return (0, utils_1.downloadExtractAndCacheJDK)(downloader, toolName, version);
     });
 }
 exports.setUpGraalVMRelease = setUpGraalVMRelease;
-function determineGraalVMIdentifier(version, javaVersion) {
-    return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-${version}`;
+function determineGraalVMIdentifier(isEE, version, javaVersion) {
+    return `graalvm-${isEE ? 'ee' : 'ce'}-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-${version}`;
 }
-function determineToolName(javaVersion) {
-    return `graalvm-ce-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
+function determineToolName(isEE, javaVersion) {
+    return `graalvm-${isEE ? 'ee' : 'ce'}-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
 }
 
 
@@ -292,8 +501,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.setUpGUComponents = void 0;
 const constants_1 = __nccwpck_require__(5105);
-const exec_1 = __nccwpck_require__(1514);
+const utils_1 = __nccwpck_require__(918);
 const path_1 = __nccwpck_require__(1017);
+const BASE_FLAGS = ['--non-interactive', 'install', '--no-progress'];
 const COMPONENT_TO_POST_INSTALL_HOOK = new Map([
     [
         'linux',
@@ -311,15 +521,19 @@ const COMPONENT_TO_POST_INSTALL_HOOK = new Map([
     ]
     // No post install hooks for Windows (yet)
 ]);
-function setUpGUComponents(graalVMHome, components) {
+function setUpGUComponents(gdsToken, graalVMHome, components) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield (0, exec_1.exec)('gu', ['install', '--no-progress'].concat(components));
+        const optionalFlags = [];
+        if (gdsToken.length > 0) {
+            optionalFlags.push('--token', gdsToken);
+        }
+        yield (0, utils_1.exec)('gu', BASE_FLAGS.concat(optionalFlags, components));
         const platformHooks = COMPONENT_TO_POST_INSTALL_HOOK.get(constants_1.GRAALVM_PLATFORM);
         if (platformHooks) {
             for (const component of components) {
                 const postInstallHook = platformHooks.get(component);
                 if (postInstallHook) {
-                    yield (0, exec_1.exec)(`"${(0, path_1.join)(graalVMHome, postInstallHook)}"`);
+                    yield (0, utils_1.exec)(`"${(0, path_1.join)(graalVMHome, postInstallHook)}"`);
                 }
             }
         }
@@ -377,6 +591,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const graalvmVersion = core.getInput('version', { required: true });
+            const gdsToken = core.getInput('gds-token');
             const javaVersion = core.getInput('java-version', { required: true });
             const componentsString = core.getInput('components');
             const components = componentsString.length > 0 ? componentsString.split(',') : [];
@@ -393,17 +608,17 @@ function run() {
             let graalVMHome;
             switch (graalvmVersion) {
                 case c.VERSION_LATEST:
-                    graalVMHome = yield graalvm.setUpGraalVMLatest(javaVersion);
+                    graalVMHome = yield graalvm.setUpGraalVMLatest(gdsToken, javaVersion);
                     break;
                 case c.VERSION_DEV:
-                    graalVMHome = yield graalvm.setUpGraalVMDevBuild(javaVersion);
+                    graalVMHome = yield graalvm.setUpGraalVMDevBuild(gdsToken, javaVersion);
                     break;
                 default:
                     if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
                         graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalvmVersion, javaVersion);
                     }
                     else {
-                        graalVMHome = yield graalvm.setUpGraalVMRelease(graalvmVersion, javaVersion);
+                        graalVMHome = yield graalvm.setUpGraalVMRelease(gdsToken, graalvmVersion, javaVersion);
                     }
                     break;
             }
@@ -420,7 +635,7 @@ function run() {
                     core.warning(`Mandrel does not support GraalVM components: ${componentsString}`);
                 }
                 else {
-                    yield (0, gu_1.setUpGUComponents)(graalVMHome, components);
+                    yield (0, gu_1.setUpGUComponents)(gdsToken, graalVMHome, components);
                 }
             }
         }
@@ -472,6 +687,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.setUpMandrel = void 0;
 const c = __importStar(__nccwpck_require__(5105));
 const utils_1 = __nccwpck_require__(918);
+const tool_cache_1 = __nccwpck_require__(7784);
 const MANDREL_REPO = 'mandrel';
 const MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE;
 const MANDREL_DL_BASE = 'https://github.com/graalvm/mandrel/releases/download';
@@ -507,7 +723,7 @@ function setUpMandrelRelease(version, javaVersion) {
         const identifier = determineMandrelIdentifier(version, javaVersion);
         const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`;
         const toolName = determineToolName(javaVersion);
-        return (0, utils_1.downloadExtractAndCacheJDK)(downloadUrl, toolName, version);
+        return (0, utils_1.downloadExtractAndCacheJDK)(() => __awaiter(this, void 0, void 0, function* () { return (0, tool_cache_1.downloadTool)(downloadUrl); }), toolName, version);
     });
 }
 function determineMandrelIdentifier(version, javaVersion) {
@@ -637,14 +853,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = void 0;
+exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(5105));
 const core = __importStar(__nccwpck_require__(2186));
 const httpClient = __importStar(__nccwpck_require__(9925));
 const tc = __importStar(__nccwpck_require__(7784));
-const core_1 = __nccwpck_require__(6762);
-const path_1 = __nccwpck_require__(1017);
+const exec_1 = __nccwpck_require__(1514);
 const fs_1 = __nccwpck_require__(7147);
+const core_1 = __nccwpck_require__(6762);
+const crypto_1 = __nccwpck_require__(6113);
+const path_1 = __nccwpck_require__(1017);
 // Set up Octokit in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = process.env['GITHUB_API_URL'] || 'https://api.github.com';
 const GitHub = core_1.Octokit.defaults({
@@ -653,6 +871,17 @@ const GitHub = core_1.Octokit.defaults({
         agent: new httpClient.HttpClient().getAgent(baseUrl)
     }
 });
+function exec(commandLine, args, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const exitCode = yield (0, exec_1.exec)(commandLine, args, options);
+        if (exitCode !== 0) {
+            throw new Error(`'${[commandLine]
+                .concat(args || [])
+                .join(' ')}' exited with a non-zero code: ${exitCode}`);
+        }
+    });
+}
+exports.exec = exec;
 function getLatestRelease(repo) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = core.getInput('github-token');
@@ -667,11 +896,11 @@ function getLatestRelease(repo) {
 exports.getLatestRelease = getLatestRelease;
 function downloadAndExtractJDK(downloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
-        return findJavaHomeInSubfolder(yield downloadAndExtract(downloadUrl));
+        return findJavaHomeInSubfolder(yield extract(yield tc.downloadTool(downloadUrl)));
     });
 }
 exports.downloadAndExtractJDK = downloadAndExtractJDK;
-function downloadExtractAndCacheJDK(downloadUrl, toolName, version) {
+function downloadExtractAndCacheJDK(downloader, toolName, version) {
     return __awaiter(this, void 0, void 0, function* () {
         const semVersion = toSemVer(version);
         let toolPath = tc.find(toolName, semVersion);
@@ -679,7 +908,7 @@ function downloadExtractAndCacheJDK(downloadUrl, toolName, version) {
             core.info(`Found ${toolName} ${version} in tool-cache @ ${toolPath}`);
         }
         else {
-            const extractDir = yield downloadAndExtract(downloadUrl);
+            const extractDir = yield extract(yield downloader());
             core.info(`Adding ${toolName} ${version} to tool-cache ...`);
             toolPath = yield tc.cacheDir(extractDir, toolName, semVersion);
         }
@@ -687,17 +916,22 @@ function downloadExtractAndCacheJDK(downloadUrl, toolName, version) {
     });
 }
 exports.downloadExtractAndCacheJDK = downloadExtractAndCacheJDK;
-function downloadAndExtract(downloadUrl) {
+function calculateSHA256(filePath) {
+    const hashSum = (0, crypto_1.createHash)('sha256');
+    hashSum.update((0, fs_1.readFileSync)(filePath));
+    return hashSum.digest('hex');
+}
+exports.calculateSHA256 = calculateSHA256;
+function extract(downloadPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const downloadPath = yield tc.downloadTool(downloadUrl);
-        if (downloadUrl.endsWith('.tar.gz')) {
+        if (c.GRAALVM_FILE_EXTENSION === '.tar.gz') {
             return yield tc.extractTar(downloadPath);
         }
-        else if (downloadUrl.endsWith('.zip')) {
+        else if (c.GRAALVM_FILE_EXTENSION === '.zip') {
             return yield tc.extractZip(downloadPath);
         }
         else {
-            throw new Error(`Unexpected filetype downloaded: ${downloadUrl}`);
+            throw new Error(`Unexpected filetype downloaded: ${c.GRAALVM_FILE_EXTENSION}`);
         }
     });
 }
@@ -6864,9 +7098,17 @@ AbortError.prototype = Object.create(Error.prototype);
 AbortError.prototype.constructor = AbortError;
 AbortError.prototype.name = 'AbortError';
 
+const URL$1 = Url.URL || whatwgUrl.URL;
+
 // fix an issue where "PassThrough", "resolve" aren't a named export for node <10
 const PassThrough$1 = Stream.PassThrough;
-const resolve_url = Url.resolve;
+
+const isDomainOrSubdomain = function isDomainOrSubdomain(destination, original) {
+	const orig = new URL$1(original).hostname;
+	const dest = new URL$1(destination).hostname;
+
+	return orig === dest || orig[orig.length - dest.length - 1] === '.' && orig.endsWith(dest);
+};
 
 /**
  * Fetch function
@@ -6954,7 +7196,19 @@ function fetch(url, opts) {
 				const location = headers.get('Location');
 
 				// HTTP fetch step 5.3
-				const locationURL = location === null ? null : resolve_url(request.url, location);
+				let locationURL = null;
+				try {
+					locationURL = location === null ? null : new URL$1(location, request.url).toString();
+				} catch (err) {
+					// error here can only be invalid URL in Location: header
+					// do not throw when options.redirect == manual
+					// let the user extract the errorneous redirect URL
+					if (request.redirect !== 'manual') {
+						reject(new FetchError(`uri requested responds with an invalid redirect URL: ${location}`, 'invalid-redirect'));
+						finalize();
+						return;
+					}
+				}
 
 				// HTTP fetch step 5.5
 				switch (request.redirect) {
@@ -7001,6 +7255,12 @@ function fetch(url, opts) {
 							timeout: request.timeout,
 							size: request.size
 						};
+
+						if (!isDomainOrSubdomain(request.url, locationURL)) {
+							for (const name of ['authorization', 'www-authenticate', 'cookie', 'cookie2']) {
+								requestOpts.headers.delete(name);
+							}
+						}
 
 						// HTTP-redirect fetch step 9
 						if (res.statusCode !== 303 && request.body && getTotalBytes(request) === null) {
@@ -11268,16 +11528,14 @@ function bytesToUuid(buf, offset) {
   var i = offset || 0;
   var bth = byteToHex;
   // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-  return ([
-    bth[buf[i++]], bth[buf[i++]],
-    bth[buf[i++]], bth[buf[i++]], '-',
-    bth[buf[i++]], bth[buf[i++]], '-',
-    bth[buf[i++]], bth[buf[i++]], '-',
-    bth[buf[i++]], bth[buf[i++]], '-',
-    bth[buf[i++]], bth[buf[i++]],
-    bth[buf[i++]], bth[buf[i++]],
-    bth[buf[i++]], bth[buf[i++]]
-  ]).join('');
+  return ([bth[buf[i++]], bth[buf[i++]], 
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]]]).join('');
 }
 
 module.exports = bytesToUuid;
