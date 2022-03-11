@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
 import {IS_LINUX} from './constants'
-import {exec} from '@actions/exec'
+import {exec} from './utils'
 import {join} from 'path'
 
 const MUSL_NAME = 'x86_64-linux-musl-native'
