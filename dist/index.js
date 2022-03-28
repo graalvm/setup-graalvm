@@ -169,7 +169,7 @@ function setUpNativeImageMusl() {
             const muslExtractPath = yield tc.extractTar(muslDownloadPath);
             const muslPath = (0, path_1.join)(muslExtractPath, MUSL_NAME);
             const zlibVersion = '1.2.11';
-            const zlibDownloadPath = yield tc.downloadTool(`https://zlib.net/zlib-${zlibVersion}.tar.gz`);
+            const zlibDownloadPath = yield tc.downloadTool(`https://zlib.net/fossils/zlib-${zlibVersion}.tar.gz`);
             const zlibExtractPath = yield tc.extractTar(zlibDownloadPath);
             const zlibPath = (0, path_1.join)(zlibExtractPath, `zlib-${zlibVersion}`);
             const zlibBuildOptions = {

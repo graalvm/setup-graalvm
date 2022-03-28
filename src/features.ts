@@ -25,7 +25,7 @@ export async function setUpNativeImageMusl(): Promise<void> {
 
     const zlibVersion = '1.2.11'
     const zlibDownloadPath = await tc.downloadTool(
-      `https://zlib.net/zlib-${zlibVersion}.tar.gz`
+      `https://zlib.net/fossils/zlib-${zlibVersion}.tar.gz`
     )
     const zlibExtractPath = await tc.extractTar(zlibDownloadPath)
     const zlibPath = join(zlibExtractPath, `zlib-${zlibVersion}`)
