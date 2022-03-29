@@ -136,6 +136,24 @@ jobs:
           java --version
           native-image.cmd --version
         if: runner.os == 'Windows'
+  test-native-image-msvc:
+    name: native-image on windows-latest
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          version: 'latest'
+          java-version: '17'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build HelloWorld executable with GraalVM Native Image on Windows
+        run: |
+          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
+          javac.exe HelloWorld.java
+          native-image.cmd HelloWorld
+          ./helloworld.exe
   test-native-image-musl:
     name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
@@ -149,7 +167,7 @@ jobs:
           components: 'native-image'
           native-image-musl: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build static HelloWorld image with Native Image and musl
+      - name: Build static HelloWorld executable with GraalVM Native Image and musl
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
@@ -188,7 +206,7 @@ jobs:
           R --version
           truffleruby --version
           wasm --version
-      - name: Build HelloWorld.java with Native Image
+      - name: Build HelloWorld.java with GraalVM Native Image
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
