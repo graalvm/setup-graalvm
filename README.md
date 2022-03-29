@@ -52,7 +52,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: [latest, dev, '22.0.0.2']
+        version: ['22.0.0.2', latest]
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
@@ -66,17 +66,10 @@ jobs:
 
       - name: Build and run HelloWorld.java
         run: |
+          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
           native-image HelloWorld
           ./helloworld
-        if: runner.os != 'Windows'
-      
-      - name: Build and run HelloWorld.java on Windows
-        run: |
-          javac.exe HelloWorld.java
-          native-image.cmd HelloWorld
-          ./helloworld.exe
-        if: runner.os == 'Windows'
       
       - name: Upload binary
         uses: actions/upload-artifact@v2

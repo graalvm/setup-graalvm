@@ -67,7 +67,7 @@ jobs:
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
-          native-image.cmd --version
+          native-image --version
         if: runner.os == 'Windows'
   test-ee:
     name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
@@ -103,7 +103,7 @@ jobs:
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
-          # native-image.cmd --version (activate after 22.1.0 is released)
+          # native-image --version (activate after 22.1.0 is released)
         if: runner.os == 'Windows'
   test-mandrel:
     name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
@@ -134,7 +134,7 @@ jobs:
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
-          native-image.cmd --version
+          native-image --version
         if: runner.os == 'Windows'
   test-native-image-msvc:
     name: native-image on windows-latest
@@ -151,9 +151,9 @@ jobs:
       - name: Build HelloWorld executable with GraalVM Native Image on Windows
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
-          javac.exe HelloWorld.java
-          native-image.cmd HelloWorld
-          ./helloworld.exe
+          javac HelloWorld.java
+          native-image HelloWorld
+          ./helloworld
   test-native-image-musl:
     name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
