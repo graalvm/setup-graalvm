@@ -48,18 +48,17 @@ name: GraalVM Native Image build
 on: [push, pull_request]
 jobs:
   build:
-    name: ${{ matrix.version }} on ${{ matrix.os }}
+    name: HelloWorld on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: ['22.0.0.2', latest]
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
 
       - uses: graalvm/setup-graalvm@v1
         with:
-          version: ${{ matrix.version }}
+          version: '22.0.0.2'
           java-version: '11'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -74,7 +73,7 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v2
         with:
-          name: helloworld-${{ matrix.os }}-${{ matrix.version }}
+          name: helloworld-${{ matrix.os }}
           path: helloworld*
 ```
 
