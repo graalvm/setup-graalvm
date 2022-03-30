@@ -41,7 +41,7 @@ jobs:
           native-image --version
 ```
 
-### Complex Native Image Template
+### Building a HelloWorld with GraalVM Native Image on Different Platforms
 
 ```yml
 name: GraalVM Native Image build
