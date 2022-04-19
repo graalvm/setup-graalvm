@@ -254,12 +254,15 @@ function fetchArtifact(userAgent, metadata, version, javaVersion) {
         const http = new httpClient.HttpClient(userAgent);
         let filter;
         if (version === c.VERSION_LATEST) {
-            filter = `sortBy=timeCreated&limit=1`; // latest and only one item
+            filter = `sortBy=displayName&sortOrder=DESC&limit=1`; // latest and only one item
         }
         else {
             filter = `metadata=version:${version}`;
         }
-        const response = yield http.get(`${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&${filter}&metadata=java:jdk${javaVersion}&metadata=os:${c.GRAALVM_PLATFORM}&metadata=arch:${c.GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`, { accept: 'application/json' });
+        const catalogOS = c.IS_MACOS ? 'macos' : c.GRAALVM_PLATFORM;
+        const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&${filter}&metadata=java:jdk${javaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`;
+        core.debug(`Requesting ${requestUrl}`);
+        const response = yield http.get(requestUrl, { accept: 'application/json' });
         if (response.message.statusCode !== 200) {
             throw new Error(`Unable to find JDK${javaVersion}-based GraalVM EE ${version}`);
         }
@@ -523,11 +526,9 @@ const COMPONENT_TO_POST_INSTALL_HOOK = new Map([
 ]);
 function setUpGUComponents(gdsToken, graalVMHome, components) {
     return __awaiter(this, void 0, void 0, function* () {
-        const optionalFlags = [];
-        if (gdsToken.length > 0) {
-            optionalFlags.push('--token', gdsToken);
-        }
-        yield (0, utils_1.exec)('gu', BASE_FLAGS.concat(optionalFlags, components));
+        yield (0, utils_1.exec)('gu', BASE_FLAGS.concat(components), {
+            env: Object.assign(Object.assign({}, process.env), { GRAAL_EE_DOWNLOAD_TOKEN: gdsToken })
+        });
         const platformHooks = COMPONENT_TO_POST_INSTALL_HOOK.get(constants_1.GRAALVM_PLATFORM);
         if (platformHooks) {
             for (const component of components) {

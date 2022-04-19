@@ -75,9 +75,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: ['21.3.0', 'latest']
+        version: ['22.1.0', 'latest']
         java-version: ['11', '17']
-        components: [''] # ['native-image'] (activate after 22.1.0 is released)
+        components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
@@ -96,14 +96,14 @@ jobs:
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
           java --version | grep "GraalVM EE" || exit 23
-          # native-image --version (activate after 22.1.0 is released)
+          native-image --version
         if: runner.os != 'Windows'
       - name: Check Windows environment
         run: |
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
-          # native-image --version (activate after 22.1.0 is released)
+          native-image --version
         if: runner.os == 'Windows'
   test-mandrel:
     name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}

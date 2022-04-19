@@ -26,12 +26,12 @@ export async function setUpGUComponents(
   graalVMHome: string,
   components: string[]
 ): Promise<void> {
-  const optionalFlags = []
-  if (gdsToken.length > 0) {
-    optionalFlags.push('--token', gdsToken)
-  }
-
-  await exec('gu', BASE_FLAGS.concat(optionalFlags, components))
+  await exec('gu', BASE_FLAGS.concat(components), {
+    env: {
+      ...process.env,
+      GRAAL_EE_DOWNLOAD_TOKEN: gdsToken
+    }
+  })
 
   const platformHooks = COMPONENT_TO_POST_INSTALL_HOOK.get(GRAALVM_PLATFORM)
   if (platformHooks) {
