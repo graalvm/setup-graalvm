@@ -23,12 +23,12 @@ export async function setUpNativeImageMusl(): Promise<void> {
     const muslExtractPath = await tc.extractTar(muslDownloadPath)
     const muslPath = join(muslExtractPath, MUSL_NAME)
 
-    const zlibVersion = '1.2.11'
+    const zlibCommit = 'ec3df00224d4b396e2ac6586ab5d25f673caa4c2'
     const zlibDownloadPath = await tc.downloadTool(
-      `https://zlib.net/fossils/zlib-${zlibVersion}.tar.gz`
+      `https://github.com/madler/zlib/archive/${zlibCommit}.tar.gz`
     )
     const zlibExtractPath = await tc.extractTar(zlibDownloadPath)
-    const zlibPath = join(zlibExtractPath, `zlib-${zlibVersion}`)
+    const zlibPath = join(zlibExtractPath, `zlib-${zlibCommit}`)
     const zlibBuildOptions = {
       cwd: zlibPath,
       env: {

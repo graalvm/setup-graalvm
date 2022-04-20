@@ -168,10 +168,10 @@ function setUpNativeImageMusl() {
             const muslDownloadPath = yield tc.downloadTool(`http://more.musl.cc/10/x86_64-linux-musl/${MUSL_NAME}.tgz`);
             const muslExtractPath = yield tc.extractTar(muslDownloadPath);
             const muslPath = (0, path_1.join)(muslExtractPath, MUSL_NAME);
-            const zlibVersion = '1.2.11';
-            const zlibDownloadPath = yield tc.downloadTool(`https://zlib.net/fossils/zlib-${zlibVersion}.tar.gz`);
+            const zlibCommit = 'ec3df00224d4b396e2ac6586ab5d25f673caa4c2';
+            const zlibDownloadPath = yield tc.downloadTool(`https://github.com/madler/zlib/archive/${zlibCommit}.tar.gz`);
             const zlibExtractPath = yield tc.extractTar(zlibDownloadPath);
-            const zlibPath = (0, path_1.join)(zlibExtractPath, `zlib-${zlibVersion}`);
+            const zlibPath = (0, path_1.join)(zlibExtractPath, `zlib-${zlibCommit}`);
             const zlibBuildOptions = {
                 cwd: zlibPath,
                 env: Object.assign(Object.assign({}, process.env), { CC: (0, path_1.join)(muslPath, 'bin', 'gcc') })
