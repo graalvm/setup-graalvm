@@ -19,7 +19,7 @@ This action:
 ### Quickstart Template
 
 ```yml
-name: GraalVM build
+name: GraalVM Community Edition build
 on: [push, pull_request]
 jobs:
   build:
@@ -44,7 +44,7 @@ jobs:
 ### Building a HelloWorld with GraalVM Native Image on Different Platforms
 
 ```yml
-name: GraalVM Native Image build
+name: GraalVM Native Image builds
 on: [push, pull_request]
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
 4. Store this token as a [GitHub Action secret][gha-secrets]. For this template, we use the name `GDS_TOKEN`.
 
 ```yml
-name: GraalVM build
+name: GraalVM Enterprise Edition build
 on: [push, pull_request]
 jobs:
   build:
