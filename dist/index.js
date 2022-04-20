@@ -243,7 +243,7 @@ const assert_1 = __nccwpck_require__(9491);
 const v4_1 = __importDefault(__nccwpck_require__(824));
 function downloadGraalVMEE(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const userAgent = `GraalVMGitHubAction/1.0.5 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`;
+        const userAgent = `GraalVMGitHubAction/1.0.6 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`;
         const baseArtifact = yield fetchArtifact(userAgent, 'isBase:True', version, javaVersion);
         return downloadArtifact(gdsToken, userAgent, baseArtifact);
     });

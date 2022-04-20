@@ -32,7 +32,7 @@ export async function downloadGraalVMEE(
   version: string,
   javaVersion: string
 ): Promise<string> {
-  const userAgent = `GraalVMGitHubAction/1.0.5 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
+  const userAgent = `GraalVMGitHubAction/1.0.6 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
   const baseArtifact = await fetchArtifact(
     userAgent,
     'isBase:True',
