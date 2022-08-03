@@ -201,7 +201,7 @@ jobs:
           native-image --version
           [[ $(which node) == *"graalvm"* ]] || exit 45
           node --version
-          graalpython --version
+          graalpy --version
           [[ $(which R) == *"graalvm"* ]] || exit 56
           R --version
           truffleruby --version
