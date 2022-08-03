@@ -165,7 +165,7 @@ function setUpNativeImageMusl() {
         }
         else {
             core.startGroup(`Setting up musl for GraalVM Native Image...`);
-            const muslDownloadPath = yield tc.downloadTool(`http://more.musl.cc/10/x86_64-linux-musl/${MUSL_NAME}.tgz`);
+            const muslDownloadPath = yield tc.downloadTool(`https://github.com/graalvm/setup-graalvm/releases/download/x86_64-linux-musl-${MUSL_VERSION}/${MUSL_NAME}.tgz`);
             const muslExtractPath = yield tc.extractTar(muslDownloadPath);
             const muslPath = (0, path_1.join)(muslExtractPath, MUSL_NAME);
             const zlibCommit = 'ec3df00224d4b396e2ac6586ab5d25f673caa4c2';

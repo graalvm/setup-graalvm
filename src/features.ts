@@ -18,7 +18,7 @@ export async function setUpNativeImageMusl(): Promise<void> {
   } else {
     core.startGroup(`Setting up musl for GraalVM Native Image...`)
     const muslDownloadPath = await tc.downloadTool(
-      `http://more.musl.cc/10/x86_64-linux-musl/${MUSL_NAME}.tgz`
+      `https://github.com/graalvm/setup-graalvm/releases/download/x86_64-linux-musl-${MUSL_VERSION}/${MUSL_NAME}.tgz`
     )
     const muslExtractPath = await tc.extractTar(muslDownloadPath)
     const muslPath = join(muslExtractPath, MUSL_NAME)
