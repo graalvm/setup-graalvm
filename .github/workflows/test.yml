@@ -8,6 +8,8 @@ on:
     paths-ignore:
       - '**.md'
   workflow_dispatch:
+permissions:
+  contents: read
 
 jobs:
   build: # make sure build/ci work properly
