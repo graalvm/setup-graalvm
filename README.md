@@ -12,6 +12,7 @@ This action:
 - sets `$JAVA_HOME` to `$GRAALVM_HOME` by default<br>(can be disabled via `set-java-home: 'false'`, see [options](#options))
 - supports `amd64` and `aarch64` (selected automatically, `aarch64` requires a [self-hosted runner][gha-self-hosted-runners])
 - sets up Windows environments with build tools using [vcvarsall.bat][vcvarsall]
+- supports dependency caching for Apache Maven, Gradle, and sbt (see [`cache` option](#options))
 
 
 ## Templates
