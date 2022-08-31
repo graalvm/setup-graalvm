@@ -66784,7 +66784,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const STATE_CACHE_PRIMARY_KEY = 'cache-primary-key';
 const CACHE_MATCHED_KEY = 'cache-matched-key';
-const CACHE_KEY_PREFIX = 'setup-java';
+const CACHE_KEY_PREFIX = 'setup-graalvm';
 const supportedPackageManager = [
     {
         id: 'maven',

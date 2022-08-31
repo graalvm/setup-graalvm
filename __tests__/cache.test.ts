@@ -44,7 +44,7 @@ describe('dependency cache', () => {
   let spySaveState: jest.SpyInstance<void, Parameters<typeof core.saveState>>
 
   beforeEach(() => {
-    workspace = mkdtempSync(join(tmpdir(), 'setup-java-cache-'))
+    workspace = mkdtempSync(join(tmpdir(), 'setup-graalvm-cache-'))
     switch (os.platform()) {
       case 'darwin':
         process.env['RUNNER_OS'] = 'macOS'
@@ -337,7 +337,7 @@ function createStateForMissingBuildFile() {
   jest.spyOn(core, 'getState').mockImplementation(name => {
     switch (name) {
       case 'cache-primary-key':
-        return 'setup-java-cache-'
+        return 'setup-graalvm-cache-'
       default:
         return ''
     }
@@ -351,9 +351,9 @@ function createStateForSuccessfulRestore() {
   jest.spyOn(core, 'getState').mockImplementation(name => {
     switch (name) {
       case 'cache-primary-key':
-        return 'setup-java-cache-primary-key'
+        return 'setup-graalvm-cache-primary-key'
       case 'cache-matched-key':
-        return 'setup-java-cache-matched-key'
+        return 'setup-graalvm-cache-matched-key'
       default:
         return ''
     }

@@ -34,7 +34,7 @@ import * as glob from '@actions/glob'
 
 const STATE_CACHE_PRIMARY_KEY = 'cache-primary-key'
 const CACHE_MATCHED_KEY = 'cache-matched-key'
-const CACHE_KEY_PREFIX = 'setup-java'
+const CACHE_KEY_PREFIX = 'setup-graalvm'
 
 interface PackageManager {
   id: 'maven' | 'gradle' | 'sbt'
