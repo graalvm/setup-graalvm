@@ -44,8 +44,6 @@ describe('cleanup', () => {
     spyInfo = jest.spyOn(core, 'info')
     spyInfo.mockImplementation(() => null)
     spyCacheSave = jest.spyOn(cache, 'saveCache')
-    spyJobStatusSuccess = jest.spyOn(util, 'isJobStatusSuccess')
-    spyJobStatusSuccess.mockReturnValue(true)
     createStateForSuccessfulRestore()
   })
   afterEach(() => {

@@ -8,7 +8,6 @@ export const INPUT_GITHUB_TOKEN = 'github-token'
 export const INPUT_SET_JAVA_HOME = 'set-java-home'
 export const INPUT_CACHE = 'cache'
 export const INPUT_NI_MUSL = 'native-image-musl'
-export const INPUT_JOB_STATUS = 'job-status'
 
 export const IS_LINUX = process.platform === 'linux'
 export const IS_MACOS = process.platform === 'darwin'

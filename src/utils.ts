@@ -112,7 +112,3 @@ function toSemVer(version: string): string {
   const patch = parts.length > 2 ? parts.slice(2).join('-') : '0'
   return `${major}.${minor}.${patch}`
 }
-
-export function isJobStatusSuccess(): boolean {
-  return core.getInput(c.INPUT_JOB_STATUS) === 'success'
-}

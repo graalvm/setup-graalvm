@@ -26,7 +26,6 @@
 
 import * as core from '@actions/core'
 import * as constants from './constants'
-import {isJobStatusSuccess} from './utils'
 import {save} from './cache'
 
 /**
@@ -34,9 +33,8 @@ import {save} from './cache'
  * @returns Promise that will be resolved when the save process finishes
  */
 async function saveCache(): Promise<void> {
-  const jobStatus = isJobStatusSuccess()
   const cache = core.getInput(constants.INPUT_CACHE)
-  return jobStatus && cache ? save(cache) : Promise.resolve()
+  return cache ? save(cache) : Promise.resolve()
 }
 
 /**

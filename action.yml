@@ -37,3 +37,4 @@ runs:
   using: 'node16'
   main: 'dist/main/index.js'
   post: 'dist/cleanup/index.js'
+  post-if: 'success()'

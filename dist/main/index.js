@@ -66938,7 +66938,7 @@ function isProbablyGradleDaemonProblem(packageManager, error) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_JOB_STATUS = exports.INPUT_NI_MUSL = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -66947,7 +66947,6 @@ exports.INPUT_GITHUB_TOKEN = 'github-token';
 exports.INPUT_SET_JAVA_HOME = 'set-java-home';
 exports.INPUT_CACHE = 'cache';
 exports.INPUT_NI_MUSL = 'native-image-musl';
-exports.INPUT_JOB_STATUS = 'job-status';
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
@@ -67797,7 +67796,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isJobStatusSuccess = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
+exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const httpClient = __importStar(__nccwpck_require__(9925));
@@ -67900,10 +67899,6 @@ function toSemVer(version) {
     const patch = parts.length > 2 ? parts.slice(2).join('-') : '0';
     return `${major}.${minor}.${patch}`;
 }
-function isJobStatusSuccess() {
-    return core.getInput(c.INPUT_JOB_STATUS) === 'success';
-}
-exports.isJobStatusSuccess = isJobStatusSuccess;
 
 
 /***/ }),
