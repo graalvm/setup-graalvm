@@ -11,7 +11,7 @@ import {IncomingHttpHeaders} from 'http'
 import {RetryHelper} from '@actions/tool-cache/lib/retry-helper'
 import {calculateSHA256} from './utils'
 import {ok} from 'assert'
-import uuidV4 from 'uuid/v4'
+import {v4 as uuidv4} from 'uuid'
 
 interface GDSArtifactsResponse {
   readonly items: GDSArtifact[]
@@ -130,7 +130,7 @@ async function downloadTool(
   userAgent: string,
   headers?: IHeaders
 ): Promise<string> {
-  const dest = path.join(getTempDirectory(), uuidV4())
+  const dest = path.join(getTempDirectory(), uuidv4())
   await io.mkdirP(path.dirname(dest))
   core.debug(`Downloading ${url}`)
   core.debug(`Destination ${dest}`)

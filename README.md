@@ -118,6 +118,7 @@ jobs:
 | `components`    | `''`     | Comma-spearated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
 | `github-token`  | `''`     | Token for communication with the GitHub API. Please set to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps to reduce rate limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. |
+| `cache`         | `''`     | Name of the build platform to cache dependencies. It can be `'maven'`, `'gradle'`, or `'sbt'` and works the same way it does in [actions/setup-java][setup-java-caching]. |
 | `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] for building [static images][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
 
 
@@ -144,6 +145,7 @@ Only pull requests from committers that can be verified as having signed the OCA
 [oca]: https://oca.opensource.oracle.com
 [releases]: https://github.com/graalvm/graalvm-ce-builds/releases
 [repo]: https://github.com/oracle/graal
+[setup-java-caching]: https://github.com/actions/setup-java/tree/5b36705a13905facb447b6812d613a06a07e371d#caching-packages-dependencies
 [stable]: https://github.com/graalvm/graalvm-ce-builds/releases/latest
 [truffle-languages]: https://www.graalvm.org/reference-manual/languages/
 [vcvarsall]: https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line

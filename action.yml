@@ -1,6 +1,6 @@
 name: 'GitHub Action for GraalVM'
 description: 'Set up a specific version of GraalVM Community Edition (CE) or Enterprise Edition (EE)'
-author: 'GraalVM Developers'
+author: 'GraalVM Community'
 branding:
   icon: 'terminal'  
   color: 'blue'
@@ -26,10 +26,14 @@ inputs:
     required: false
     description: 'Set $JAVA_HOME to the GraalVM installation. Default: true.'
     default: 'true'
+  cache:
+    description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle", or "sbt".'
+    required: false
   native-image-musl:
     required: false
     description: 'Set up musl for static image building with GraalVM Native Image.'
     default: 'false'
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: 'node16'
+  main: 'dist/main/index.js'
+  post: 'dist/cleanup/index.js'

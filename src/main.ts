@@ -1,7 +1,9 @@
 import * as c from './constants'
 import * as core from '@actions/core'
 import * as graalvm from './graalvm'
+import {isFeatureAvailable as isCacheAvailable} from '@actions/cache'
 import {join} from 'path'
+import {restore} from './cache'
 import {setUpDependencies} from './dependencies'
 import {setUpGUComponents} from './gu'
 import {setUpMandrel} from './mandrel'
@@ -10,14 +12,15 @@ import {setUpWindowsEnvironment} from './msvc'
 
 async function run(): Promise<void> {
   try {
-    const graalvmVersion = core.getInput('version', {required: true})
-    const gdsToken = core.getInput('gds-token')
-    const javaVersion = core.getInput('java-version', {required: true})
-    const componentsString: string = core.getInput('components')
+    const graalvmVersion = core.getInput(c.INPUT_VERSION, {required: true})
+    const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
+    const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
+    const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
     const components: string[] =
       componentsString.length > 0 ? componentsString.split(',') : []
-    const setJavaHome = core.getInput('set-java-home') === 'true'
-    const enableNativeImageMusl = core.getInput('native-image-musl') === 'true'
+    const setJavaHome = core.getInput(c.INPUT_SET_JAVA_HOME) === 'true'
+    const cache = core.getInput(c.INPUT_CACHE)
+    const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
 
     if (c.IS_WINDOWS) {
       setUpWindowsEnvironment()
@@ -66,6 +69,10 @@ async function run(): Promise<void> {
       } else {
         await setUpGUComponents(gdsToken, graalVMHome, components)
       }
+    }
+
+    if (cache && isCacheAvailable()) {
+      await restore(cache)
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
