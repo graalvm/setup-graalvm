@@ -45,12 +45,16 @@ async function saveCache(): Promise<void> {
  * @param promise the promise to ignore error from
  * @returns Promise that will ignore error reported by the given promise
  */
-async function ignoreError(promise: Promise<void>): Promise<void> {
-  try {
-    await promise
-  } catch (error) {
-    core.warning(error)
-  }
+async function ignoreError(promise: Promise<void>): Promise<unknown> {
+  /* eslint-disable github/no-then */
+  return new Promise(resolve => {
+    promise
+      .catch(error => {
+        core.warning(error)
+        resolve(void 0)
+      })
+      .then(resolve)
+  })
 }
 
 export async function run(): Promise<void> {

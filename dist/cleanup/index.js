@@ -67015,12 +67015,15 @@ function saveCache() {
  */
 function ignoreError(promise) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            yield promise;
-        }
-        catch (error) {
-            core.warning(error);
-        }
+        /* eslint-disable github/no-then */
+        return new Promise(resolve => {
+            promise
+                .catch(error => {
+                core.warning(error);
+                resolve(void 0);
+            })
+                .then(resolve);
+        });
     });
 }
 function run() {
