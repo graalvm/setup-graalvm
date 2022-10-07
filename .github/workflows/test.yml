@@ -164,54 +164,18 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: 'latest'
+          version: 'dev' # report output option wasn't released yet
           java-version: '17'
           components: 'native-image'
           native-image-musl: 'true'
+          native-image-report-artifact: 'true'
+          native-image-report-build: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build static HelloWorld executable with GraalVM Native Image and musl
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
           native-image --static --libc=musl HelloWorld
-          ./helloworld
-  test-native-image-report-artifact:
-    name: native-image-artifact-report on ubuntu-latest
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          version: 'latest'
-          java-version: '17'
-          components: 'native-image'
-          native-image-report-artifact: 'true'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build static HelloWorld executable with GraalVM Native Image and make artifact report
-        run: |
-          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
-          javac HelloWorld.java
-          native-image --static HelloWorld
-          ./helloworld
-  test-native-image-report-build:
-    name: native-image-artifact-report on ubuntu-latest
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          version: 'dev' # report output option wasn't released yet
-          java-version: '17'
-          components: 'native-image'
-          native-image-report-build: 'true'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build static HelloWorld executable with GraalVM Native Image and make build report
-        run: |
-          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
-          javac HelloWorld.java
-          native-image --static HelloWorld
           ./helloworld
   test-extensive:
     name: extensive tests on ubuntu-latest
