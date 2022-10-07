@@ -8,6 +8,8 @@ export const INPUT_GITHUB_TOKEN = 'github-token'
 export const INPUT_SET_JAVA_HOME = 'set-java-home'
 export const INPUT_CACHE = 'cache'
 export const INPUT_NI_MUSL = 'native-image-musl'
+export const INPUT_NI_REPORT_BUILD = 'native-image-report-build'
+export const INPUT_NI_REPORT_ARTIFACT = 'native-image-report-artifact'
 
 export const IS_LINUX = process.platform === 'linux'
 export const IS_MACOS = process.platform === 'darwin'
@@ -26,6 +28,8 @@ export const MANDREL_NAMESPACE = 'mandrel-'
 
 export const GDS_BASE = 'https://gds.oracle.com/api/20220101'
 export const GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6'
+
+export const NATIVE_IMAGE_OPTIONS_FILE = 'native-image-options.properties'
 
 export type LatestReleaseResponse =
   otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']

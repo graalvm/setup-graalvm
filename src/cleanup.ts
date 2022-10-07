@@ -26,7 +26,9 @@
 
 import * as core from '@actions/core'
 import * as constants from './constants'
-import {save} from './cache'
+import { save } from './cache'
+import { createNIArtifactReport, createNIBuildReport } from './reports'
+import { isNativeImageBuildReport, isNativeImageArtifactReport } from './options'
 
 /**
  * Check given input and run a save process for the specified package manager
@@ -55,7 +57,19 @@ async function ignoreError(promise: Promise<void>): Promise<unknown> {
   })
 }
 
+
 export async function run(): Promise<void> {
+  let reported = false;
+  if (await isNativeImageBuildReport()) {
+    createNIBuildReport();
+    reported = true;
+  }
+  if (await isNativeImageArtifactReport()) {
+    createNIArtifactReport();
+    reported = true;
+  }
+  if (reported)
+    core.summary.write();
   await ignoreError(saveCache())
 }
 

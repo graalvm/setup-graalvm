@@ -1,6 +1,7 @@
-import {GRAALVM_PLATFORM} from './constants'
-import {exec} from './utils'
-import {join} from 'path'
+import { GRAALVM_PLATFORM } from './constants'
+import { exec } from './utils'
+import { join } from 'path'
+import { ExecOptions } from '@actions/exec'
 
 const BASE_FLAGS = ['--non-interactive', 'install', '--no-progress']
 const COMPONENT_TO_POST_INSTALL_HOOK = new Map<string, Map<string, string>>([
@@ -42,4 +43,18 @@ export async function setUpGUComponents(
       }
     }
   }
+}
+
+export async function getVersionString(): Promise<string> {
+  let output = "";
+  const options: ExecOptions = {
+    listeners: {
+      stdout: (data: Buffer) => {
+        output += data.toString();
+      }
+    }
+  };
+  await exec('gu', ['--version'], options);
+  const versionParts = output.split(' ');
+  return versionParts[versionParts.length - 1];
 }

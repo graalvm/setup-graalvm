@@ -1,8 +1,8 @@
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import {IS_LINUX} from './constants'
-import {exec} from './utils'
-import {join} from 'path'
+import { IS_LINUX } from './constants'
+import { exec } from './utils'
+import { join } from 'path'
 
 const MUSL_NAME = 'x86_64-linux-musl-native'
 const MUSL_VERSION = '10.2.1'
@@ -42,7 +42,7 @@ export async function setUpNativeImageMusl(): Promise<void> {
       zlibBuildOptions
     )
     await exec('make', [], zlibBuildOptions)
-    await exec('make', ['install'], {cwd: zlibPath})
+    await exec('make', ['install'], { cwd: zlibPath })
 
     core.info(`Adding ${MUSL_NAME} ${MUSL_VERSION} to tool-cache ...`)
     toolPath = await tc.cacheDir(muslPath, MUSL_NAME, MUSL_VERSION)

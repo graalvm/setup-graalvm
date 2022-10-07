@@ -1,20 +1,22 @@
 import * as c from './constants'
 import * as core from '@actions/core'
 import * as graalvm from './graalvm'
-import {isFeatureAvailable as isCacheAvailable} from '@actions/cache'
-import {join} from 'path'
-import {restore} from './cache'
-import {setUpDependencies} from './dependencies'
-import {setUpGUComponents} from './gu'
-import {setUpMandrel} from './mandrel'
-import {setUpNativeImageMusl} from './features'
-import {setUpWindowsEnvironment} from './msvc'
+import { isFeatureAvailable as isCacheAvailable } from '@actions/cache'
+import { join } from 'path'
+import { restore } from './cache'
+import { setUpDependencies } from './dependencies'
+import { setUpGUComponents } from './gu'
+import { setUpMandrel } from './mandrel'
+import { setUpNativeImageMusl } from './features'
+import { setUpWindowsEnvironment } from './msvc'
+import { isNativeImageArtifactReport, isNativeImageBuildReport } from './options'
+import { setUpNIArtifactReport, setUpNIBuildReport } from './reports'
 
 async function run(): Promise<void> {
   try {
-    const graalvmVersion = core.getInput(c.INPUT_VERSION, {required: true})
+    const graalvmVersion = core.getInput(c.INPUT_VERSION, { required: true })
     const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
-    const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
+    const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, { required: true })
     const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
     const components: string[] =
       componentsString.length > 0 ? componentsString.split(',') : []
@@ -25,6 +27,7 @@ async function run(): Promise<void> {
     if (c.IS_WINDOWS) {
       setUpWindowsEnvironment()
     }
+
     await setUpDependencies(components)
     if (enableNativeImageMusl) {
       await setUpNativeImageMusl()
@@ -69,6 +72,18 @@ async function run(): Promise<void> {
       } else {
         await setUpGUComponents(gdsToken, graalVMHome, components)
       }
+    }
+
+    if (await isNativeImageArtifactReport()) {
+      await setUpNIArtifactReport()
+    } else if (core.getBooleanInput(c.INPUT_NI_REPORT_ARTIFACT)) {
+      core.notice(`Artifact report isn't available for GraalVM version ${graalvmVersion}.`)
+    }
+
+    if (await isNativeImageBuildReport()) {
+      await setUpNIBuildReport()
+    } else if (core.getBooleanInput(c.INPUT_NI_REPORT_BUILD)) {
+      core.notice(`Build report isn't available for GraalVM version ${graalvmVersion}.`)
     }
 
     if (cache && isCacheAvailable()) {

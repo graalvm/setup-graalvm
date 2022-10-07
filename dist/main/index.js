@@ -66938,7 +66938,7 @@ function isProbablyGradleDaemonProblem(packageManager, error) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.NATIVE_IMAGE_OPTIONS_FILE = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_REPORT_ARTIFACT = exports.INPUT_NI_REPORT_BUILD = exports.INPUT_NI_MUSL = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -66947,6 +66947,8 @@ exports.INPUT_GITHUB_TOKEN = 'github-token';
 exports.INPUT_SET_JAVA_HOME = 'set-java-home';
 exports.INPUT_CACHE = 'cache';
 exports.INPUT_NI_MUSL = 'native-image-musl';
+exports.INPUT_NI_REPORT_BUILD = 'native-image-report-build';
+exports.INPUT_NI_REPORT_ARTIFACT = 'native-image-report-artifact';
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
@@ -66960,6 +66962,7 @@ exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
 exports.MANDREL_NAMESPACE = 'mandrel-';
 exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
 exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
+exports.NATIVE_IMAGE_OPTIONS_FILE = 'native-image-options.properties';
 function determineGraalVMArchitecture() {
     switch (process.arch) {
         case 'x64': {
@@ -66973,6 +66976,63 @@ function determineGraalVMArchitecture() {
         }
     }
 }
+
+
+/***/ }),
+
+/***/ 1833:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PEAK_RSS_BYTES = exports.SYSTEM_TOTAL = exports.TOTAL_SECS = exports.TOTAL_CORES = exports.LOAD = exports.RESOURCES = exports.COMPILATION_UNITS = exports.BYTES = exports.FIELDS = exports.CLASSES = exports.METHODS = exports.GRAALVM_VERSION = exports.GARBAGE_COLLECTOR = exports.JAVA_VERSION = exports.NAME = exports.C_COMPILER = exports.IMAGE_HEAP = exports.TOTAL_BYTES = exports.CODE_AREA = exports.CPU = exports.GARBAGE_COLLECTION = exports.MEMORY = exports.ANALYSIS_RESULTS = exports.GENERAL_INFO = exports.IMAGE_DETAILS = exports.RESOURCE_USAGE = exports.COUNT = void 0;
+exports.COUNT = "count";
+exports.RESOURCE_USAGE = "resource_usage";
+exports.IMAGE_DETAILS = "image_details";
+exports.GENERAL_INFO = "general_info";
+exports.ANALYSIS_RESULTS = "analysis_results";
+exports.MEMORY = "memory";
+exports.GARBAGE_COLLECTION = "garbage_collection";
+exports.CPU = "cpu";
+exports.CODE_AREA = "code_area";
+exports.TOTAL_BYTES = "total_bytes";
+exports.IMAGE_HEAP = "image_heap";
+exports.C_COMPILER = "c_compiler";
+exports.NAME = "name";
+exports.JAVA_VERSION = "java_version";
+exports.GARBAGE_COLLECTOR = "garbage_collector";
+exports.GRAALVM_VERSION = "graalvm_version";
+exports.METHODS = "methods";
+exports.CLASSES = "classes";
+exports.FIELDS = "fields";
+exports.BYTES = "bytes";
+exports.COMPILATION_UNITS = "compilation_units";
+exports.RESOURCES = "resources";
+exports.LOAD = "load";
+exports.TOTAL_CORES = "total_cores";
+exports.TOTAL_SECS = "total_secs";
+exports.SYSTEM_TOTAL = "system_total";
+exports.PEAK_RSS_BYTES = "peak_rss_bytes";
+
+
+/***/ }),
+
+/***/ 6014:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TOTAL = exports.SIZE = exports.NAME = exports.COUNT = exports.CODE_BREAKDOWN = exports.HEAP_BREAKDOWN = exports.CODE_SIZE = exports.HEAP_SIZE = void 0;
+exports.HEAP_SIZE = "heap-size";
+exports.CODE_SIZE = "code-size";
+exports.HEAP_BREAKDOWN = "heap-breakdown";
+exports.CODE_BREAKDOWN = "code-breakdown";
+exports.COUNT = "count";
+exports.NAME = "name";
+exports.SIZE = "size";
+exports.TOTAL = "total";
 
 
 /***/ }),
@@ -67438,7 +67498,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpGUComponents = void 0;
+exports.getVersionString = exports.setUpGUComponents = void 0;
 const constants_1 = __nccwpck_require__(9042);
 const utils_1 = __nccwpck_require__(1314);
 const path_1 = __nccwpck_require__(1017);
@@ -67477,6 +67537,22 @@ function setUpGUComponents(gdsToken, graalVMHome, components) {
     });
 }
 exports.setUpGUComponents = setUpGUComponents;
+function getVersionString() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let output = "";
+        const options = {
+            listeners: {
+                stdout: (data) => {
+                    output += data.toString();
+                }
+            }
+        };
+        yield utils_1.exec('gu', ['--version'], options);
+        const versionParts = output.split(' ');
+        return versionParts[versionParts.length - 1];
+    });
+}
+exports.getVersionString = getVersionString;
 
 
 /***/ }),
@@ -67526,6 +67602,8 @@ const gu_1 = __nccwpck_require__(5609);
 const mandrel_1 = __nccwpck_require__(8766);
 const features_1 = __nccwpck_require__(7216);
 const msvc_1 = __nccwpck_require__(1165);
+const options_1 = __nccwpck_require__(6159);
+const reports_1 = __nccwpck_require__(94);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -67577,6 +67655,18 @@ function run() {
                 else {
                     yield gu_1.setUpGUComponents(gdsToken, graalVMHome, components);
                 }
+            }
+            if (yield options_1.isNativeImageArtifactReport()) {
+                yield reports_1.setUpNIArtifactReport();
+            }
+            else if (core.getBooleanInput(c.INPUT_NI_REPORT_ARTIFACT)) {
+                core.notice(`Artifact report isn't available for GraalVM version ${graalvmVersion}.`);
+            }
+            if (yield options_1.isNativeImageBuildReport()) {
+                yield reports_1.setUpNIBuildReport();
+            }
+            else if (core.getBooleanInput(c.INPUT_NI_REPORT_BUILD)) {
+                core.notice(`Build report isn't available for GraalVM version ${graalvmVersion}.`);
             }
             if (cache && cache_1.isFeatureAvailable()) {
                 yield cache_2.restore(cache);
@@ -67762,6 +67852,213 @@ exports.setUpWindowsEnvironment = setUpWindowsEnvironment;
 
 /***/ }),
 
+/***/ 6159:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isNativeImageArtifactReport = exports.isNativeImageBuildReport = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const c = __importStar(__nccwpck_require__(9042));
+const utils_1 = __nccwpck_require__(1314);
+function isNativeImageBuildReport() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const version = yield utils_1.getGVMversion();
+        const correctVersion = (version.major > 22 || version.major === 22 && version.minor > 2);
+        return correctVersion && core.getBooleanInput(c.INPUT_NI_REPORT_BUILD);
+    });
+}
+exports.isNativeImageBuildReport = isNativeImageBuildReport;
+function isNativeImageArtifactReport() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const version = yield utils_1.getGVMversion();
+        const correctVersion = (version.major > 20 || version.major === 20 && version.minor > 2);
+        return correctVersion && core.getBooleanInput(c.INPUT_NI_REPORT_ARTIFACT);
+    });
+}
+exports.isNativeImageArtifactReport = isNativeImageArtifactReport;
+
+
+/***/ }),
+
+/***/ 94:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createNIBuildReport = exports.createNIArtifactReport = exports.setUpNIBuildReport = exports.setUpNIArtifactReport = void 0;
+const fs = __importStar(__nccwpck_require__(7147));
+const core = __importStar(__nccwpck_require__(2186));
+const utils_1 = __nccwpck_require__(1314);
+const dashboardNIDef_1 = __nccwpck_require__(6014);
+const buildOutputDef_1 = __nccwpck_require__(1833);
+function setUpNIArtifactReport() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const version = yield utils_1.getGVMversion();
+        yield utils_1.setNativeImageOption("-H:+DashboardCode");
+        yield utils_1.setNativeImageOption("-H:+DashboardHeap");
+        yield utils_1.setNativeImageOption("-H:-DashboardBgv");
+        yield utils_1.setNativeImageOption("-H:+DashboardJson");
+        yield utils_1.setNativeImageOption("-H:DashboardDump=artifactReport");
+    });
+}
+exports.setUpNIArtifactReport = setUpNIArtifactReport;
+function setUpNIBuildReport() {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield utils_1.setNativeImageOption("-H:BuildOutputJSONFile=outputReport.json");
+    });
+}
+exports.setUpNIBuildReport = setUpNIBuildReport;
+function createNIArtifactReport() {
+    const data = JSON.parse(fs.readFileSync("artifactReport.dump").toString());
+    const heapBreakdown = data[dashboardNIDef_1.HEAP_BREAKDOWN];
+    const codeBreakdown = data[dashboardNIDef_1.CODE_BREAKDOWN];
+    let heap = heapBreakdown[dashboardNIDef_1.HEAP_SIZE];
+    let code = codeBreakdown[dashboardNIDef_1.CODE_SIZE];
+    heap.sort((v1, v2) => v2.size - v1.size);
+    heap = heap.slice(0, 10);
+    code = aggregateCode(code);
+    code.sort((v1, v2) => v2.size - v1.size);
+    code = code.slice(0, 10);
+    const heapSum = heap.map(v => v.size).reduce((v1, v2) => v1 + v2);
+    const codeSum = code.map(v => v.size).reduce((v1, v2) => v1 + v2);
+    addMermaidPieSummary("Heap/Code size", true, { name: "Heap size", value: heapSum }, { name: "Code size", value: codeSum });
+    addTableSummary("10 Top Heap sizes", ["Name", "Count", "Size", "%"], ...heap.map(h => [h.name, `${h.count}`, `${h.size}`, (h.size / heapSum * 100).toFixed(2)]));
+    addTableSummary("10 Top Code sizes", ["Name", "Size", "%"], ...code.map(c => [c.name, `${c.size}`, (c.size / codeSum * 100).toFixed(2)]));
+}
+exports.createNIArtifactReport = createNIArtifactReport;
+function createNIBuildReport() {
+    const data = JSON.parse(fs.readFileSync("outputReport.json").toString());
+    addTableSummary("Image details", ["Type", "Bytes"], ...imageDetailsToTableRows(data[buildOutputDef_1.IMAGE_DETAILS]));
+    addTableSummaryNoHeader("Resource usage", ...resourceUsageToTableRows(data[buildOutputDef_1.RESOURCE_USAGE]));
+    addTableSummary("Analysis Results", ["Type", "Total", "Reflection", "JNI", "Reachable"], ...Object.entries(data[buildOutputDef_1.ANALYSIS_RESULTS]).map(analysisResultEntryToTableRow));
+}
+exports.createNIBuildReport = createNIBuildReport;
+function analysisResultEntryToTableRow(entry) {
+    return [entry[0],
+        `${entry[1].total}`,
+        `${entry[1].reflection}`,
+        `${entry[1].jni}`,
+        `${entry[1].reachable}`];
+}
+function imageDetailsToTableRows(imageDetails) {
+    const out = [];
+    const imageHeap = imageDetails[buildOutputDef_1.IMAGE_HEAP];
+    out.push(["Heap", `${imageHeap[buildOutputDef_1.BYTES]}`]);
+    out.push(["Resources", `${imageHeap[buildOutputDef_1.RESOURCES][buildOutputDef_1.BYTES]}`]);
+    out.push(["Code", `${imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.BYTES]}`]);
+    out.push(["Total", `${imageDetails[buildOutputDef_1.TOTAL_BYTES]}`]);
+    return out;
+}
+function resourceUsageToTableRows(resourceUsage) {
+    const out = [];
+    out.push(["Memory usage", resourceUsage[buildOutputDef_1.MEMORY][buildOutputDef_1.SYSTEM_TOTAL] + " B"]);
+    out.push(["CPU usage", (resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.LOAD] / resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.TOTAL_CORES]).toFixed(2) + "%"]);
+    return out;
+}
+function aggregateCode(code) {
+    const aggregates = new Map();
+    code.forEach(element => {
+        const pkg = parsePkg(element.name);
+        aggregates.set(pkg, (aggregates.get(pkg) || 0) + element.size);
+    });
+    code = [];
+    aggregates.forEach((s, n) => code.push({ name: n, size: s }));
+    return code;
+}
+function parsePkg(name) {
+    const parts = name.split('.');
+    let pkg = [];
+    for (const part of parts) {
+        if (part === part.toLowerCase()) {
+            pkg.push(part);
+        }
+        else
+            break;
+    }
+    return pkg.join('.');
+}
+function addMermaidPieSummary(title, showData, ...data) {
+    //%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ff0000'}}}%%\n
+    core.summary.addCodeBlock(`pie ${showData ? "showData " : ""}title ${title}\n\t${data.map(v1 => "\"" + v1.name + "\":" + v1.value).join("\n\t")}`, "mermaid");
+}
+function addTableSummary(title, colNames, ...data) {
+    const rows = [];
+    rows.push([{ data: title, header: true, colspan: `${colNames.length}` }]);
+    rows.push(colNames.map(name => { return { data: name, header: true }; }));
+    core.summary.addTable(rows.concat(data));
+}
+function addTableSummaryNoHeader(title, ...data) {
+    const rows = [];
+    let max = 0;
+    for (const row of data) {
+        max = Math.max(row.length, max);
+    }
+    rows.push([{ data: title, header: true, colspan: `${max}` }]);
+    core.summary.addTable(rows.concat(data));
+}
+
+
+/***/ }),
+
 /***/ 1314:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -67796,8 +68093,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
+exports.getGVMversion = exports.setNativeImageOption = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
+const gu_1 = __nccwpck_require__(5609);
 const core = __importStar(__nccwpck_require__(2186));
 const httpClient = __importStar(__nccwpck_require__(9925));
 const tc = __importStar(__nccwpck_require__(7784));
@@ -67806,6 +68104,7 @@ const fs_1 = __nccwpck_require__(7147);
 const core_1 = __nccwpck_require__(6762);
 const crypto_1 = __nccwpck_require__(6113);
 const path_1 = __nccwpck_require__(1017);
+const fs = __importStar(__nccwpck_require__(7147));
 // Set up Octokit in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = process.env['GITHUB_API_URL'] || 'https://api.github.com';
 const GitHub = core_1.Octokit.defaults({
@@ -67899,6 +68198,39 @@ function toSemVer(version) {
     const patch = parts.length > 2 ? parts.slice(2).join('-') : '0';
     return `${major}.${minor}.${patch}`;
 }
+function getNativeImageOptionsFile() {
+    let optionsFile = process.env["NATIVE_IMAGE_CONFIG_FILE"];
+    if (optionsFile === undefined)
+        core.exportVariable("NATIVE_IMAGE_CONFIG_FILE", optionsFile = c.NATIVE_IMAGE_OPTIONS_FILE);
+    return optionsFile;
+}
+function setNativeImageOption(value) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let optionsFile = getNativeImageOptionsFile();
+        if (fs.existsSync(optionsFile)) {
+            fs.appendFileSync(optionsFile, " " + value);
+        }
+        else {
+            fs.writeFileSync(optionsFile, "NativeImageArgs = " + value);
+        }
+    });
+}
+exports.setNativeImageOption = setNativeImageOption;
+function getGVMversion() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const versionString = yield gu_1.getVersionString();
+        const devParts = versionString.split('-');
+        const versionParts = devParts[0].split('.');
+        return {
+            major: parseInt(versionParts[0]) || 0,
+            minor: parseInt(versionParts[1]) || 0,
+            patch: parseInt(versionParts[2]) || 0,
+            hotfix: parseInt(versionParts[3]) || 0,
+            dev: devParts[1] === 'dev'
+        };
+    });
+}
+exports.getGVMversion = getGVMversion;
 
 
 /***/ }),

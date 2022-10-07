@@ -1,12 +1,14 @@
 import * as c from './constants'
+import { getVersionString } from './gu';
 import * as core from '@actions/core'
 import * as httpClient from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
-import {ExecOptions, exec as e} from '@actions/exec'
-import {readFileSync, readdirSync} from 'fs'
-import {Octokit} from '@octokit/core'
-import {createHash} from 'crypto'
-import {join} from 'path'
+import { ExecOptions, exec as e } from '@actions/exec'
+import { readFileSync, readdirSync } from 'fs'
+import { Octokit } from '@octokit/core'
+import { createHash } from 'crypto'
+import { join } from 'path'
+import * as fs from 'fs'
 
 // Set up Octokit in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = process.env['GITHUB_API_URL'] || 'https://api.github.com'
@@ -36,7 +38,7 @@ export async function getLatestRelease(
   repo: string
 ): Promise<c.LatestReleaseResponse['data']> {
   const githubToken = core.getInput('github-token')
-  const options = githubToken.length > 0 ? {auth: githubToken} : {}
+  const options = githubToken.length > 0 ? { auth: githubToken } : {}
   const octokit = new GitHub(options)
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
@@ -111,4 +113,34 @@ function toSemVer(version: string): string {
   const minor = parts.length > 1 ? parts[1] : '0'
   const patch = parts.length > 2 ? parts.slice(2).join('-') : '0'
   return `${major}.${minor}.${patch}`
+}
+
+function getNativeImageOptionsFile(): string {
+  let optionsFile: string | undefined = process.env["NATIVE_IMAGE_CONFIG_FILE"];
+  if (optionsFile === undefined)
+    core.exportVariable("NATIVE_IMAGE_CONFIG_FILE", optionsFile = c.NATIVE_IMAGE_OPTIONS_FILE);
+  return optionsFile;
+}
+
+export async function setNativeImageOption(value: string): Promise<void> {
+  let optionsFile: string = getNativeImageOptionsFile();
+  if (fs.existsSync(optionsFile)) {
+    fs.appendFileSync(optionsFile, " " + value);
+  } else {
+    fs.writeFileSync(optionsFile, "NativeImageArgs = " + value);
+  }
+}
+
+type Version = { major: number, minor: number, patch: number, hotfix: number, dev: boolean }
+export async function getGVMversion(): Promise<Version> {
+  const versionString = await getVersionString();
+  const devParts = versionString.split('-');
+  const versionParts = devParts[0].split('.');
+  return {
+    major: parseInt(versionParts[0]) || 0,
+    minor: parseInt(versionParts[1]) || 0,
+    patch: parseInt(versionParts[2]) || 0,
+    hotfix: parseInt(versionParts[3]) || 0,
+    dev: devParts[1] === 'dev'
+  };
 }
