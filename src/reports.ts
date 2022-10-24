@@ -1,9 +1,10 @@
 import * as fs from "fs";
 import * as core from "@actions/core";
 import * as mark from "./markdown";
-import { getGVMversion, setNativeImageOption } from "./utils";
+import { getGVMversion, hRBytes, setNativeImageOption } from "./utils";
 import { CodeSize, CODE_BREAKDOWN, CODE_SIZE, DashboardDump, HeapSize, HEAP_BREAKDOWN, HEAP_SIZE, NAME, SIZE } from "./definitions/dashboardNIDef";
 import { AnalysisResult, ANALYSIS_RESULTS, BuildOutput, BYTES, CODE_AREA, CPU, ImageDetails, ImageHeap, IMAGE_DETAILS, IMAGE_HEAP, LOAD, MEMORY, RESOURCES, ResourceUsage, RESOURCE_USAGE, SYSTEM_TOTAL, TOTAL_BYTES, TOTAL_CORES } from "./definitions/buildOutputDef";
+import * as art from "@actions/artifact"
 
 export async function setUpNIArtifactReport(): Promise<void> {
   const version = await getGVMversion();
@@ -38,10 +39,10 @@ export function createNIArtifactReport(): void {
     { name: "Code size", size: codeSum });
   addTableSummary("10 Top Heap sizes",
     ["Name", "Count", "Size", "%"],
-    ...heap.map(h => [h.name, `${h.count}`, `${h.size}`, (h.size / heapSum * 100).toFixed(2)]));
+    ...heap.map(h => [h.name, `${h.count}`, hRBytes(h.size), (h.size / heapSum * 100).toFixed(2)]));
   addTableSummary("Code sizes by packages",
     ["Name", "Size"],
-    ...pCode.sort(descend).map(c => [processPackage(c), `${c.size}`]));
+    ...pCode.sort(descend).map(c => [processPackage(c), hRBytes(c.size)]));
 }
 
 function processPackage(pkg: Package): string {
@@ -56,7 +57,7 @@ function packageToTables(pkg: Package): string {
   if (pkg.codes !== undefined) {
     if (pkg.pkg !== undefined && pkg.pkg.size > 0) {
       out += '\n'
-      out += mark.detail(`${mark.bold('"methods"')} size: ${getSizeDiff(pkg)}`, codeSizesToTable(pkg.codes));
+      out += mark.detail(`${mark.bold('"methods"')} size: ${hRBytes(getSizeDiff(pkg))}`, codeSizesToTable(pkg.codes));
     } else {
       out += codeSizesToTable(pkg.codes);
     }
@@ -66,11 +67,11 @@ function packageToTables(pkg: Package): string {
 
 function packageToTable(pkgs: Package[]): string {
   const rows: mark.TableRow[] = [mark.makeHeaderRow("Name", "Size")];
-  return mark.table(rows.concat(pkgs.sort(descend).map(cd => [processPackage(cd), `${cd[SIZE]}`])));
+  return mark.table(rows.concat(pkgs.sort(descend).map(cd => [processPackage(cd), hRBytes(cd[SIZE])])));
 }
 function codeSizesToTable(codes: CodeSize[]): string {
   const rows: mark.TableRow[] = [mark.makeHeaderRow("Name", "Size")];
-  return mark.table(rows.concat(codes.sort(descend).map(cd => [cd[NAME], `${cd[SIZE]}`])));
+  return mark.table(rows.concat(codes.sort(descend).map(cd => [cd[NAME], hRBytes(cd[SIZE])])));
 }
 
 function getSizeDiff(pkg: Package): number {
@@ -91,24 +92,24 @@ export function createNIBuildReport(): void {
 
 function analysisResultEntryToTableRow(entry: [string, AnalysisResult]): mark.TableRow {
   return [entry[0],
-  `${entry[1].total}`,
-  `${entry[1].reflection}`,
-  `${entry[1].jni}`,
-  `${entry[1].reachable}`];
+  hRBytes(entry[1].total),
+  hRBytes(entry[1].reflection),
+  hRBytes(entry[1].jni),
+  hRBytes(entry[1].reachable)];
 }
 
 function imageDetailsToTableRows(imageDetails: ImageDetails): mark.TableRow[] {
   const out: mark.TableRow[] = [];
   const imageHeap: ImageHeap = imageDetails[IMAGE_HEAP];
-  out.push(["Heap", `${imageHeap[BYTES]}`]);
-  out.push(["Resources", `${imageHeap[RESOURCES][BYTES]}`]);
-  out.push(["Code", `${imageDetails[CODE_AREA][BYTES]}`]);
-  out.push(["Total", `${imageDetails[TOTAL_BYTES]}`]);
+  out.push(["Heap", hRBytes(imageHeap[BYTES])]);
+  out.push(["Resources", hRBytes(imageHeap[RESOURCES][BYTES])]);
+  out.push(["Code", hRBytes(imageDetails[CODE_AREA][BYTES])]);
+  out.push(["Total", hRBytes(imageDetails[TOTAL_BYTES])]);
   return out;
 }
 function resourceUsageToTableRows(resourceUsage: ResourceUsage): mark.TableRow[] {
   const out: mark.TableRow[] = [];
-  out.push(["Memory usage", resourceUsage[MEMORY][SYSTEM_TOTAL] + " B"]);
+  out.push(["Memory usage", hRBytes(resourceUsage[MEMORY][SYSTEM_TOTAL])]);
   out.push(["CPU usage", (resourceUsage[CPU][LOAD] / resourceUsage[CPU][TOTAL_CORES] * 100).toFixed(2) + "%"]);
   return out;
 }
@@ -172,7 +173,7 @@ function addMermaidPieSummary(title: string, showData: boolean, ...data: mark.Me
 function addTableSummary(title: string, colNames: string[], ...data: mark.TableRow[]) {
   const rows: mark.TableRow[] = [];
   rows.push([{ content: title, header: true, span: colNames.length }]);
-  rows.push(mark.makeHeaderRow(...colNames));
+  rows.push(colNames.map(name => { return { content: name, header: true } }));
   core.summary.addRaw(mark.table(rows.concat(data)));
 }
 function addTableSummaryNoHeader(title: string, ...data: mark.TableRow[]) {

@@ -144,3 +144,12 @@ export async function getGVMversion(): Promise<Version> {
     dev: devParts[1] === 'dev'
   };
 }
+
+const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+const k = Math.pow(2, 10);
+export function hRBytes(bytes: number, decimals = 2): string {
+  if (bytes <= 0) return '0 Bytes';
+  const dm = decimals < 0 ? 0 : decimals;
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
