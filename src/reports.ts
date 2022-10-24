@@ -4,7 +4,6 @@ import * as mark from "./markdown";
 import { getGVMversion, hRBytes, setNativeImageOption } from "./utils";
 import { CodeSize, CODE_BREAKDOWN, CODE_SIZE, DashboardDump, HeapSize, HEAP_BREAKDOWN, HEAP_SIZE, NAME, SIZE } from "./definitions/dashboardNIDef";
 import { AnalysisResult, ANALYSIS_RESULTS, BuildOutput, BYTES, CODE_AREA, CPU, ImageDetails, ImageHeap, IMAGE_DETAILS, IMAGE_HEAP, LOAD, MEMORY, RESOURCES, ResourceUsage, RESOURCE_USAGE, SYSTEM_TOTAL, TOTAL_BYTES, TOTAL_CORES } from "./definitions/buildOutputDef";
-import * as art from "@actions/artifact"
 
 export async function setUpNIArtifactReport(): Promise<void> {
   const version = await getGVMversion();
@@ -46,36 +45,19 @@ export function createNIArtifactReport(): void {
 }
 
 function processPackage(pkg: Package): string {
-  return mark.detail(mark.bold(pkg[NAME]), packageToTables(pkg));
+  const boldName = mark.bold(pkg[NAME]);
+  if (pkg.pkg.size > 0)
+    return mark.detail(boldName, packageToTable(pkg));
+  return boldName;
 }
 
-function packageToTables(pkg: Package): string {
-  let out = "";
-  if (pkg.pkg !== undefined && pkg.pkg.size > 0) {
-    out += packageToTable([...pkg.pkg.values()]);
-  }
-  if (pkg.codes !== undefined) {
-    if (pkg.pkg !== undefined && pkg.pkg.size > 0) {
-      out += '\n'
-      out += mark.detail(`${mark.bold('"methods"')} size: ${hRBytes(getSizeDiff(pkg))}`, codeSizesToTable(pkg.codes));
-    } else {
-      out += codeSizesToTable(pkg.codes);
-    }
-  }
-  return out;
+function packageToTable(pkg: Package): string {
+  return packagesToTable([...pkg.pkg.values()]);
 }
 
-function packageToTable(pkgs: Package[]): string {
+function packagesToTable(pkgs: Package[]): string {
   const rows: mark.TableRow[] = [mark.makeHeaderRow("Name", "Size")];
   return mark.table(rows.concat(pkgs.sort(descend).map(cd => [processPackage(cd), hRBytes(cd[SIZE])])));
-}
-function codeSizesToTable(codes: CodeSize[]): string {
-  const rows: mark.TableRow[] = [mark.makeHeaderRow("Name", "Size")];
-  return mark.table(rows.concat(codes.sort(descend).map(cd => [cd[NAME], hRBytes(cd[SIZE])])));
-}
-
-function getSizeDiff(pkg: Package): number {
-  return pkg[SIZE] - [...pkg.pkg.values()].map(p => p[SIZE]).reduce(sum);
 }
 
 export function createNIBuildReport(): void {
@@ -114,7 +96,7 @@ function resourceUsageToTableRows(resourceUsage: ResourceUsage): mark.TableRow[]
   return out;
 }
 
-type Package = CodeSize & { pkg: Map<string, Package>, codes?: CodeSize[] };
+type Package = CodeSize & { pkg: Map<string, Package> };
 function parsePackages(code: CodeSize[]): Package[] {
   const pkgs: Map<string, Package> = new Map();
   code.forEach(c => {
@@ -131,10 +113,6 @@ function parsePackages(code: CodeSize[]): Package[] {
         break;
       }
     }
-    if (p.codes === undefined)
-      p.codes = [];
-    c[NAME] = c[NAME].slice(prt);
-    p.codes.push(c);
   });
   return mergePackages([...pkgs.values()]);
 }
@@ -145,11 +123,10 @@ function mergePackages(pkgs: Package[]): Package[] {
 }
 
 function mergePackage(pkg: Package): Package {
-  if (pkg.pkg.size === 1 && pkg.codes === undefined) {
+  if (pkg.pkg.size === 1) {
     const pack = pkg.pkg.get(pkg.pkg.keys().next().value) as Package;
     pkg[NAME] = pkg[NAME] + "." + pack[NAME];
     pkg.pkg = pack.pkg;
-    pkg.codes = pack.codes;
     mergePackage(pkg);
   } else
     mergePackages([...pkg.pkg.values()]);
