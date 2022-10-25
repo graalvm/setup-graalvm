@@ -15,7 +15,7 @@ jobs:
   build: # make sure build/ci work properly
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: |
           npm install
       - run: |
@@ -43,7 +43,7 @@ jobs:
             components: 'native-image'
             os: windows-2022
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -82,7 +82,7 @@ jobs:
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -116,7 +116,7 @@ jobs:
         java-version: ['11', '17']
         os: [windows-latest, ubuntu-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -142,7 +142,7 @@ jobs:
     name: native-image on windows-latest
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -160,7 +160,7 @@ jobs:
     name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -179,7 +179,7 @@ jobs:
     name: extensive tests on ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run setup-graalvm action
         uses: ./
         with:
