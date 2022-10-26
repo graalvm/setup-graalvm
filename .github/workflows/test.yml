@@ -26,19 +26,19 @@ jobs:
     strategy:
       matrix:
         version: [latest, dev]
-        java-version: ['11']
+        java-version: ['17', '19']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
         include:
-          - version: '22.1.0'
+          - version: '22.3.0'
             java-version: '17'
             components: 'native-image'
             os: ubuntu-18.04
-          - version: '22.1.0'
+          - version: '22.3.0'
             java-version: '17'
             components: 'native-image'
             os: macos-11
-          - version: '22.1.0'
+          - version: '22.3.0'
             java-version: '17'
             components: 'native-image'
             os: windows-2022
@@ -77,8 +77,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: ['22.1.0', 'latest']
-        java-version: ['11', '17']
+        version: ['22.3.0', 'latest']
+        java-version: ['11', '17', '19']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
@@ -165,7 +165,7 @@ jobs:
         uses: ./
         with:
           version: 'latest'
-          java-version: '17'
+          java-version: '19'
           components: 'native-image'
           native-image-musl: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
