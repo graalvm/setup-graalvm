@@ -67769,6 +67769,80 @@ function determineToolName(javaVersion) {
 
 /***/ }),
 
+/***/ 4270:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bold = exports.mermaidPie = exports.code = exports.LANG = exports.table = exports.makeHeaderRow = exports.detail = void 0;
+function open(tag) {
+    return '<' + tag + '>';
+}
+function close(tag) {
+    return open('/' + tag);
+}
+function app(...content) {
+    return content.join('\n');
+}
+function enclose(tag, content, attr) {
+    return app(open(tag + (attr ? ' ' + attr : '')), content, close(tag));
+}
+const DETAILS = 'details';
+const OPEN_ATTR = 'open';
+const SUMMARY = 'summary';
+function detail(summary, details, closed = true) {
+    return enclose(DETAILS, app(enclose(SUMMARY, summary, closed ? undefined : OPEN_ATTR), details));
+}
+exports.detail = detail;
+const TABLE = 'table';
+const TR = 'tr';
+const TH = 'th';
+const TD = 'td';
+const COLSPAN_ATTR = 'colspan=';
+function mark_cell(content, header = false, span) {
+    return enclose(header ? TH : TD, content, span ? COLSPAN_ATTR + span : undefined);
+}
+function cell(cell) {
+    if (typeof cell === 'string')
+        return mark_cell(cell);
+    return mark_cell(cell.content, cell.header, cell.span);
+}
+function row(row) {
+    return enclose(TR, row.map(cell).join('\n'));
+}
+function makeHeaderRow(...names) {
+    return names.map(n => { return { content: n, header: true }; });
+}
+exports.makeHeaderRow = makeHeaderRow;
+function table(table) {
+    return enclose(TABLE, table.map(row).join('\n'));
+}
+exports.table = table;
+const CODE = "code";
+const PRE = "pre";
+const LANG_ATTR = "lang=";
+var LANG;
+(function (LANG) {
+    LANG["MERMAID"] = "mermaid";
+})(LANG = exports.LANG || (exports.LANG = {}));
+function code(lang, code) {
+    return enclose(PRE, enclose(CODE, code), LANG_ATTR + lang);
+}
+exports.code = code;
+function mermaidPie(title, showData, ...data) {
+    return code(LANG.MERMAID, `pie ${showData ? "showData " : ""}title ${title}\n\t${data.map(v1 => "\"" + v1.name + "\":" + v1.size).join("\n\t")}`);
+}
+exports.mermaidPie = mermaidPie;
+const BOLD = "b";
+function bold(input) {
+    return enclose(BOLD, input);
+}
+exports.bold = bold;
+
+
+/***/ }),
+
 /***/ 1165:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -67947,6 +68021,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createNIBuildReport = exports.createNIArtifactReport = exports.setUpNIBuildReport = exports.setUpNIArtifactReport = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const core = __importStar(__nccwpck_require__(2186));
+const mark = __importStar(__nccwpck_require__(4270));
 const utils_1 = __nccwpck_require__(1314);
 const dashboardNIDef_1 = __nccwpck_require__(6014);
 const buildOutputDef_1 = __nccwpck_require__(1833);
@@ -67967,24 +68042,37 @@ function setUpNIBuildReport() {
     });
 }
 exports.setUpNIBuildReport = setUpNIBuildReport;
+const descend = (v1, v2) => v2.size - v1.size;
+const sum = (n1, n2) => n1 + n2;
 function createNIArtifactReport() {
     const data = JSON.parse(fs.readFileSync("artifactReport.dump").toString());
     const heapBreakdown = data[dashboardNIDef_1.HEAP_BREAKDOWN];
     const codeBreakdown = data[dashboardNIDef_1.CODE_BREAKDOWN];
     let heap = heapBreakdown[dashboardNIDef_1.HEAP_SIZE];
     let code = codeBreakdown[dashboardNIDef_1.CODE_SIZE];
-    heap.sort((v1, v2) => v2.size - v1.size);
+    const heapSum = heap.map(v => v.size).reduce(sum);
+    const codeSum = code.map(v => v.size).reduce(sum);
+    heap.sort(descend);
     heap = heap.slice(0, 10);
-    code = aggregateCode(code);
-    code.sort((v1, v2) => v2.size - v1.size);
-    code = code.slice(0, 10);
-    const heapSum = heap.map(v => v.size).reduce((v1, v2) => v1 + v2);
-    const codeSum = code.map(v => v.size).reduce((v1, v2) => v1 + v2);
-    addMermaidPieSummary("Heap/Code size", true, { name: "Heap size", value: heapSum }, { name: "Code size", value: codeSum });
-    addTableSummary("10 Top Heap sizes", ["Name", "Count", "Size", "%"], ...heap.map(h => [h.name, `${h.count}`, `${h.size}`, (h.size / heapSum * 100).toFixed(2)]));
-    addTableSummary("10 Top Code sizes", ["Name", "Size", "%"], ...code.map(c => [c.name, `${c.size}`, (c.size / codeSum * 100).toFixed(2)]));
+    let pCode = parsePackages(code);
+    addMermaidPieSummary("Heap/Code size", true, { name: "Heap size", size: heapSum }, { name: "Code size", size: codeSum });
+    addTableSummary("10 Top Heap sizes", ["Name", "Count", "Size", "%"], ...heap.map(h => [h.name, `${h.count}`, utils_1.hRBytes(h.size), (h.size / heapSum * 100).toFixed(2)]));
+    addTableSummary("Code sizes by packages", ["Name", "Size"], ...pCode.sort(descend).map(c => [processPackage(c), utils_1.hRBytes(c.size)]));
 }
 exports.createNIArtifactReport = createNIArtifactReport;
+function processPackage(pkg) {
+    const boldName = mark.bold(pkg[dashboardNIDef_1.NAME]);
+    if (pkg.pkg.size > 0)
+        return mark.detail(boldName, packageToTable(pkg));
+    return boldName;
+}
+function packageToTable(pkg) {
+    return packagesToTable([...pkg.pkg.values()]);
+}
+function packagesToTable(pkgs) {
+    const rows = [mark.makeHeaderRow("Name", "Size")];
+    return mark.table(rows.concat(pkgs.sort(descend).map(cd => [processPackage(cd), utils_1.hRBytes(cd[dashboardNIDef_1.SIZE])])));
+}
 function createNIBuildReport() {
     const data = JSON.parse(fs.readFileSync("outputReport.json").toString());
     addTableSummary("Image details", ["Type", "Bytes"], ...imageDetailsToTableRows(data[buildOutputDef_1.IMAGE_DETAILS]));
@@ -67994,57 +68082,78 @@ function createNIBuildReport() {
 exports.createNIBuildReport = createNIBuildReport;
 function analysisResultEntryToTableRow(entry) {
     return [entry[0],
-        `${entry[1].total}`,
-        `${entry[1].reflection}`,
-        `${entry[1].jni}`,
-        `${entry[1].reachable}`];
+        utils_1.hRBytes(entry[1].total),
+        utils_1.hRBytes(entry[1].reflection),
+        utils_1.hRBytes(entry[1].jni),
+        utils_1.hRBytes(entry[1].reachable)];
 }
 function imageDetailsToTableRows(imageDetails) {
     const out = [];
     const imageHeap = imageDetails[buildOutputDef_1.IMAGE_HEAP];
-    out.push(["Heap", `${imageHeap[buildOutputDef_1.BYTES]}`]);
-    out.push(["Resources", `${imageHeap[buildOutputDef_1.RESOURCES][buildOutputDef_1.BYTES]}`]);
-    out.push(["Code", `${imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.BYTES]}`]);
-    out.push(["Total", `${imageDetails[buildOutputDef_1.TOTAL_BYTES]}`]);
+    out.push(["Heap", utils_1.hRBytes(imageHeap[buildOutputDef_1.BYTES])]);
+    out.push(["Resources", utils_1.hRBytes(imageHeap[buildOutputDef_1.RESOURCES][buildOutputDef_1.BYTES])]);
+    out.push(["Code", utils_1.hRBytes(imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.BYTES])]);
+    out.push(["Total", utils_1.hRBytes(imageDetails[buildOutputDef_1.TOTAL_BYTES])]);
     return out;
 }
 function resourceUsageToTableRows(resourceUsage) {
     const out = [];
-    out.push(["Memory usage", resourceUsage[buildOutputDef_1.MEMORY][buildOutputDef_1.SYSTEM_TOTAL] + " B"]);
-    out.push(["CPU usage", (resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.LOAD] / resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.TOTAL_CORES]).toFixed(2) + "%"]);
+    out.push(["Memory usage", utils_1.hRBytes(resourceUsage[buildOutputDef_1.MEMORY][buildOutputDef_1.SYSTEM_TOTAL])]);
+    out.push(["CPU usage", (resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.LOAD] / resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.TOTAL_CORES] * 100).toFixed(2) + "%"]);
     return out;
 }
-function aggregateCode(code) {
-    const aggregates = new Map();
-    code.forEach(element => {
-        const pkg = parsePkg(element.name);
-        aggregates.set(pkg, (aggregates.get(pkg) || 0) + element.size);
-    });
-    code = [];
-    aggregates.forEach((s, n) => code.push({ name: n, size: s }));
-    return code;
-}
-function parsePkg(name) {
-    const parts = name.split('.');
-    let pkg = [];
-    for (const part of parts) {
-        if (part === part.toLowerCase()) {
-            pkg.push(part);
+function parsePackages(code) {
+    const pkgs = new Map();
+    code.forEach(c => {
+        const parts = c[dashboardNIDef_1.NAME].split('.');
+        let prt = 0;
+        let p = { name: "", size: 0, pkg: new Map() };
+        let m = pkgs;
+        for (const part of parts) {
+            if (part === part.toLowerCase()) {
+                p = appMap(part, c[dashboardNIDef_1.SIZE], m);
+                m = p.pkg;
+                prt += part.length + 1;
+            }
+            else {
+                break;
+            }
         }
-        else
-            break;
+    });
+    return mergePackages([...pkgs.values()]);
+}
+function mergePackages(pkgs) {
+    pkgs.forEach(mergePackage);
+    return pkgs;
+}
+function mergePackage(pkg) {
+    if (pkg.pkg.size === 1) {
+        const pack = pkg.pkg.get(pkg.pkg.keys().next().value);
+        pkg[dashboardNIDef_1.NAME] = pkg[dashboardNIDef_1.NAME] + "." + pack[dashboardNIDef_1.NAME];
+        pkg.pkg = pack.pkg;
+        mergePackage(pkg);
     }
-    return pkg.join('.');
+    else
+        mergePackages([...pkg.pkg.values()]);
+    return pkg;
+}
+function appMap(part, size, map) {
+    let next = map.get(part);
+    if (next === undefined) {
+        next = { name: part, size: 0, pkg: new Map() };
+        map.set(part, next);
+    }
+    next.size += size;
+    return next;
 }
 function addMermaidPieSummary(title, showData, ...data) {
-    //%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ff0000'}}}%%\n
-    core.summary.addCodeBlock(`pie ${showData ? "showData " : ""}title ${title}\n\t${data.map(v1 => "\"" + v1.name + "\":" + v1.value).join("\n\t")}`, "mermaid");
+    core.summary.addRaw(mark.mermaidPie(title, showData, ...data));
 }
 function addTableSummary(title, colNames, ...data) {
     const rows = [];
-    rows.push([{ data: title, header: true, colspan: `${colNames.length}` }]);
-    rows.push(colNames.map(name => { return { data: name, header: true }; }));
-    core.summary.addTable(rows.concat(data));
+    rows.push([{ content: title, header: true, span: colNames.length }]);
+    rows.push(colNames.map(name => { return { content: name, header: true }; }));
+    core.summary.addRaw(mark.table(rows.concat(data)));
 }
 function addTableSummaryNoHeader(title, ...data) {
     const rows = [];
@@ -68052,8 +68161,8 @@ function addTableSummaryNoHeader(title, ...data) {
     for (const row of data) {
         max = Math.max(row.length, max);
     }
-    rows.push([{ data: title, header: true, colspan: `${max}` }]);
-    core.summary.addTable(rows.concat(data));
+    rows.push([{ content: title, header: true, span: max }]);
+    core.summary.addRaw(mark.table(rows.concat(data)));
 }
 
 
@@ -68093,7 +68202,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getGVMversion = exports.setNativeImageOption = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
+exports.hRBytes = exports.getGVMversion = exports.setNativeImageOption = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const gu_1 = __nccwpck_require__(5609);
 const core = __importStar(__nccwpck_require__(2186));
@@ -68231,6 +68340,16 @@ function getGVMversion() {
     });
 }
 exports.getGVMversion = getGVMversion;
+const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+const k = Math.pow(2, 10);
+function hRBytes(bytes, decimals = 2) {
+    if (bytes <= 0)
+        return '0 Bytes';
+    const dm = decimals < 0 ? 0 : decimals;
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+exports.hRBytes = hRBytes;
 
 
 /***/ }),
