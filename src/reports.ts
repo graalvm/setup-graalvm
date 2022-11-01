@@ -1,9 +1,9 @@
 import * as fs from "fs";
-import * as core from "@actions/core";
 import * as mark from "./markdown";
 import { getGVMversion, hRBytes, setNativeImageOption } from "./utils";
-import { CodeSize, CODE_BREAKDOWN, CODE_SIZE, DashboardDump, HeapSize, HEAP_BREAKDOWN, HEAP_SIZE, NAME, SIZE } from "./definitions/dashboardNIDef";
-import { AnalysisResult, ANALYSIS_RESULTS, BuildOutput, BYTES, CODE_AREA, CPU, ImageDetails, ImageHeap, IMAGE_DETAILS, IMAGE_HEAP, LOAD, MEMORY, RESOURCES, ResourceUsage, RESOURCE_USAGE, SYSTEM_TOTAL, TOTAL_BYTES, TOTAL_CORES } from "./definitions/buildOutputDef";
+import { CodeSize, CODE_BREAKDOWN, CODE_SIZE, DashboardDump, HeapSize, HEAP_BREAKDOWN, HEAP_SIZE, SIZE } from "./definitions/dashboardNIDef";
+import { AnalysisResult, AnalysisResults, ANALYSIS_RESULTS, BuildOutput, BYTES, CLASSES, CODE_AREA, COMPILATION_UNITS, COUNT, CPU, FIELDS, GARBAGE_COLLECTION, GENERAL_INFO, ImageDetails, ImageHeap, IMAGE_DETAILS, IMAGE_HEAP, LOAD, MEMORY, METHODS, NAME, PEAK_RSS_BYTES, RESOURCES, ResourceUsage, RESOURCE_USAGE, SYSTEM_TOTAL, TOTAL_BYTES, TOTAL_CORES, TOTAL_SECS } from "./definitions/buildOutputDef";
+import * as gu from "./gu";
 
 export async function setUpNIArtifactReport(): Promise<void> {
   const version = await getGVMversion();
@@ -22,7 +22,8 @@ type Sized = { size: number };
 const descend = (v1: Sized, v2: Sized) => v2.size - v1.size;
 const sum = (n1: number, n2: number) => n1 + n2;
 
-export function createNIArtifactReport(): void {
+export function createNIArtifactReport(): string {
+  let out = "";
   const data: DashboardDump = JSON.parse(fs.readFileSync("artifactReport.dump").toString());
   const heapBreakdown = data[HEAP_BREAKDOWN];
   const codeBreakdown = data[CODE_BREAKDOWN];
@@ -33,15 +34,16 @@ export function createNIArtifactReport(): void {
   heap.sort(descend);
   heap = heap.slice(0, 10);
   let pCode: Package[] = parsePackages(code);
-  addMermaidPieSummary("Heap/Code size", true,
+  out += makeMermaidPieSummary("Heap/Code size", true,
     { name: "Heap size", size: heapSum },
     { name: "Code size", size: codeSum });
-  addTableSummary("10 Top Heap sizes",
+  out += makeTableSummary("10 Top Heap sizes",
     ["Name", "Count", "Size", "%"],
     ...heap.map(h => [h.name, `${h.count}`, hRBytes(h.size), (h.size / heapSum * 100).toFixed(2)]));
-  addTableSummary("Code sizes by packages",
+  out += makeTableSummary("Code sizes by packages",
     ["Name", "Size"],
     ...pCode.sort(descend).map(c => [processPackage(c), hRBytes(c.size)]));
+  return out;
 }
 
 function processPackage(pkg: Package): string {
@@ -60,39 +62,102 @@ function packagesToTable(pkgs: Package[]): string {
   return mark.table(rows.concat(pkgs.sort(descend).map(cd => [processPackage(cd), hRBytes(cd[SIZE])])));
 }
 
-export function createNIBuildReport(): void {
+export async function createNIBuildReport(): Promise<string> {
   const data: BuildOutput = JSON.parse(fs.readFileSync("outputReport.json").toString());
-  addTableSummary("Image details",
-    ["Type", "Bytes"],
-    ...imageDetailsToTableRows(data[IMAGE_DETAILS]));
-  addTableSummaryNoHeader("Resource usage",
-    ...resourceUsageToTableRows(data[RESOURCE_USAGE]));
-  addTableSummary("Analysis Results",
-    ["Type", "Total", "Reflection", "JNI", "Reachable"],
-    ...Object.entries(data[ANALYSIS_RESULTS]).map(analysisResultEntryToTableRow));
-}
+  let out = mark.header(`Generated ${data[GENERAL_INFO][NAME]}`, 2);
+  out += `using ${mark.link("GraalVM Native Image", "https://www.graalvm.org/native-image/")} ${await gu.getVersionString()}`
 
-function analysisResultEntryToTableRow(entry: [string, AnalysisResult]): mark.TableRow {
-  return [entry[0],
-  hRBytes(entry[1].total),
-  hRBytes(entry[1].reflection),
-  hRBytes(entry[1].jni),
-  hRBytes(entry[1].reachable)];
+  out += mark.header("Analysis Results", 4);
+  out += makeTableSummaryRaw(
+    mark.toHeaderRow(
+      { content: "Category", alignment: mark.ALIGN.LEFT },
+      { content: "Classes", alignment: mark.ALIGN.RIGHT },
+      { content: "in %", alignment: mark.ALIGN.RIGHT },
+      { content: "Fields", alignment: mark.ALIGN.RIGHT },
+      { content: "in %", alignment: mark.ALIGN.RIGHT },
+      { content: "Methods", alignment: mark.ALIGN.RIGHT },
+      { content: "in %", alignment: mark.ALIGN.RIGHT }),
+    ...analysisResultsToTableRows(data[ANALYSIS_RESULTS]));
+  out += mark.header("Image Details", 4);
+  out += makeTableSummaryRaw(
+    mark.toHeaderRow(
+      { content: "Category", alignment: mark.ALIGN.LEFT },
+      { content: "Size", alignment: mark.ALIGN.RIGHT },
+      { content: "in %", alignment: mark.ALIGN.RIGHT },
+      { content: "Details", alignment: mark.ALIGN.LEFT }),
+    ...imageDetailsToTableRows(data[IMAGE_DETAILS]));
+  out += mark.header("Resource usage", 4);
+  out += makeTableSummaryRaw(
+    mark.toHeaderRow({ content: "Category", alignment: mark.ALIGN.LEFT }, { content: "" }),
+    ...resourceUsageToTableRows(data[RESOURCE_USAGE]));
+  out += mark.italic(`Report generated by ${mark.link("setup-graalvm", "https://github.com/marketplace/actions/github-action-for-graalvm")}.`);
+  return out;
 }
 
 function imageDetailsToTableRows(imageDetails: ImageDetails): mark.TableRow[] {
   const out: mark.TableRow[] = [];
-  const imageHeap: ImageHeap = imageDetails[IMAGE_HEAP];
-  out.push(["Heap", hRBytes(imageHeap[BYTES])]);
-  out.push(["Resources", hRBytes(imageHeap[RESOURCES][BYTES])]);
-  out.push(["Code", hRBytes(imageDetails[CODE_AREA][BYTES])]);
-  out.push(["Total", hRBytes(imageDetails[TOTAL_BYTES])]);
+  out.push([
+    mark.link("Code area", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-code-area"),
+    { content: hRBytes(imageDetails[CODE_AREA][BYTES]), alignment: mark.ALIGN.RIGHT },
+    { content: asPercent(imageDetails[TOTAL_BYTES], imageDetails[CODE_AREA][BYTES]), alignment: mark.ALIGN.RIGHT },
+    { content: `${imageDetails[CODE_AREA][COMPILATION_UNITS]} compilation units`, alignment: mark.ALIGN.LEFT }]);
+  out.push([
+    mark.link("Image heap", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-image-heap"),
+    { content: hRBytes(imageDetails[IMAGE_HEAP][BYTES]), alignment: mark.ALIGN.RIGHT },
+    { content: asPercent(imageDetails[TOTAL_BYTES], imageDetails[IMAGE_HEAP][BYTES]), alignment: mark.ALIGN.RIGHT },
+    { content: `${imageDetails[IMAGE_HEAP][RESOURCES][COUNT]} resources`, alignment: mark.ALIGN.LEFT }]);
+  out.push([
+    mark.link("Other data", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-other-data"),
+    { content: hRBytes(imageDetails[TOTAL_BYTES] - imageDetails[IMAGE_HEAP][BYTES] - imageDetails[CODE_AREA][BYTES]), alignment: mark.ALIGN.RIGHT },
+    { content: asPercent(imageDetails[TOTAL_BYTES], imageDetails[TOTAL_BYTES] - imageDetails[IMAGE_HEAP][BYTES] - imageDetails[CODE_AREA][BYTES]), alignment: mark.ALIGN.RIGHT }, ""]);
+  out.push([
+    "Total", { content: hRBytes(imageDetails[TOTAL_BYTES]), alignment: mark.ALIGN.RIGHT },
+    { content: "100%", alignment: mark.ALIGN.RIGHT }, ""]);
   return out;
+}
+
+function analysisResultsToTableRows(results: AnalysisResults): mark.TableRow[] {
+  const out: mark.TableRow[] = [];
+  out.push([mark.link("Reachable",
+    "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-reachability"),
+  ...translateResults(results, r => r.reachable)]);
+  out.push([mark.link("Reflection",
+    "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-reflection-registrations"),
+  ...translateResults(results, r => r.reflection)]);
+  out.push([mark.link("JNI",
+    "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-jni-access-registrations"),
+  ...translateResults(results, r => r.jni)]);
+  out.push([mark.link("Loaded",
+    "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#reachable-classes-fields-and-methods"),
+  ...translateResults(results, r => r.total)]);
+  return out;
+}
+
+function translateResults(results: AnalysisResults, transformer: (result: AnalysisResult) => number): mark.TableCell[] {
+  return [...translateResult(results[CLASSES], transformer),
+  ...translateResult(results[FIELDS], transformer),
+  ...translateResult(results[METHODS], transformer)];
+}
+function translateResult(result: AnalysisResult, transformer: (result: AnalysisResult) => number): [mark.TableCell, mark.TableCell] {
+  const current = transformer(result);
+  return [{ content: `${current}`, alignment: mark.ALIGN.RIGHT },
+  { content: asPercent(result.total, current), alignment: mark.ALIGN.RIGHT }];
+}
+
+function asPercent(total: number, part: number, precission: number = 2): string {
+  return (part / total * 100).toFixed(precission) + "%";
 }
 function resourceUsageToTableRows(resourceUsage: ResourceUsage): mark.TableRow[] {
   const out: mark.TableRow[] = [];
-  out.push(["Memory usage", hRBytes(resourceUsage[MEMORY][SYSTEM_TOTAL])]);
-  out.push(["CPU usage", (resourceUsage[CPU][LOAD] / resourceUsage[CPU][TOTAL_CORES] * 100).toFixed(2) + "%"]);
+  out.push([
+    mark.link("GCs", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-garbage-collections"),
+    { content: `${resourceUsage[GARBAGE_COLLECTION][TOTAL_SECS]}s in ${resourceUsage[GARBAGE_COLLECTION][COUNT]} GCs`, alignment: mark.ALIGN.LEFT }]);
+  out.push([
+    mark.link("Peak RSS", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-peak-rss"),
+    { content: hRBytes(resourceUsage[MEMORY][PEAK_RSS_BYTES]), alignment: mark.ALIGN.LEFT }]);
+  out.push([
+    mark.link("CPU load", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-cpu-load"),
+    { content: `${resourceUsage[CPU][LOAD].toFixed(2)}`, alignment: mark.ALIGN.LEFT }]);
   return out;
 }
 
@@ -143,22 +208,26 @@ function appMap(part: string, size: number, map: Map<string, Package>): Package 
   return next;
 }
 
-function addMermaidPieSummary(title: string, showData: boolean, ...data: mark.MermaidPieData[]) {
-  core.summary.addRaw(mark.mermaidPie(title, showData, ...data));
+function makeMermaidPieSummary(title: string, showData: boolean, ...data: mark.MermaidPieData[]): string {
+  return mark.mermaidPie(title, showData, ...data);
 }
 
-function addTableSummary(title: string, colNames: string[], ...data: mark.TableRow[]) {
+function makeTableSummary(title: string, colNames: string[], ...data: mark.TableRow[]): string {
   const rows: mark.TableRow[] = [];
   rows.push([{ content: title, header: true, span: colNames.length }]);
   rows.push(colNames.map(name => { return { content: name, header: true } }));
-  core.summary.addRaw(mark.table(rows.concat(data)));
+  return mark.table(rows.concat(data));
 }
-function addTableSummaryNoHeader(title: string, ...data: mark.TableRow[]) {
+function makeTableSummaryNoHeader(title: string, ...data: mark.TableRow[]): string {
   const rows: mark.TableRow[] = [];
   let max = 0;
   for (const row of data) {
     max = Math.max(row.length, max);
   }
   rows.push([{ content: title, header: true, span: max }]);
-  core.summary.addRaw(mark.table(rows.concat(data)));
+  return mark.table(rows.concat(data));
+}
+
+function makeTableSummaryRaw(...data: mark.TableRow[]): string {
+  return mark.table(data);
 }

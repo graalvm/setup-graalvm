@@ -7,13 +7,17 @@ function close(tag: string): string {
 function app(...content: string[]): string {
     return content.join('\n');
 }
-function enclose(tag: string, content: string, attr?: string) {
+function enclose(tag: string, content: string, ...attrs: (string | undefined)[]) {
     return app(
-        open(tag + (attr ? ' ' + attr : '')),
+        open(tag + concatAttrs(attrs)),
         content,
         close(tag));
 }
 
+function concatAttrs(attrs: (string | undefined)[]): string {
+    const out = attrs.filter(a => a).join(' ');
+    return out.length === 0 ? out : ' ' + out;
+}
 const DETAILS = 'details';
 const OPEN_ATTR = 'open';
 const SUMMARY = 'summary';
@@ -30,17 +34,18 @@ const TR = 'tr';
 const TH = 'th';
 const TD = 'td';
 const COLSPAN_ATTR = 'colspan=';
-export type TableCell = { content: string, header?: boolean, span?: number };
+export type TableCell = { content: string, header?: boolean, span?: number, alignment?: ALIGN};
 export type TableRow = (TableCell | string)[];
-function mark_cell(content: string, header: boolean = false, span?: number): string {
+function mark_cell(content: string, header: boolean = false, span?: number, alignment?: ALIGN): string {
     return enclose(header ? TH : TD,
         content,
-        span ? COLSPAN_ATTR + span : undefined);
+        span ? COLSPAN_ATTR + span : undefined,
+        alignment ? `${ALIGN_ATTR}"${alignment}"` : undefined);
 }
 function cell(cell: TableCell | string): string {
     if (typeof cell === 'string')
         return mark_cell(cell);
-    return mark_cell(cell.content, cell.header, cell.span);
+    return mark_cell(cell.content, cell.header, cell.span, cell.alignment);
 }
 function row(row: TableRow) {
     return enclose(TR, row.map(cell).join('\n'));
@@ -48,6 +53,18 @@ function row(row: TableRow) {
 export function makeHeaderRow(...names: string[]): TableRow {
     return names.map(n => { return { content: n, header: true } });
 }
+
+export function toHeaderRow(...row:TableCell[]):TableRow{
+    row.forEach(r=>r.header=true);
+    return row;
+}
+
+export enum ALIGN {
+    LEFT = "left",
+    CENTER = "center",
+    RIGHT = "right"
+}
+const ALIGN_ATTR = "align="
 export function table(table: TableRow[]): string {
     return enclose(TABLE, table.map(row).join('\n'));
 }
@@ -70,4 +87,21 @@ export function mermaidPie(title: string, showData: boolean, ...data: MermaidPie
 const BOLD = "b";
 export function bold(input: string): string {
     return enclose(BOLD, input);
+}
+
+const A = "a";
+const HREF_ATTR = "href="
+export function link(text: string, link: string): string {
+    return enclose(A, text, HREF_ATTR + `"${link}"`);
+}
+
+const H = "h";
+export function header(input: string, importance: number = 6): string {
+    if (importance > 6 || importance < 1) return input;
+    return enclose(H + importance, input);
+}
+
+const I = "i";
+export function italic(input: string): string {
+    return enclose(I, input);
 }

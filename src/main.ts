@@ -9,7 +9,7 @@ import { setUpGUComponents } from './gu'
 import { setUpMandrel } from './mandrel'
 import { setUpNativeImageMusl } from './features'
 import { setUpWindowsEnvironment } from './msvc'
-import { isNativeImageArtifactReport, isNativeImageBuildReport } from './options'
+import { isArtReport, isJobReport, isNativeImageArtifactReport, isNativeImageBuildReport, isPrReport } from './options'
 import { setUpNIArtifactReport, setUpNIBuildReport } from './reports'
 
 async function run(): Promise<void> {
@@ -76,13 +76,13 @@ async function run(): Promise<void> {
 
     if (await isNativeImageArtifactReport()) {
       await setUpNIArtifactReport()
-    } else if (core.getBooleanInput(c.INPUT_NI_REPORT_ARTIFACT)) {
+    } else if (isArtReport()) {
       core.notice(`Artifact report isn't available for GraalVM version ${graalvmVersion}.`)
     }
 
     if (await isNativeImageBuildReport()) {
       await setUpNIBuildReport()
-    } else if (core.getBooleanInput(c.INPUT_NI_REPORT_BUILD)) {
+    } else if (isJobReport() || isPrReport()) {
       core.notice(`Build report isn't available for GraalVM version ${graalvmVersion}.`)
     }
 

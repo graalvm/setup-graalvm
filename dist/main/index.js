@@ -66938,7 +66938,7 @@ function isProbablyGradleDaemonProblem(packageManager, error) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.NATIVE_IMAGE_OPTIONS_FILE = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_REPORT_ARTIFACT = exports.INPUT_NI_REPORT_BUILD = exports.INPUT_NI_MUSL = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.NATIVE_IMAGE_OPTIONS_FILE = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_REPORT_ARTIFACT = exports.INPUT_NI_REPORT_PR = exports.INPUT_NI_REPORT_JOB = exports.INPUT_NI_MUSL = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -66947,8 +66947,9 @@ exports.INPUT_GITHUB_TOKEN = 'github-token';
 exports.INPUT_SET_JAVA_HOME = 'set-java-home';
 exports.INPUT_CACHE = 'cache';
 exports.INPUT_NI_MUSL = 'native-image-musl';
-exports.INPUT_NI_REPORT_BUILD = 'native-image-report-build';
-exports.INPUT_NI_REPORT_ARTIFACT = 'native-image-report-artifact';
+exports.INPUT_NI_REPORT_JOB = 'native-image-job-summary';
+exports.INPUT_NI_REPORT_PR = 'native-image-pr-summary';
+exports.INPUT_NI_REPORT_ARTIFACT = 'native-image-artifact-report';
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
@@ -67659,13 +67660,13 @@ function run() {
             if (yield options_1.isNativeImageArtifactReport()) {
                 yield reports_1.setUpNIArtifactReport();
             }
-            else if (core.getBooleanInput(c.INPUT_NI_REPORT_ARTIFACT)) {
+            else if (options_1.isArtReport()) {
                 core.notice(`Artifact report isn't available for GraalVM version ${graalvmVersion}.`);
             }
             if (yield options_1.isNativeImageBuildReport()) {
                 yield reports_1.setUpNIBuildReport();
             }
-            else if (core.getBooleanInput(c.INPUT_NI_REPORT_BUILD)) {
+            else if (options_1.isJobReport() || options_1.isPrReport()) {
                 core.notice(`Build report isn't available for GraalVM version ${graalvmVersion}.`);
             }
             if (cache && cache_1.isFeatureAvailable()) {
@@ -67775,7 +67776,7 @@ function determineToolName(javaVersion) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bold = exports.mermaidPie = exports.code = exports.LANG = exports.table = exports.makeHeaderRow = exports.detail = void 0;
+exports.italic = exports.header = exports.link = exports.bold = exports.mermaidPie = exports.code = exports.LANG = exports.table = exports.ALIGN = exports.toHeaderRow = exports.makeHeaderRow = exports.detail = void 0;
 function open(tag) {
     return '<' + tag + '>';
 }
@@ -67785,8 +67786,12 @@ function close(tag) {
 function app(...content) {
     return content.join('\n');
 }
-function enclose(tag, content, attr) {
-    return app(open(tag + (attr ? ' ' + attr : '')), content, close(tag));
+function enclose(tag, content, ...attrs) {
+    return app(open(tag + concatAttrs(attrs)), content, close(tag));
+}
+function concatAttrs(attrs) {
+    const out = attrs.filter(a => a).join(' ');
+    return out.length === 0 ? out : ' ' + out;
 }
 const DETAILS = 'details';
 const OPEN_ATTR = 'open';
@@ -67800,13 +67805,13 @@ const TR = 'tr';
 const TH = 'th';
 const TD = 'td';
 const COLSPAN_ATTR = 'colspan=';
-function mark_cell(content, header = false, span) {
-    return enclose(header ? TH : TD, content, span ? COLSPAN_ATTR + span : undefined);
+function mark_cell(content, header = false, span, alignment) {
+    return enclose(header ? TH : TD, content, span ? COLSPAN_ATTR + span : undefined, alignment ? `${ALIGN_ATTR}"${alignment}"` : undefined);
 }
 function cell(cell) {
     if (typeof cell === 'string')
         return mark_cell(cell);
-    return mark_cell(cell.content, cell.header, cell.span);
+    return mark_cell(cell.content, cell.header, cell.span, cell.alignment);
 }
 function row(row) {
     return enclose(TR, row.map(cell).join('\n'));
@@ -67815,6 +67820,18 @@ function makeHeaderRow(...names) {
     return names.map(n => { return { content: n, header: true }; });
 }
 exports.makeHeaderRow = makeHeaderRow;
+function toHeaderRow(...row) {
+    row.forEach(r => r.header = true);
+    return row;
+}
+exports.toHeaderRow = toHeaderRow;
+var ALIGN;
+(function (ALIGN) {
+    ALIGN["LEFT"] = "left";
+    ALIGN["CENTER"] = "center";
+    ALIGN["RIGHT"] = "right";
+})(ALIGN = exports.ALIGN || (exports.ALIGN = {}));
+const ALIGN_ATTR = "align=";
 function table(table) {
     return enclose(TABLE, table.map(row).join('\n'));
 }
@@ -67839,6 +67856,24 @@ function bold(input) {
     return enclose(BOLD, input);
 }
 exports.bold = bold;
+const A = "a";
+const HREF_ATTR = "href=";
+function link(text, link) {
+    return enclose(A, text, HREF_ATTR + `"${link}"`);
+}
+exports.link = link;
+const H = "h";
+function header(input, importance = 6) {
+    if (importance > 6 || importance < 1)
+        return input;
+    return enclose(H + importance, input);
+}
+exports.header = header;
+const I = "i";
+function italic(input) {
+    return enclose(I, input);
+}
+exports.italic = italic;
 
 
 /***/ }),
@@ -67960,7 +67995,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isNativeImageArtifactReport = exports.isNativeImageBuildReport = void 0;
+exports.isArtReport = exports.isNativeImageArtifactReport = exports.isPrReport = exports.isJobReport = exports.isNativeImageBuildReport = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const c = __importStar(__nccwpck_require__(9042));
 const utils_1 = __nccwpck_require__(1314);
@@ -67968,18 +68003,30 @@ function isNativeImageBuildReport() {
     return __awaiter(this, void 0, void 0, function* () {
         const version = yield utils_1.getGVMversion();
         const correctVersion = (version.major > 22 || version.major === 22 && version.minor > 2);
-        return correctVersion && core.getBooleanInput(c.INPUT_NI_REPORT_BUILD);
+        return correctVersion && (isJobReport() || isPrReport());
     });
 }
 exports.isNativeImageBuildReport = isNativeImageBuildReport;
+function isJobReport() {
+    return core.getBooleanInput(c.INPUT_NI_REPORT_JOB);
+}
+exports.isJobReport = isJobReport;
+function isPrReport() {
+    return core.getBooleanInput(c.INPUT_NI_REPORT_PR);
+}
+exports.isPrReport = isPrReport;
 function isNativeImageArtifactReport() {
     return __awaiter(this, void 0, void 0, function* () {
         const version = yield utils_1.getGVMversion();
         const correctVersion = (version.major > 20 || version.major === 20 && version.minor > 2);
-        return correctVersion && core.getBooleanInput(c.INPUT_NI_REPORT_ARTIFACT);
+        return correctVersion && isArtReport();
     });
 }
 exports.isNativeImageArtifactReport = isNativeImageArtifactReport;
+function isArtReport() {
+    return false; //core.getBooleanInput(c.INPUT_NI_REPORT_ARTIFACT);
+}
+exports.isArtReport = isArtReport;
 
 
 /***/ }),
@@ -68020,11 +68067,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createNIBuildReport = exports.createNIArtifactReport = exports.setUpNIBuildReport = exports.setUpNIArtifactReport = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
-const core = __importStar(__nccwpck_require__(2186));
 const mark = __importStar(__nccwpck_require__(4270));
 const utils_1 = __nccwpck_require__(1314);
 const dashboardNIDef_1 = __nccwpck_require__(6014);
 const buildOutputDef_1 = __nccwpck_require__(1833);
+const gu = __importStar(__nccwpck_require__(5609));
 function setUpNIArtifactReport() {
     return __awaiter(this, void 0, void 0, function* () {
         const version = yield utils_1.getGVMversion();
@@ -68045,6 +68092,7 @@ exports.setUpNIBuildReport = setUpNIBuildReport;
 const descend = (v1, v2) => v2.size - v1.size;
 const sum = (n1, n2) => n1 + n2;
 function createNIArtifactReport() {
+    let out = "";
     const data = JSON.parse(fs.readFileSync("artifactReport.dump").toString());
     const heapBreakdown = data[dashboardNIDef_1.HEAP_BREAKDOWN];
     const codeBreakdown = data[dashboardNIDef_1.CODE_BREAKDOWN];
@@ -68055,13 +68103,14 @@ function createNIArtifactReport() {
     heap.sort(descend);
     heap = heap.slice(0, 10);
     let pCode = parsePackages(code);
-    addMermaidPieSummary("Heap/Code size", true, { name: "Heap size", size: heapSum }, { name: "Code size", size: codeSum });
-    addTableSummary("10 Top Heap sizes", ["Name", "Count", "Size", "%"], ...heap.map(h => [h.name, `${h.count}`, utils_1.hRBytes(h.size), (h.size / heapSum * 100).toFixed(2)]));
-    addTableSummary("Code sizes by packages", ["Name", "Size"], ...pCode.sort(descend).map(c => [processPackage(c), utils_1.hRBytes(c.size)]));
+    out += makeMermaidPieSummary("Heap/Code size", true, { name: "Heap size", size: heapSum }, { name: "Code size", size: codeSum });
+    out += makeTableSummary("10 Top Heap sizes", ["Name", "Count", "Size", "%"], ...heap.map(h => [h.name, `${h.count}`, utils_1.hRBytes(h.size), (h.size / heapSum * 100).toFixed(2)]));
+    out += makeTableSummary("Code sizes by packages", ["Name", "Size"], ...pCode.sort(descend).map(c => [processPackage(c), utils_1.hRBytes(c.size)]));
+    return out;
 }
 exports.createNIArtifactReport = createNIArtifactReport;
 function processPackage(pkg) {
-    const boldName = mark.bold(pkg[dashboardNIDef_1.NAME]);
+    const boldName = mark.bold(pkg[buildOutputDef_1.NAME]);
     if (pkg.pkg.size > 0)
         return mark.detail(boldName, packageToTable(pkg));
     return boldName;
@@ -68074,38 +68123,91 @@ function packagesToTable(pkgs) {
     return mark.table(rows.concat(pkgs.sort(descend).map(cd => [processPackage(cd), utils_1.hRBytes(cd[dashboardNIDef_1.SIZE])])));
 }
 function createNIBuildReport() {
-    const data = JSON.parse(fs.readFileSync("outputReport.json").toString());
-    addTableSummary("Image details", ["Type", "Bytes"], ...imageDetailsToTableRows(data[buildOutputDef_1.IMAGE_DETAILS]));
-    addTableSummaryNoHeader("Resource usage", ...resourceUsageToTableRows(data[buildOutputDef_1.RESOURCE_USAGE]));
-    addTableSummary("Analysis Results", ["Type", "Total", "Reflection", "JNI", "Reachable"], ...Object.entries(data[buildOutputDef_1.ANALYSIS_RESULTS]).map(analysisResultEntryToTableRow));
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = JSON.parse(fs.readFileSync("outputReport.json").toString());
+        let out = mark.header(`Generated ${data[buildOutputDef_1.GENERAL_INFO][buildOutputDef_1.NAME]}`, 2);
+        out += `using ${mark.link("GraalVM Native Image", "https://www.graalvm.org/native-image/")} ${yield gu.getVersionString()}`;
+        out += mark.header("Analysis Results", 4);
+        out += makeTableSummaryRaw(mark.toHeaderRow({ content: "Category", alignment: mark.ALIGN.LEFT }, { content: "Classes", alignment: mark.ALIGN.RIGHT }, { content: "in %", alignment: mark.ALIGN.RIGHT }, { content: "Fields", alignment: mark.ALIGN.RIGHT }, { content: "in %", alignment: mark.ALIGN.RIGHT }, { content: "Methods", alignment: mark.ALIGN.RIGHT }, { content: "in %", alignment: mark.ALIGN.RIGHT }), ...analysisResultsToTableRows(data[buildOutputDef_1.ANALYSIS_RESULTS]));
+        out += mark.header("Image Details", 4);
+        out += makeTableSummaryRaw(mark.toHeaderRow({ content: "Category", alignment: mark.ALIGN.LEFT }, { content: "Size", alignment: mark.ALIGN.RIGHT }, { content: "in %", alignment: mark.ALIGN.RIGHT }, { content: "Details", alignment: mark.ALIGN.LEFT }), ...imageDetailsToTableRows(data[buildOutputDef_1.IMAGE_DETAILS]));
+        out += mark.header("Resource usage", 4);
+        out += makeTableSummaryRaw(mark.toHeaderRow({ content: "Category", alignment: mark.ALIGN.LEFT }, { content: "" }), ...resourceUsageToTableRows(data[buildOutputDef_1.RESOURCE_USAGE]));
+        out += mark.italic(`Report generated by ${mark.link("setup-graalvm", "https://github.com/marketplace/actions/github-action-for-graalvm")}.`);
+        return out;
+    });
 }
 exports.createNIBuildReport = createNIBuildReport;
-function analysisResultEntryToTableRow(entry) {
-    return [entry[0],
-        utils_1.hRBytes(entry[1].total),
-        utils_1.hRBytes(entry[1].reflection),
-        utils_1.hRBytes(entry[1].jni),
-        utils_1.hRBytes(entry[1].reachable)];
-}
 function imageDetailsToTableRows(imageDetails) {
     const out = [];
-    const imageHeap = imageDetails[buildOutputDef_1.IMAGE_HEAP];
-    out.push(["Heap", utils_1.hRBytes(imageHeap[buildOutputDef_1.BYTES])]);
-    out.push(["Resources", utils_1.hRBytes(imageHeap[buildOutputDef_1.RESOURCES][buildOutputDef_1.BYTES])]);
-    out.push(["Code", utils_1.hRBytes(imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.BYTES])]);
-    out.push(["Total", utils_1.hRBytes(imageDetails[buildOutputDef_1.TOTAL_BYTES])]);
+    out.push([
+        mark.link("Code area", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-code-area"),
+        { content: utils_1.hRBytes(imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.BYTES]), alignment: mark.ALIGN.RIGHT },
+        { content: asPercent(imageDetails[buildOutputDef_1.TOTAL_BYTES], imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.BYTES]), alignment: mark.ALIGN.RIGHT },
+        { content: `${imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.COMPILATION_UNITS]} compilation units`, alignment: mark.ALIGN.LEFT }
+    ]);
+    out.push([
+        mark.link("Image heap", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-image-heap"),
+        { content: utils_1.hRBytes(imageDetails[buildOutputDef_1.IMAGE_HEAP][buildOutputDef_1.BYTES]), alignment: mark.ALIGN.RIGHT },
+        { content: asPercent(imageDetails[buildOutputDef_1.TOTAL_BYTES], imageDetails[buildOutputDef_1.IMAGE_HEAP][buildOutputDef_1.BYTES]), alignment: mark.ALIGN.RIGHT },
+        { content: `${imageDetails[buildOutputDef_1.IMAGE_HEAP][buildOutputDef_1.RESOURCES][buildOutputDef_1.COUNT]} resources`, alignment: mark.ALIGN.LEFT }
+    ]);
+    out.push([
+        mark.link("Other data", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-other-data"),
+        { content: utils_1.hRBytes(imageDetails[buildOutputDef_1.TOTAL_BYTES] - imageDetails[buildOutputDef_1.IMAGE_HEAP][buildOutputDef_1.BYTES] - imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.BYTES]), alignment: mark.ALIGN.RIGHT },
+        { content: asPercent(imageDetails[buildOutputDef_1.TOTAL_BYTES], imageDetails[buildOutputDef_1.TOTAL_BYTES] - imageDetails[buildOutputDef_1.IMAGE_HEAP][buildOutputDef_1.BYTES] - imageDetails[buildOutputDef_1.CODE_AREA][buildOutputDef_1.BYTES]), alignment: mark.ALIGN.RIGHT }, ""
+    ]);
+    out.push([
+        "Total", { content: utils_1.hRBytes(imageDetails[buildOutputDef_1.TOTAL_BYTES]), alignment: mark.ALIGN.RIGHT },
+        { content: "100%", alignment: mark.ALIGN.RIGHT }, ""
+    ]);
     return out;
+}
+function analysisResultsToTableRows(results) {
+    const out = [];
+    out.push([mark.link("Reachable", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-reachability"),
+        ...translateResults(results, r => r.reachable)]);
+    out.push([mark.link("Reflection", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-reflection-registrations"),
+        ...translateResults(results, r => r.reflection)]);
+    out.push([mark.link("JNI", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-jni-access-registrations"),
+        ...translateResults(results, r => r.jni)]);
+    out.push([mark.link("Loaded", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#reachable-classes-fields-and-methods"),
+        ...translateResults(results, r => r.total)]);
+    return out;
+}
+function translateResults(results, transformer) {
+    return [...translateResult(results[buildOutputDef_1.CLASSES], transformer),
+        ...translateResult(results[buildOutputDef_1.FIELDS], transformer),
+        ...translateResult(results[buildOutputDef_1.METHODS], transformer)];
+}
+function translateResult(result, transformer) {
+    const current = transformer(result);
+    return [{ content: `${current}`, alignment: mark.ALIGN.RIGHT },
+        { content: asPercent(result.total, current), alignment: mark.ALIGN.RIGHT }];
+}
+function asPercent(total, part, precission = 2) {
+    return (part / total * 100).toFixed(precission) + "%";
 }
 function resourceUsageToTableRows(resourceUsage) {
     const out = [];
-    out.push(["Memory usage", utils_1.hRBytes(resourceUsage[buildOutputDef_1.MEMORY][buildOutputDef_1.SYSTEM_TOTAL])]);
-    out.push(["CPU usage", (resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.LOAD] / resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.TOTAL_CORES] * 100).toFixed(2) + "%"]);
+    out.push([
+        mark.link("GCs", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-garbage-collections"),
+        { content: `${resourceUsage[buildOutputDef_1.GARBAGE_COLLECTION][buildOutputDef_1.TOTAL_SECS]}s in ${resourceUsage[buildOutputDef_1.GARBAGE_COLLECTION][buildOutputDef_1.COUNT]} GCs`, alignment: mark.ALIGN.LEFT }
+    ]);
+    out.push([
+        mark.link("Peak RSS", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-peak-rss"),
+        { content: utils_1.hRBytes(resourceUsage[buildOutputDef_1.MEMORY][buildOutputDef_1.PEAK_RSS_BYTES]), alignment: mark.ALIGN.LEFT }
+    ]);
+    out.push([
+        mark.link("CPU load", "https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md#glossary-cpu-load"),
+        { content: `${resourceUsage[buildOutputDef_1.CPU][buildOutputDef_1.LOAD].toFixed(2)}`, alignment: mark.ALIGN.LEFT }
+    ]);
     return out;
 }
 function parsePackages(code) {
     const pkgs = new Map();
     code.forEach(c => {
-        const parts = c[dashboardNIDef_1.NAME].split('.');
+        const parts = c[buildOutputDef_1.NAME].split('.');
         let prt = 0;
         let p = { name: "", size: 0, pkg: new Map() };
         let m = pkgs;
@@ -68129,7 +68231,7 @@ function mergePackages(pkgs) {
 function mergePackage(pkg) {
     if (pkg.pkg.size === 1) {
         const pack = pkg.pkg.get(pkg.pkg.keys().next().value);
-        pkg[dashboardNIDef_1.NAME] = pkg[dashboardNIDef_1.NAME] + "." + pack[dashboardNIDef_1.NAME];
+        pkg[buildOutputDef_1.NAME] = pkg[buildOutputDef_1.NAME] + "." + pack[buildOutputDef_1.NAME];
         pkg.pkg = pack.pkg;
         mergePackage(pkg);
     }
@@ -68146,23 +68248,26 @@ function appMap(part, size, map) {
     next.size += size;
     return next;
 }
-function addMermaidPieSummary(title, showData, ...data) {
-    core.summary.addRaw(mark.mermaidPie(title, showData, ...data));
+function makeMermaidPieSummary(title, showData, ...data) {
+    return mark.mermaidPie(title, showData, ...data);
 }
-function addTableSummary(title, colNames, ...data) {
+function makeTableSummary(title, colNames, ...data) {
     const rows = [];
     rows.push([{ content: title, header: true, span: colNames.length }]);
     rows.push(colNames.map(name => { return { content: name, header: true }; }));
-    core.summary.addRaw(mark.table(rows.concat(data)));
+    return mark.table(rows.concat(data));
 }
-function addTableSummaryNoHeader(title, ...data) {
+function makeTableSummaryNoHeader(title, ...data) {
     const rows = [];
     let max = 0;
     for (const row of data) {
         max = Math.max(row.length, max);
     }
     rows.push([{ content: title, header: true, span: max }]);
-    core.summary.addRaw(mark.table(rows.concat(data)));
+    return mark.table(rows.concat(data));
+}
+function makeTableSummaryRaw(...data) {
+    return mark.table(data);
 }
 
 
