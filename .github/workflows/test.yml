@@ -112,8 +112,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: ['mandrel-21.3.0.0-Final', 'mandrel-latest']
-        java-version: ['11', '17']
+        version: ['mandrel-22.2.0.0-Final', 'mandrel-latest']
+        java-version: ['17']
         os: [windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
