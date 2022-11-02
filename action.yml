@@ -29,6 +29,10 @@ inputs:
   cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle", or "sbt".'
     required: false
+  check-for-updates:
+    required: false
+    description: 'Annotate jobs with update notifications, for example, when a new GraalVM release is available'
+    default: 'true'
   native-image-musl:
     required: false
     description: 'Set up musl for static image building with GraalVM Native Image.'

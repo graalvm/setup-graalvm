@@ -1,14 +1,42 @@
+import * as c from './constants'
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import {IS_LINUX} from './constants'
-import {exec} from './utils'
+import {exec, toSemVer} from './utils'
 import {join} from 'path'
+import {lt, major, minor, valid} from 'semver'
+import {getLatestReleaseVersion} from './graalvm'
 
 const MUSL_NAME = 'x86_64-linux-musl-native'
 const MUSL_VERSION = '10.2.1'
 
+export async function checkForUpdates(
+  graalVMVersion: string,
+  javaVersion: string
+): Promise<void> {
+  if (graalVMVersion === '22.3.0' && javaVersion === '11') {
+    core.notice(
+      'Please consider upgrading your project to Java 17+. The GraalVM 22.3.0 release is the last to support JDK11: https://github.com/oracle/graal/issues/5063'
+    )
+    return
+  }
+  const latestGraalVMVersion = await getLatestReleaseVersion()
+  const selectedVersion = toSemVer(graalVMVersion)
+  const latestVersion = toSemVer(latestGraalVMVersion)
+  if (
+    valid(selectedVersion) &&
+    valid(latestVersion) &&
+    lt(selectedVersion, latestVersion)
+  ) {
+    core.notice(
+      `A new GraalVM release is available! Please consider upgrading to GraalVM ${latestGraalVMVersion}. Release notes: https://www.graalvm.org/release-notes/${major(
+        latestVersion
+      )}_${minor(latestVersion)}/`
+    )
+  }
+}
+
 export async function setUpNativeImageMusl(): Promise<void> {
-  if (!IS_LINUX) {
+  if (!c.IS_LINUX) {
     core.warning('musl is only supported on Linux')
     return
   }

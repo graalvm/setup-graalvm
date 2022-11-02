@@ -7,7 +7,7 @@ import {restore} from './cache'
 import {setUpDependencies} from './dependencies'
 import {setUpGUComponents} from './gu'
 import {setUpMandrel} from './mandrel'
-import {setUpNativeImageMusl} from './features'
+import {checkForUpdates, setUpNativeImageMusl} from './features'
 import {setUpWindowsEnvironment} from './msvc'
 
 async function run(): Promise<void> {
@@ -20,6 +20,8 @@ async function run(): Promise<void> {
       componentsString.length > 0 ? componentsString.split(',') : []
     const setJavaHome = core.getInput(c.INPUT_SET_JAVA_HOME) === 'true'
     const cache = core.getInput(c.INPUT_CACHE)
+    const enableCheckForUpdates =
+      core.getInput(c.INPUT_CHECK_FOR_UPDATES) === 'true'
     const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
 
     if (c.IS_WINDOWS) {
@@ -43,6 +45,9 @@ async function run(): Promise<void> {
         if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
           graalVMHome = await setUpMandrel(graalvmVersion, javaVersion)
         } else {
+          if (enableCheckForUpdates) {
+            await checkForUpdates(graalvmVersion, javaVersion)
+          }
           graalVMHome = await graalvm.setUpGraalVMRelease(
             gdsToken,
             graalvmVersion,

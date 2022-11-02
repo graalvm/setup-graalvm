@@ -120,6 +120,7 @@ jobs:
 | `github-token`  | `''`     | Token for communication with the GitHub API. Please set to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps to reduce rate limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. |
 | `cache`         | `''`     | Name of the build platform to cache dependencies. It can be `'maven'`, `'gradle'`, or `'sbt'` and works the same way it does in [actions/setup-java][setup-java-caching]. |
+| `check-for-updates` | `'true'`  | [Annotate jobs][gha-annotations] with update notifications, for example, when a new GraalVM release is available. |
 | `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] for building [static images][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
 
 
@@ -132,6 +133,7 @@ Only pull requests from committers that can be verified as having signed the OCA
 
 [dev-build]: https://github.com/graalvm/graalvm-ce-dev-builds/releases/latest
 [dev-builds]: https://github.com/graalvm/graalvm-ce-dev-builds
+[gha-annotations]: https://github.com/actions/toolkit/tree/main/packages/core#annotations
 [gha-secrets]: https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository
 [gha-self-hosted-runners]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [gu]: https://www.graalvm.org/reference-manual/graalvm-updater/

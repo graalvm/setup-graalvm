@@ -105,7 +105,7 @@ function findJavaHomeInSubfolder(searchPath: string): string {
  * semver.org versions (e.g., `22.0.0-2`), which is needed because
  * @actions/tool-cache uses `semver` to validate versions.
  */
-function toSemVer(version: string): string {
+export function toSemVer(version: string): string {
   const parts = version.split('.')
   const major = parts[0]
   const minor = parts.length > 1 ? parts[1] : '0'

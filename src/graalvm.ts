@@ -20,14 +20,15 @@ export async function setUpGraalVMLatest(
   if (gdsToken.length > 0) {
     return setUpGraalVMRelease(gdsToken, c.VERSION_LATEST, javaVersion)
   }
+  const latestReleaseVersion = await getLatestReleaseVersion()
+  return setUpGraalVMRelease(gdsToken, latestReleaseVersion, javaVersion)
+}
+
+export async function getLatestReleaseVersion(): Promise<string> {
   const latestRelease = await getLatestRelease(GRAALVM_REPO_RELEASES)
   const tag_name = latestRelease.tag_name
   if (tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
-    const latestVersion = tag_name.substring(
-      GRAALVM_TAG_PREFIX.length,
-      tag_name.length
-    )
-    return setUpGraalVMRelease(gdsToken, latestVersion, javaVersion)
+    return tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length)
   }
   throw new Error(`Could not find latest GraalVM release: ${tag_name}`)
 }

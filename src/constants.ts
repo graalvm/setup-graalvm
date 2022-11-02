@@ -7,6 +7,7 @@ export const INPUT_COMPONENTS = 'components'
 export const INPUT_GITHUB_TOKEN = 'github-token'
 export const INPUT_SET_JAVA_HOME = 'set-java-home'
 export const INPUT_CACHE = 'cache'
+export const INPUT_CHECK_FOR_UPDATES = 'check-for-updates'
 export const INPUT_NI_MUSL = 'native-image-musl'
 
 export const IS_LINUX = process.platform === 'linux'
