@@ -29,6 +29,7 @@ import * as constants from './constants'
 import { save } from './cache'
 import { createNIArtifactReport, createNIBuildReport } from './reports'
 import { isNativeImageBuildReport, isNativeImageArtifactReport, isPrReport, isJobReport } from './options'
+import { commentPR } from './utils'
 
 /**
  * Check given input and run a save process for the specified package manager
@@ -59,11 +60,16 @@ async function ignoreError(promise: Promise<void>): Promise<unknown> {
 
 
 export async function run(): Promise<void> {
+  await outputReports();
+  await ignoreError(saveCache())
+}
+
+async function outputReports() {
   let reported = false;
   if (await isNativeImageBuildReport()) {
     const report = await createNIBuildReport();
     if (isPrReport()) {
-
+      commentPR(report);
     }
     if (isJobReport()) {
       core.summary.addRaw(report);
@@ -73,7 +79,7 @@ export async function run(): Promise<void> {
   if (await isNativeImageArtifactReport()) {
     const report = createNIArtifactReport();
     if (isPrReport()) {
-      
+      commentPR(report);
     }
     if (isJobReport()) {
       core.summary.addRaw(report);
@@ -82,7 +88,6 @@ export async function run(): Promise<void> {
   }
   if (reported)
     core.summary.write();
-  await ignoreError(saveCache())
 }
 
 if (require.main === module) {

@@ -12,7 +12,11 @@ export function isJobReport(): boolean {
     return core.getBooleanInput(c.INPUT_NI_REPORT_JOB);
 }
 export function isPrReport(): boolean {
-    return core.getBooleanInput(c.INPUT_NI_REPORT_PR);
+    return isPrEvent() && core.getBooleanInput(c.INPUT_NI_REPORT_PR);
+}
+
+export function isPrEvent(): boolean {
+    return process.env[c.ENV_GITHUB_EVENT_NAME] === c.EVENT_NAME_PULL_REQUEST;
 }
 
 export async function isNativeImageArtifactReport(): Promise<boolean> {
@@ -21,6 +25,10 @@ export async function isNativeImageArtifactReport(): Promise<boolean> {
     return correctVersion && isArtReport();
 }
 
-export function isArtReport():boolean{
+export function isArtReport(): boolean {
     return false;//core.getBooleanInput(c.INPUT_NI_REPORT_ARTIFACT);
+}
+
+export function getGitHubToken(): string {
+    return core.getInput(c.INPUT_GITHUB_TOKEN);
 }

@@ -30,7 +30,11 @@ export const MANDREL_NAMESPACE = 'mandrel-'
 export const GDS_BASE = 'https://gds.oracle.com/api/20220101'
 export const GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6'
 
+export const ENV_NATIVE_IMAGE_CONFIG_FILE = 'NATIVE_IMAGE_CONFIG_FILE'
 export const NATIVE_IMAGE_OPTIONS_FILE = 'native-image-options.properties'
+
+export const ENV_GITHUB_EVENT_NAME = "GITHUB_EVENT_NAME";
+export const EVENT_NAME_PULL_REQUEST = "pull_request";
 
 export type LatestReleaseResponse =
   otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']

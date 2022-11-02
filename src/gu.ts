@@ -45,7 +45,10 @@ export async function setUpGUComponents(
   }
 }
 
+let version: string;
 export async function getVersionString(): Promise<string> {
+  if (version)
+    return version;
   let output = "";
   const options: ExecOptions = {
     listeners: {
@@ -56,5 +59,5 @@ export async function getVersionString(): Promise<string> {
   };
   await exec('gu', ['--version'], options);
   const versionParts = output.split(' ');
-  return versionParts[versionParts.length - 1];
+  return version = versionParts[versionParts.length - 1];
 }

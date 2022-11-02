@@ -9,6 +9,8 @@ import { Octokit } from '@octokit/core'
 import { createHash } from 'crypto'
 import { join } from 'path'
 import * as fs from 'fs'
+import * as github from '@actions/github';
+import { getGitHubToken, isPrEvent } from './options';
 
 // Set up Octokit in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = process.env['GITHUB_API_URL'] || 'https://api.github.com'
@@ -37,7 +39,7 @@ export async function exec(
 export async function getLatestRelease(
   repo: string
 ): Promise<c.LatestReleaseResponse['data']> {
-  const githubToken = core.getInput('github-token')
+  const githubToken = getGitHubToken();
   const options = githubToken.length > 0 ? { auth: githubToken } : {}
   const octokit = new GitHub(options)
   return (
@@ -116,9 +118,9 @@ function toSemVer(version: string): string {
 }
 
 function getNativeImageOptionsFile(): string {
-  let optionsFile: string | undefined = process.env["NATIVE_IMAGE_CONFIG_FILE"];
+  let optionsFile: string | undefined = process.env[c.ENV_NATIVE_IMAGE_CONFIG_FILE];
   if (optionsFile === undefined)
-    core.exportVariable("NATIVE_IMAGE_CONFIG_FILE", optionsFile = c.NATIVE_IMAGE_OPTIONS_FILE);
+    core.exportVariable(c.ENV_NATIVE_IMAGE_CONFIG_FILE, optionsFile = c.NATIVE_IMAGE_OPTIONS_FILE);
   return optionsFile;
 }
 
@@ -152,4 +154,15 @@ export function hRBytes(bytes: number, decimals = 2): string {
   const dm = decimals < 0 ? 0 : decimals;
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+export async function commentPR(content: string): Promise<void> {
+  if (!isPrEvent())
+    throw new Error("Not a PR event.");
+  const context = github.context;
+  await github.getOctokit(getGitHubToken()).rest.issues.createComment({
+    ...context.repo,
+    issue_number: context.payload.pull_request?.number as number,
+    body: content,
+  });
 }

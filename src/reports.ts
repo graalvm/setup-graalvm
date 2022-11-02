@@ -23,7 +23,7 @@ const descend = (v1: Sized, v2: Sized) => v2.size - v1.size;
 const sum = (n1: number, n2: number) => n1 + n2;
 
 export function createNIArtifactReport(): string {
-  let out = "";
+  let out = mark.header("Native Image Artifact Report", 1);
   const data: DashboardDump = JSON.parse(fs.readFileSync("artifactReport.dump").toString());
   const heapBreakdown = data[HEAP_BREAKDOWN];
   const codeBreakdown = data[CODE_BREAKDOWN];
@@ -64,7 +64,8 @@ function packagesToTable(pkgs: Package[]): string {
 
 export async function createNIBuildReport(): Promise<string> {
   const data: BuildOutput = JSON.parse(fs.readFileSync("outputReport.json").toString());
-  let out = mark.header(`Generated ${data[GENERAL_INFO][NAME]}`, 2);
+  let out = mark.header("Native Image Build Output Report", 1);
+  out += mark.header(`Generated ${data[GENERAL_INFO][NAME]}`, 2);
   out += `using ${mark.link("GraalVM Native Image", "https://www.graalvm.org/native-image/")} ${await gu.getVersionString()}`
 
   out += mark.header("Analysis Results", 4);
