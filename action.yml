@@ -37,6 +37,14 @@ inputs:
     required: false
     description: 'Set up musl for static image building with GraalVM Native Image.'
     default: 'false'
+  native-image-job-reports:
+    required: false
+    description: 'Post a job summary containing a Native Image build report.'
+    default: 'false'
+  native-image-pr-reports:
+    required: false
+    description: 'Post a comment containing a Native Image build report on pull requests.'
+    default: 'false'
 runs:
   using: 'node16'
   main: 'dist/main/index.js'

@@ -27,6 +27,7 @@
 import * as core from '@actions/core'
 import * as constants from './constants'
 import {save} from './cache'
+import {generateReports} from './features/reports'
 
 /**
  * Check given input and run a save process for the specified package manager
@@ -56,6 +57,7 @@ async function ignoreError(promise: Promise<void>): Promise<unknown> {
 }
 
 export async function run(): Promise<void> {
+  generateReports()
   await ignoreError(saveCache())
 }
 

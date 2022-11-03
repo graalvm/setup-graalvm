@@ -1,5 +1,6 @@
 import * as c from './constants'
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 import * as httpClient from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
 import {ExecOptions, exec as e} from '@actions/exec'
@@ -35,7 +36,7 @@ export async function exec(
 export async function getLatestRelease(
   repo: string
 ): Promise<c.LatestReleaseResponse['data']> {
-  const githubToken = core.getInput('github-token')
+  const githubToken = getGitHubToken()
   const options = githubToken.length > 0 ? {auth: githubToken} : {}
   const octokit = new GitHub(options)
   return (
@@ -111,4 +112,24 @@ export function toSemVer(version: string): string {
   const minor = parts.length > 1 ? parts[1] : '0'
   const patch = parts.length > 2 ? parts.slice(2).join('-') : '0'
   return `${major}.${minor}.${patch}`
+}
+
+export function isPREvent(): boolean {
+  return process.env[c.ENV_GITHUB_EVENT_NAME] === c.EVENT_NAME_PULL_REQUEST
+}
+
+function getGitHubToken(): string {
+  return core.getInput(c.INPUT_GITHUB_TOKEN)
+}
+
+export async function createPRComment(content: string): Promise<void> {
+  if (!isPREvent()) {
+    throw new Error('Not a PR event.')
+  }
+  const context = github.context
+  await github.getOctokit(getGitHubToken()).rest.issues.createComment({
+    ...context.repo,
+    issue_number: context.payload.pull_request?.number as number,
+    body: content
+  })
 }

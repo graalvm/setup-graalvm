@@ -149,6 +149,8 @@ jobs:
           version: 'latest'
           java-version: '17'
           components: 'native-image'
+          native-image-job-reports: 'true'
+          native-image-pr-reports: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build HelloWorld executable with GraalVM Native Image on Windows
         run: |
@@ -168,6 +170,8 @@ jobs:
           java-version: '19'
           components: 'native-image'
           native-image-musl: 'true'
+          native-image-job-reports: 'true'
+          native-image-pr-reports: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build static HelloWorld executable with GraalVM Native Image and musl
         run: |
@@ -187,6 +191,8 @@ jobs:
           java-version: '17'
           components: 'espresso,llvm-toolchain,native-image,nodejs,python,R,ruby,wasm'
           set-java-home: 'false'
+          native-image-job-reports: 'true'
+          native-image-pr-reports: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check environment
         run: |
@@ -212,7 +218,7 @@ jobs:
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
-          native-image HelloWorld
+          native-image -g HelloWorld
           ./helloworld
       - name: Build Ruby-FFI with TruffleRuby
         run: |

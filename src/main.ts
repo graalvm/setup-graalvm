@@ -9,6 +9,7 @@ import {setUpGUComponents} from './gu'
 import {setUpMandrel} from './mandrel'
 import {checkForUpdates, setUpNativeImageMusl} from './features'
 import {setUpWindowsEnvironment} from './msvc'
+import {setUpNativeImageBuildReports} from './features/reports'
 
 async function run(): Promise<void> {
   try {
@@ -79,6 +80,7 @@ async function run(): Promise<void> {
     if (cache && isCacheAvailable()) {
       await restore(cache)
     }
+    setUpNativeImageBuildReports(graalvmVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
