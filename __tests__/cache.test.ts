@@ -27,7 +27,7 @@
 import {mkdtempSync} from 'fs'
 import {tmpdir} from 'os'
 import {join} from 'path'
-import {restore, save} from '../src/cache'
+import {restore, save} from '../src/features/cache'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as core from '@actions/core'

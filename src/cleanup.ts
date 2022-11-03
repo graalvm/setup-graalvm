@@ -26,7 +26,7 @@
 
 import * as core from '@actions/core'
 import * as constants from './constants'
-import {save} from './cache'
+import {save} from './features/cache'
 import {generateReports} from './features/reports'
 
 /**
