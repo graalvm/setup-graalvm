@@ -73701,7 +73701,128 @@ try {
 
 /***/ }),
 
-/***/ 4810:
+/***/ 9042:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.INPUT_VERSION = 'version';
+exports.INPUT_GDS_TOKEN = 'gds-token';
+exports.INPUT_JAVA_VERSION = 'java-version';
+exports.INPUT_COMPONENTS = 'components';
+exports.INPUT_GITHUB_TOKEN = 'github-token';
+exports.INPUT_SET_JAVA_HOME = 'set-java-home';
+exports.INPUT_CACHE = 'cache';
+exports.INPUT_CHECK_FOR_UPDATES = 'check-for-updates';
+exports.INPUT_NI_MUSL = 'native-image-musl';
+exports.IS_LINUX = process.platform === 'linux';
+exports.IS_MACOS = process.platform === 'darwin';
+exports.IS_WINDOWS = process.platform === 'win32';
+exports.VERSION_DEV = 'dev';
+exports.VERSION_LATEST = 'latest';
+exports.GRAALVM_ARCH = determineGraalVMArchitecture();
+exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
+exports.GRAALVM_GH_USER = 'graalvm';
+exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
+exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
+exports.MANDREL_NAMESPACE = 'mandrel-';
+exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
+exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
+exports.ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
+exports.EVENT_NAME_PULL_REQUEST = 'pull_request';
+function determineGraalVMArchitecture() {
+    switch (process.arch) {
+        case 'x64': {
+            return 'amd64';
+        }
+        case 'arm64': {
+            return 'aarch64';
+        }
+        default: {
+            throw new Error(`Unsupported architecture: ${process.arch}`);
+        }
+    }
+}
+
+
+/***/ }),
+
+/***/ 7760:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.setUpDependencies = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const constants_1 = __nccwpck_require__(9042);
+const utils_1 = __nccwpck_require__(1314);
+const APT_GET_INSTALL_BASE = 'sudo apt-get -y --no-upgrade install';
+const COMPONENT_TO_DEPS = new Map([
+    [
+        'linux',
+        new Map([
+            ['nodejs', `${APT_GET_INSTALL_BASE} g++ make`],
+            ['ruby', `${APT_GET_INSTALL_BASE} make gcc libssl-dev libz-dev`],
+            [
+                'R',
+                `${APT_GET_INSTALL_BASE} libgomp1 build-essential gfortran libxml2 libc++-dev`
+            ]
+        ])
+    ],
+    ['darwin', new Map([['ruby', 'brew install openssl']])]
+]);
+function setUpDependencies(components) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const platformDeps = COMPONENT_TO_DEPS.get(constants_1.GRAALVM_PLATFORM);
+        if (platformDeps) {
+            for (const component of components) {
+                const depCommand = platformDeps.get(component);
+                if (depCommand) {
+                    core.startGroup(`Installing dependencies for ${component}...`);
+                    yield utils_1.exec(depCommand);
+                    core.endGroup();
+                }
+            }
+        }
+    });
+}
+exports.setUpDependencies = setUpDependencies;
+
+
+/***/ }),
+
+/***/ 9179:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -73921,55 +74042,7 @@ function isProbablyGradleDaemonProblem(packageManager, error) {
 
 /***/ }),
 
-/***/ 9042:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
-exports.INPUT_VERSION = 'version';
-exports.INPUT_GDS_TOKEN = 'gds-token';
-exports.INPUT_JAVA_VERSION = 'java-version';
-exports.INPUT_COMPONENTS = 'components';
-exports.INPUT_GITHUB_TOKEN = 'github-token';
-exports.INPUT_SET_JAVA_HOME = 'set-java-home';
-exports.INPUT_CACHE = 'cache';
-exports.INPUT_CHECK_FOR_UPDATES = 'check-for-updates';
-exports.INPUT_NI_MUSL = 'native-image-musl';
-exports.IS_LINUX = process.platform === 'linux';
-exports.IS_MACOS = process.platform === 'darwin';
-exports.IS_WINDOWS = process.platform === 'win32';
-exports.VERSION_DEV = 'dev';
-exports.VERSION_LATEST = 'latest';
-exports.GRAALVM_ARCH = determineGraalVMArchitecture();
-exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
-exports.GRAALVM_GH_USER = 'graalvm';
-exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
-exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
-exports.MANDREL_NAMESPACE = 'mandrel-';
-exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
-exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
-exports.ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
-exports.EVENT_NAME_PULL_REQUEST = 'pull_request';
-function determineGraalVMArchitecture() {
-    switch (process.arch) {
-        case 'x64': {
-            return 'amd64';
-        }
-        case 'arm64': {
-            return 'aarch64';
-        }
-        default: {
-            throw new Error(`Unsupported architecture: ${process.arch}`);
-        }
-    }
-}
-
-
-/***/ }),
-
-/***/ 7760:
+/***/ 6780:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -74003,89 +74076,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpDependencies = void 0;
+exports.checkForUpdates = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const constants_1 = __nccwpck_require__(9042);
 const utils_1 = __nccwpck_require__(1314);
-const APT_GET_INSTALL_BASE = 'sudo apt-get -y --no-upgrade install';
-const COMPONENT_TO_DEPS = new Map([
-    [
-        'linux',
-        new Map([
-            ['nodejs', `${APT_GET_INSTALL_BASE} g++ make`],
-            ['ruby', `${APT_GET_INSTALL_BASE} make gcc libssl-dev libz-dev`],
-            [
-                'R',
-                `${APT_GET_INSTALL_BASE} libgomp1 build-essential gfortran libxml2 libc++-dev`
-            ]
-        ])
-    ],
-    ['darwin', new Map([['ruby', 'brew install openssl']])]
-]);
-function setUpDependencies(components) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const platformDeps = COMPONENT_TO_DEPS.get(constants_1.GRAALVM_PLATFORM);
-        if (platformDeps) {
-            for (const component of components) {
-                const depCommand = platformDeps.get(component);
-                if (depCommand) {
-                    core.startGroup(`Installing dependencies for ${component}...`);
-                    yield utils_1.exec(depCommand);
-                    core.endGroup();
-                }
-            }
-        }
-    });
-}
-exports.setUpDependencies = setUpDependencies;
-
-
-/***/ }),
-
-/***/ 7216:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpNativeImageMusl = exports.checkForUpdates = void 0;
-const c = __importStar(__nccwpck_require__(9042));
-const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
-const utils_1 = __nccwpck_require__(1314);
-const path_1 = __nccwpck_require__(1017);
 const semver_1 = __nccwpck_require__(1383);
 const graalvm_1 = __nccwpck_require__(5254);
-const MUSL_NAME = 'x86_64-linux-musl-native';
-const MUSL_VERSION = '10.2.1';
 function checkForUpdates(graalVMVersion, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         if (graalVMVersion === '22.3.0' && javaVersion === '11') {
@@ -74103,6 +74098,52 @@ function checkForUpdates(graalVMVersion, javaVersion) {
     });
 }
 exports.checkForUpdates = checkForUpdates;
+
+
+/***/ }),
+
+/***/ 316:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.setUpNativeImageMusl = void 0;
+const c = __importStar(__nccwpck_require__(9042));
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const utils_1 = __nccwpck_require__(1314);
+const path_1 = __nccwpck_require__(1017);
+const MUSL_NAME = 'x86_64-linux-musl-native';
+const MUSL_VERSION = '10.2.1';
 function setUpNativeImageMusl() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!c.IS_LINUX) {
@@ -74714,11 +74755,12 @@ const core = __importStar(__nccwpck_require__(2186));
 const graalvm = __importStar(__nccwpck_require__(5254));
 const cache_1 = __nccwpck_require__(7799);
 const path_1 = __nccwpck_require__(1017);
-const cache_2 = __nccwpck_require__(4810);
+const cache_2 = __nccwpck_require__(9179);
 const dependencies_1 = __nccwpck_require__(7760);
 const gu_1 = __nccwpck_require__(5609);
 const mandrel_1 = __nccwpck_require__(8766);
-const features_1 = __nccwpck_require__(7216);
+const check_for_updates_1 = __nccwpck_require__(6780);
+const musl_1 = __nccwpck_require__(316);
 const msvc_1 = __nccwpck_require__(1165);
 const reports_1 = __nccwpck_require__(2046);
 function run() {
@@ -74738,7 +74780,7 @@ function run() {
             }
             yield dependencies_1.setUpDependencies(components);
             if (enableNativeImageMusl) {
-                yield features_1.setUpNativeImageMusl();
+                yield musl_1.setUpNativeImageMusl();
             }
             // Download or build GraalVM
             let graalVMHome;
@@ -74755,7 +74797,7 @@ function run() {
                     }
                     else {
                         if (enableCheckForUpdates) {
-                            yield features_1.checkForUpdates(graalvmVersion, javaVersion);
+                            yield check_for_updates_1.checkForUpdates(graalvmVersion, javaVersion);
                         }
                         graalVMHome = yield graalvm.setUpGraalVMRelease(gdsToken, graalvmVersion, javaVersion);
                     }

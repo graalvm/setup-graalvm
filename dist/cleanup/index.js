@@ -73701,7 +73701,166 @@ try {
 
 /***/ }),
 
-/***/ 4810:
+/***/ 3812:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018 GitHub, Inc. and contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * Forked from https://github.com/actions/setup-java/blob/5b36705a13905facb447b6812d613a06a07e371d/src/cleanup-java.ts
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.run = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const constants = __importStar(__nccwpck_require__(9042));
+const cache_1 = __nccwpck_require__(9179);
+const reports_1 = __nccwpck_require__(2046);
+/**
+ * Check given input and run a save process for the specified package manager
+ * @returns Promise that will be resolved when the save process finishes
+ */
+function saveCache() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const cache = core.getInput(constants.INPUT_CACHE);
+        return cache ? cache_1.save(cache) : Promise.resolve();
+    });
+}
+/**
+ * The save process is best-effort, and it should not make the workflow fail
+ * even though this process throws an error.
+ * @param promise the promise to ignore error from
+ * @returns Promise that will ignore error reported by the given promise
+ */
+function ignoreError(promise) {
+    return __awaiter(this, void 0, void 0, function* () {
+        /* eslint-disable github/no-then */
+        return new Promise(resolve => {
+            promise
+                .catch(error => {
+                core.warning(error);
+                resolve(void 0);
+            })
+                .then(resolve);
+        });
+    });
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        reports_1.generateReports();
+        yield ignoreError(saveCache());
+    });
+}
+exports.run = run;
+if (require.main === require.cache[eval('__filename')]) {
+    run();
+}
+else {
+    // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
+    core.info('the script is loaded as a module, so skipping the execution');
+}
+
+
+/***/ }),
+
+/***/ 9042:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.INPUT_VERSION = 'version';
+exports.INPUT_GDS_TOKEN = 'gds-token';
+exports.INPUT_JAVA_VERSION = 'java-version';
+exports.INPUT_COMPONENTS = 'components';
+exports.INPUT_GITHUB_TOKEN = 'github-token';
+exports.INPUT_SET_JAVA_HOME = 'set-java-home';
+exports.INPUT_CACHE = 'cache';
+exports.INPUT_CHECK_FOR_UPDATES = 'check-for-updates';
+exports.INPUT_NI_MUSL = 'native-image-musl';
+exports.IS_LINUX = process.platform === 'linux';
+exports.IS_MACOS = process.platform === 'darwin';
+exports.IS_WINDOWS = process.platform === 'win32';
+exports.VERSION_DEV = 'dev';
+exports.VERSION_LATEST = 'latest';
+exports.GRAALVM_ARCH = determineGraalVMArchitecture();
+exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
+exports.GRAALVM_GH_USER = 'graalvm';
+exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
+exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
+exports.MANDREL_NAMESPACE = 'mandrel-';
+exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
+exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
+exports.ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
+exports.EVENT_NAME_PULL_REQUEST = 'pull_request';
+function determineGraalVMArchitecture() {
+    switch (process.arch) {
+        case 'x64': {
+            return 'amd64';
+        }
+        case 'arm64': {
+            return 'aarch64';
+        }
+        default: {
+            throw new Error(`Unsupported architecture: ${process.arch}`);
+        }
+    }
+}
+
+
+/***/ }),
+
+/***/ 9179:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -73916,165 +74075,6 @@ function isProbablyGradleDaemonProblem(packageManager, error) {
     }
     const message = error.message || '';
     return message.startsWith('Tar failed with error: ');
-}
-
-
-/***/ }),
-
-/***/ 3812:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-/**
- * The MIT License (MIT)
- *
- * Copyright (c) 2018 GitHub, Inc. and contributors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * Forked from https://github.com/actions/setup-java/blob/5b36705a13905facb447b6812d613a06a07e371d/src/cleanup-java.ts
- */
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const constants = __importStar(__nccwpck_require__(9042));
-const cache_1 = __nccwpck_require__(4810);
-const reports_1 = __nccwpck_require__(2046);
-/**
- * Check given input and run a save process for the specified package manager
- * @returns Promise that will be resolved when the save process finishes
- */
-function saveCache() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const cache = core.getInput(constants.INPUT_CACHE);
-        return cache ? cache_1.save(cache) : Promise.resolve();
-    });
-}
-/**
- * The save process is best-effort, and it should not make the workflow fail
- * even though this process throws an error.
- * @param promise the promise to ignore error from
- * @returns Promise that will ignore error reported by the given promise
- */
-function ignoreError(promise) {
-    return __awaiter(this, void 0, void 0, function* () {
-        /* eslint-disable github/no-then */
-        return new Promise(resolve => {
-            promise
-                .catch(error => {
-                core.warning(error);
-                resolve(void 0);
-            })
-                .then(resolve);
-        });
-    });
-}
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        reports_1.generateReports();
-        yield ignoreError(saveCache());
-    });
-}
-exports.run = run;
-if (require.main === require.cache[eval('__filename')]) {
-    run();
-}
-else {
-    // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
-    core.info('the script is loaded as a module, so skipping the execution');
-}
-
-
-/***/ }),
-
-/***/ 9042:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
-exports.INPUT_VERSION = 'version';
-exports.INPUT_GDS_TOKEN = 'gds-token';
-exports.INPUT_JAVA_VERSION = 'java-version';
-exports.INPUT_COMPONENTS = 'components';
-exports.INPUT_GITHUB_TOKEN = 'github-token';
-exports.INPUT_SET_JAVA_HOME = 'set-java-home';
-exports.INPUT_CACHE = 'cache';
-exports.INPUT_CHECK_FOR_UPDATES = 'check-for-updates';
-exports.INPUT_NI_MUSL = 'native-image-musl';
-exports.IS_LINUX = process.platform === 'linux';
-exports.IS_MACOS = process.platform === 'darwin';
-exports.IS_WINDOWS = process.platform === 'win32';
-exports.VERSION_DEV = 'dev';
-exports.VERSION_LATEST = 'latest';
-exports.GRAALVM_ARCH = determineGraalVMArchitecture();
-exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
-exports.GRAALVM_GH_USER = 'graalvm';
-exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
-exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
-exports.MANDREL_NAMESPACE = 'mandrel-';
-exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
-exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
-exports.ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
-exports.EVENT_NAME_PULL_REQUEST = 'pull_request';
-function determineGraalVMArchitecture() {
-    switch (process.arch) {
-        case 'x64': {
-            return 'amd64';
-        }
-        case 'arm64': {
-            return 'aarch64';
-        }
-        default: {
-            throw new Error(`Unsupported architecture: ${process.arch}`);
-        }
-    }
 }
 
 
