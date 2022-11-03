@@ -141,6 +141,9 @@ jobs:
   test-native-image-msvc:
     name: native-image on windows-latest
     runs-on: windows-latest
+    permissions:
+      contents: read
+      pull-requests: write # for `native-image-pr-reports` option
     steps:
       - uses: actions/checkout@v3
       - name: Run setup-graalvm action
@@ -161,6 +164,9 @@ jobs:
   test-native-image-musl:
     name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # for `native-image-pr-reports` option
     steps:
       - uses: actions/checkout@v3
       - name: Run setup-graalvm action
@@ -182,6 +188,9 @@ jobs:
   test-extensive:
     name: extensive tests on ubuntu-latest
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # for `native-image-pr-reports` option
     steps:
       - uses: actions/checkout@v3
       - name: Run setup-graalvm action

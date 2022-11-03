@@ -123,7 +123,7 @@ jobs:
 | `check-for-updates` | `'true'`  | [Annotate jobs][gha-annotations] with update notifications, for example, when a new GraalVM release is available. |
 | `native-image-job-reports` *) | `'false'` | If set to `'true'`, post a job summary containing a Native Image build report. |
 | `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] for building [static images][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
-| `native-image-pr-reports` *) | `'false'` | If set to `'true'`, post a comment containing a Native Image build report on pull requests. |
+| `native-image-pr-reports` *) | `'false'` | If set to `'true'`, post a comment containing a Native Image build report on pull requests. Requires `write` permissions for the [`pull-requests` scope][gha-permissions]. |
 
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is generated only for the last Native Image build.*
 
@@ -138,6 +138,7 @@ Only pull requests from committers that can be verified as having signed the OCA
 [dev-build]: https://github.com/graalvm/graalvm-ce-dev-builds/releases/latest
 [dev-builds]: https://github.com/graalvm/graalvm-ce-dev-builds
 [gha-annotations]: https://github.com/actions/toolkit/tree/main/packages/core#annotations
+[gha-permissions]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
 [gha-secrets]: https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository
 [gha-self-hosted-runners]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [gu]: https://www.graalvm.org/reference-manual/graalvm-updater/
