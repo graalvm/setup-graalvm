@@ -63,6 +63,7 @@ jobs:
           java-version: '11'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
 
       - name: Build and run HelloWorld.java
         run: |
@@ -118,14 +119,14 @@ jobs:
 | `java-version`<br>*(required)* | n/a | `'11'` or `'17'` for a specific Java version.<br>(`'8'` and `'16'` are supported for GraalVM 21.2 and earlier.) |
 | `components`    | `''`     | Comma-spearated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
 | `github-token`  | `''`     | Token for communication with the GitHub API. Please set to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps to reduce rate limiting issues. |
-| `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. |
-| `cache`         | `''`     | Name of the build platform to cache dependencies. It can be `'maven'`, `'gradle'`, or `'sbt'` and works the same way it does in [actions/setup-java][setup-java-caching]. |
+| `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
+| `cache`         | `''`     | Name of the build platform to cache dependencies. It can be `'maven'`, `'gradle'`, or `'sbt'` and works the same way as described in [actions/setup-java][setup-java-caching]. |
 | `check-for-updates` | `'true'`  | [Annotate jobs][gha-annotations] with update notifications, for example, when a new GraalVM release is available. |
 | `native-image-job-reports` *) | `'false'` | If set to `'true'`, post a job summary containing a Native Image build report. |
-| `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] for building [static images][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
+| `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] to build [static binaries][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
 | `native-image-pr-reports` *) | `'false'` | If set to `'true'`, post a comment containing a Native Image build report on pull requests. Requires `write` permissions for the [`pull-requests` scope][gha-permissions]. |
 
-**) Make sure that Native Image is used only once per build job. Otherwise, the report is generated only for the last Native Image build.*
+**) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*
 
 
 ## Contributing

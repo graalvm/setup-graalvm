@@ -104,7 +104,7 @@ export function generateReports(): void {
   if (areJobReportsEnabled() || arePRReportsEnabled()) {
     if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
       core.warning(
-        'Unable to find build output data for creating a report. Are you sure this build job has used GraalVM Native Image?'
+        'Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?'
       )
       return
     }
