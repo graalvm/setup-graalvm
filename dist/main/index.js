@@ -74254,7 +74254,7 @@ exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
 function generateReports() {
     if (areJobReportsEnabled() || arePRReportsEnabled()) {
         if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
-            core.warning('Unable to find build output data for creating a report. Are you sure this build job has used GraalVM Native Image?');
+            core.warning('Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?');
             return;
         }
         const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
@@ -74312,12 +74312,12 @@ using [Native Image](https://www.graalvm.org/native-image/) from ${info.graalvm_
 
 #### Analysis Results
 
-| Category | Classes | in % | Fields | in % | Methods | in % |
-|:---------|--------:|-----:|-------:|-----:|--------:|-----:|
+| Category | Types | in % | Fields | in % | Methods | in % |
+|:---------|------:|-----:|-------:|-----:|--------:|-----:|
 | [Reachable](${DOCS_BASE}#glossary-reachability) | ${analysis.classes.reachable} | ${toPercent(analysis.classes.reachable, analysis.classes.total)} | ${analysis.fields.reachable} | ${toPercent(analysis.fields.reachable, analysis.fields.total)} | ${analysis.methods.reachable} | ${toPercent(analysis.methods.reachable, analysis.methods.total)} |
 | [Reflection](${DOCS_BASE}#glossary-reflection-registrations) | ${analysis.classes.reflection} | ${toPercent(analysis.classes.reflection, analysis.classes.total)} | ${analysis.fields.reflection} | ${toPercent(analysis.fields.reflection, analysis.fields.total)} | ${analysis.methods.reflection} | ${toPercent(analysis.methods.reflection, analysis.methods.total)} |
 | [JNI](${DOCS_BASE}#glossary-jni-access-registrations) | ${analysis.classes.jni} | ${toPercent(analysis.classes.jni, analysis.classes.total)} | ${analysis.fields.jni} | ${toPercent(analysis.fields.jni, analysis.fields.total)} | ${analysis.methods.jni} | ${toPercent(analysis.methods.jni, analysis.methods.total)} |
-| [Loaded](${DOCS_BASE}#reachable-classes-fields-and-methods) | ${analysis.classes.total} | 100.000% | ${analysis.fields.total} | 100.000% | ${analysis.methods.total} | 100.000% |
+| [Loaded](${DOCS_BASE}#glossary-reachability) | ${analysis.classes.total} | 100.000% | ${analysis.fields.total} | 100.000% | ${analysis.methods.total} | 100.000% |
 
 #### Image Details
 

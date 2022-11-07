@@ -175,8 +175,8 @@ using [Native Image](https://www.graalvm.org/native-image/) from ${
 
 #### Analysis Results
 
-| Category | Classes | in % | Fields | in % | Methods | in % |
-|:---------|--------:|-----:|-------:|-----:|--------:|-----:|
+| Category | Types | in % | Fields | in % | Methods | in % |
+|:---------|------:|-----:|-------:|-----:|--------:|-----:|
 | [Reachable](${DOCS_BASE}#glossary-reachability) | ${
     analysis.classes.reachable
   } | ${toPercent(analysis.classes.reachable, analysis.classes.total)} | ${
@@ -198,7 +198,7 @@ using [Native Image](https://www.graalvm.org/native-image/) from ${
   } | ${toPercent(analysis.fields.jni, analysis.fields.total)} | ${
     analysis.methods.jni
   } | ${toPercent(analysis.methods.jni, analysis.methods.total)} |
-| [Loaded](${DOCS_BASE}#reachable-classes-fields-and-methods) | ${
+| [Loaded](${DOCS_BASE}#glossary-reachability) | ${
     analysis.classes.total
   } | 100.000% | ${analysis.fields.total} | 100.000% | ${
     analysis.methods.total
