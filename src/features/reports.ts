@@ -171,7 +171,7 @@ function createReport(data: BuildOutput): string {
 
 using [Native Image](https://www.graalvm.org/native-image/) from ${
     info.graalvm_version
-  }.
+  } (${info.java_version}).
 
 #### Analysis Results
 

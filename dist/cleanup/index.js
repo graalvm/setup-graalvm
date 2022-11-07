@@ -74206,7 +74206,7 @@ function createReport(data) {
     const resources = data.resource_usage;
     return `## Generated \`${info.name}\`
 
-using [Native Image](https://www.graalvm.org/native-image/) from ${info.graalvm_version}.
+using [Native Image](https://www.graalvm.org/native-image/) from ${info.graalvm_version} (${info.java_version}).
 
 #### Analysis Results
 
