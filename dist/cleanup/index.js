@@ -74521,7 +74521,12 @@ function createPRComment(content) {
             throw new Error('Not a PR event.');
         }
         const context = github.context;
-        yield github.getOctokit(getGitHubToken()).rest.issues.createComment(Object.assign(Object.assign({}, context.repo), { issue_number: (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number, body: content }));
+        try {
+            yield github.getOctokit(getGitHubToken()).rest.issues.createComment(Object.assign(Object.assign({}, context.repo), { issue_number: (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number, body: content }));
+        }
+        catch (err) {
+            core.error(`Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`);
+        }
     });
 }
 exports.createPRComment = createPRComment;

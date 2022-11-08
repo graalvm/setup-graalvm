@@ -127,9 +127,15 @@ export async function createPRComment(content: string): Promise<void> {
     throw new Error('Not a PR event.')
   }
   const context = github.context
-  await github.getOctokit(getGitHubToken()).rest.issues.createComment({
-    ...context.repo,
-    issue_number: context.payload.pull_request?.number as number,
-    body: content
-  })
+  try {
+    await github.getOctokit(getGitHubToken()).rest.issues.createComment({
+      ...context.repo,
+      issue_number: context.payload.pull_request?.number as number,
+      body: content
+    })
+  } catch (err) {
+    core.error(
+      `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
+    )
+  }
 }
