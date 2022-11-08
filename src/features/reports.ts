@@ -1,6 +1,7 @@
 import * as c from '../constants'
 import * as core from '@actions/core'
 import * as fs from 'fs'
+import * as github from '@actions/github'
 import {join} from 'path'
 import {tmpdir} from 'os'
 import {createPRComment, isPREvent, toSemVer} from '../utils'
@@ -149,6 +150,7 @@ function setNativeImageOption(value: string): void {
 }
 
 function createReport(data: BuildOutput): string {
+  const context = github.context
   const info = data.general_info
   const analysis = data.analysis_results
   const details = data.image_details
@@ -160,89 +162,204 @@ function createReport(data: BuildOutput): string {
     debugInfoBytes
   let debugInfoLine = ''
   if (details.debug_info) {
-    debugInfoLine = `\n| [Debug info](${DOCS_BASE}#glossary-debug-info) | ${bytesToHuman(
-      debugInfoBytes
-    )} | ${toPercent(debugInfoBytes, details.total_bytes)} |  |`
+    debugInfoLine = `
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-debug-info" target="_blank">Debug info</a></td>
+      <td align="right">${bytesToHuman(debugInfoBytes)}</td>
+      <td align="right">${toPercent(debugInfoBytes, details.total_bytes)}</td>
+      <td align="left"></td>
+    </tr>`
   }
 
   const resources = data.resource_usage
 
-  return `## Generated \`${info.name}\`
+  return `## GraalVM Native Image Build Report
 
-using [Native Image](https://www.graalvm.org/native-image/) from ${
-    info.graalvm_version
-  } (${info.java_version}).
+\`${info.name}\` generated as part of the '${
+    context.job
+  }' job in run <a href="${context.serverUrl}/${context.repo.owner}/${
+    context.repo.repo
+  }/actions/runs/${context.runId}" target="_blank">#${context.runNumber}</a>.
+
+#### Environment
+
+<table>
+  <tr>
+    <td><a href="${DOCS_BASE}#glossary-version-info" target="_blank">GraalVM version</a></td>
+    <td>${info.graalvm_version}</td>
+    <td><a href="${DOCS_BASE}#glossary-ccompiler" target="_blank">C compiler</a></td>
+    <td>${info.c_compiler}</td>
+  </tr>
+  <tr>
+    <td><a href="${DOCS_BASE}#glossary-java-version-info" target="_blank">Java version</a></td>
+    <td>${info.java_version}</td>
+    <td><a href="${DOCS_BASE}#glossary-gc" target="_blank">Garbage collector</a></td>
+    <td>${info.garbage_collector}</td>
+  </tr>
+</table>
 
 #### Analysis Results
 
-| Category | Types | in % | Fields | in % | Methods | in % |
-|:---------|------:|-----:|-------:|-----:|--------:|-----:|
-| [Reachable](${DOCS_BASE}#glossary-reachability) | ${
-    analysis.classes.reachable
-  } | ${toPercent(analysis.classes.reachable, analysis.classes.total)} | ${
-    analysis.fields.reachable
-  } | ${toPercent(analysis.fields.reachable, analysis.fields.total)} | ${
-    analysis.methods.reachable
-  } | ${toPercent(analysis.methods.reachable, analysis.methods.total)} |
-| [Reflection](${DOCS_BASE}#glossary-reflection-registrations) | ${
-    analysis.classes.reflection
-  } | ${toPercent(analysis.classes.reflection, analysis.classes.total)} | ${
-    analysis.fields.reflection
-  } | ${toPercent(analysis.fields.reflection, analysis.fields.total)} | ${
-    analysis.methods.reflection
-  } | ${toPercent(analysis.methods.reflection, analysis.methods.total)} |
-| [JNI](${DOCS_BASE}#glossary-jni-access-registrations) | ${
-    analysis.classes.jni
-  } | ${toPercent(analysis.classes.jni, analysis.classes.total)} | ${
-    analysis.fields.jni
-  } | ${toPercent(analysis.fields.jni, analysis.fields.total)} | ${
-    analysis.methods.jni
-  } | ${toPercent(analysis.methods.jni, analysis.methods.total)} |
-| [Loaded](${DOCS_BASE}#glossary-reachability) | ${
-    analysis.classes.total
-  } | 100.000% | ${analysis.fields.total} | 100.000% | ${
-    analysis.methods.total
-  } | 100.000% |
+<table>
+  <thead>
+    <tr>
+      <th align="left">Category</th>
+      <th align="right">Types</th>
+      <th align="right">in %</th>
+      <th align="right">Fields</th>
+      <th align="right">in %</th>
+      <th align="right">Methods</th>
+      <th align="right">in %</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-reachability" target="_blank">Reachable</a></td>
+      <td align="right">${analysis.classes.reachable}</td>
+      <td align="right">${toPercent(
+        analysis.classes.reachable,
+        analysis.classes.total
+      )}</td>
+      <td align="right">${analysis.fields.reachable}</td>
+      <td align="right">${toPercent(
+        analysis.fields.reachable,
+        analysis.fields.total
+      )}</td>
+      <td align="right">${analysis.methods.reachable}</td>
+      <td align="right">${toPercent(
+        analysis.methods.reachable,
+        analysis.methods.total
+      )}</td>
+    </tr>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-reflection-registrations" target="_blank">Reflection</a></td>
+      <td align="right">${analysis.classes.reflection}</td>
+      <td align="right">${toPercent(
+        analysis.classes.reflection,
+        analysis.classes.total
+      )}</td>
+      <td align="right">${analysis.fields.reflection}</td>
+      <td align="right">${toPercent(
+        analysis.fields.reflection,
+        analysis.fields.total
+      )}</td>
+      <td align="right">${analysis.methods.reflection}</td>
+      <td align="right">${toPercent(
+        analysis.methods.reflection,
+        analysis.methods.total
+      )}</td>
+    </tr>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-jni-access-registrations" target="_blank">JNI</a></td>
+      <td align="right">${analysis.classes.jni}</td>
+      <td align="right">${toPercent(
+        analysis.classes.jni,
+        analysis.classes.total
+      )}</td>
+      <td align="right">${analysis.fields.jni}</td>
+      <td align="right">${toPercent(
+        analysis.fields.jni,
+        analysis.fields.total
+      )}</td>
+      <td align="right">${analysis.methods.jni}</td>
+      <td align="right">${toPercent(
+        analysis.methods.jni,
+        analysis.methods.total
+      )}</td>
+    </tr>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-reachability" target="_blank">Loaded</a></td>
+      <td align="right">${analysis.classes.total}</td>
+      <td align="right">100.000%</td>
+      <td align="right">${analysis.fields.total}</td>
+      <td align="right">100.000%</td>
+      <td align="right">${analysis.methods.total}</td>
+      <td align="right">100.000%</td>
+    </tr>
+  </tbody>
+</table>
 
 #### Image Details
 
-| Category | Size | in % | Details |
-|:---------|-----:|-----:|:--------|
-| [Code area](${DOCS_BASE}#glossary-code-area)| ${bytesToHuman(
-    details.code_area.bytes
-  )} | ${toPercent(details.code_area.bytes, details.total_bytes)} | ${
-    details.code_area.compilation_units
-  } compilation units |
-| [Image heap](${DOCS_BASE}#glossary-image-heap) | ${bytesToHuman(
-    details.image_heap.bytes
-  )} | ${toPercent(
-    details.image_heap.bytes,
-    details.total_bytes
-  )} | ${bytesToHuman(details.image_heap.resources.bytes)} for ${
-    details.image_heap.resources.count
-  } resources |${debugInfoLine}
-| [Other data](${DOCS_BASE}#glossary-other-data) | ${bytesToHuman(
-    otherBytes
-  )} | ${toPercent(otherBytes, details.total_bytes)} |  |
-| Total | **${bytesToHuman(details.total_bytes)}** | 100.000% |  |
+<table>
+  <thead>
+    <tr>
+      <th align="left">Category</th>
+      <th align="right">Size</th>
+      <th align="right">in %</th>
+      <th align="left">Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-code-area" target="_blank">Code area</a></td>
+      <td align="right">${bytesToHuman(details.code_area.bytes)}</td>
+      <td align="right">${toPercent(
+        details.code_area.bytes,
+        details.total_bytes
+      )}</td>
+      <td align="left">${
+        details.code_area.compilation_units
+      } compilation units</td>
+    </tr>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-image-heap" target="_blank">Image heap</a></td>
+      <td align="right">${bytesToHuman(details.image_heap.bytes)}</td>
+      <td align="right">${toPercent(
+        details.image_heap.bytes,
+        details.total_bytes
+      )}</td>
+      <td align="left">${bytesToHuman(
+        details.image_heap.resources.bytes
+      )} for ${details.image_heap.resources.count} resources</td>
+    </tr>${debugInfoLine}
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-other-data" target="_blank">Other data</a></td>
+      <td align="right">${bytesToHuman(otherBytes)}</td>
+      <td align="right">${toPercent(otherBytes, details.total_bytes)}</td>
+      <td align="left"></td>
+    </tr>
+    <tr>
+      <td align="left">Total</td>
+      <td align="right"><strong>${bytesToHuman(
+        details.total_bytes
+      )}</strong></td>
+      <td align="right">100.000%</td>
+      <td align="left"></td>
+    </tr>
+  </tbody>
+</table>
 
 #### Resource Usage
 
-| Category | |
-|:---------|:------|
-| [GCs](${DOCS_BASE}#glossary-garbage-collections) | ${resources.garbage_collection.total_secs.toFixed(
-    2
-  )}s in ${resources.garbage_collection.count} GCs |
-| [Peak RSS](${DOCS_BASE}#glossary-peak-rss) | ${bytesToHuman(
-    resources.memory.peak_rss_bytes
-  )} |
-| [CPU load](${DOCS_BASE}#glossary-cpu-load) | ${resources.cpu.load.toFixed(
-    3
-  )} (${toPercent(resources.cpu.load, resources.cpu.total_cores)} of ${
+<table>
+  <tbody>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-garbage-collections" target="_blank">Garbage collection</a></td>
+      <td align="left">${resources.garbage_collection.total_secs.toFixed(
+        2
+      )}s in ${resources.garbage_collection.count} GCs</td>
+    </tr>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-peak-rss" target="_blank">Peak RSS</a></td>
+      <td align="left">${bytesToHuman(
+        resources.memory.peak_rss_bytes
+      )} (${toPercent(
+    resources.memory.peak_rss_bytes,
+    resources.memory.system_total
+  )} of ${bytesToHuman(resources.memory.system_total)} system memory)</td>
+    </tr>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-cpu-load" target="_blank">CPU load</a></td>
+      <td align="left">${resources.cpu.load.toFixed(3)} (${toPercent(
+    resources.cpu.load,
     resources.cpu.total_cores
-  } CPU cores) |
+  )} of ${resources.cpu.total_cores} CPU cores)</td>
+    </tr>
+  </tbody>
+</table>
 
-_Report generated by [setup-graalvm](https://github.com/marketplace/actions/github-action-for-graalvm)._`
+<em>Report generated by <a href="https://github.com/marketplace/actions/github-action-for-graalvm" target="_blank">setup-graalvm</a>.</em>`
 }
 
 function toPercent(part: number, total: number): string {
