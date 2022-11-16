@@ -45,6 +45,9 @@ inputs:
     required: false
     description: 'Post a comment containing a Native Image build report on pull requests.'
     default: 'false'
+outputs:
+  cache-hit:
+    description: 'A boolean value to indicate an exact match was found for the primary key'
 runs:
   using: 'node16'
   main: 'dist/main/index.js'
