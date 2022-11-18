@@ -60,7 +60,7 @@ jobs:
       - uses: graalvm/setup-graalvm@v1
         with:
           version: '22.3.0'
-          java-version: '11'
+          java-version: '17'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -100,7 +100,7 @@ jobs:
         with:
           version: '22.3.0'
           gds-token: ${{ secrets.GDS_TOKEN }}
-          java-version: '11'
+          java-version: '17'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Example step
@@ -114,17 +114,17 @@ jobs:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `version`<br>*(required)* | n/a | `X.Y.Z` (e.g., `21.3.0`) for a specific [GraalVM release][releases]<br>`latest` for [latest stable release][stable],<br>`dev` for [latest dev build][dev-build],<br>`mandrel-X.Y.Z` (e.g., `mandrel-21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` for [latest Mandrel stable release][mandrel-stable]. |
+| `version`<br>*(required)* | n/a | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases]<br>`latest` for [latest stable release][stable],<br>`dev` for [latest dev build][dev-build],<br>`mandrel-X.Y.Z` (e.g., `mandrel-21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` for [latest Mandrel stable release][mandrel-stable]. |
 | `gds-token`     | `''`     | Download token for the GraalVM Download Service. If a non-empty token is provided, the action will set up GraalVM Enterprise Edition (see [GraalVM EE template](#basic-graalvm-enterprise-edition-template)). |
-| `java-version`<br>*(required)* | n/a | `'11'` or `'17'` for a specific Java version.<br>(`'8'` and `'16'` are supported for GraalVM 21.2 and earlier.) |
+| `java-version`<br>*(required)* | n/a | `'17'` or `'19'` for a specific Java version.<br>(`'8'`, `'11'`, `'16'` are supported for older GraalVM releases.) |
 | `components`    | `''`     | Comma-spearated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
 | `github-token`  | `''`     | Token for communication with the GitHub API. Please set to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps to reduce rate limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
 | `cache`         | `''`     | Name of the build platform to cache dependencies. It can be `'maven'`, `'gradle'`, or `'sbt'` and works the same way as described in [actions/setup-java][setup-java-caching]. |
 | `check-for-updates` | `'true'`  | [Annotate jobs][gha-annotations] with update notifications, for example, when a new GraalVM release is available. |
-| `native-image-job-reports` *) | `'false'` | If set to `'true'`, post a job summary containing a Native Image build report. |
 | `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] to build [static binaries][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
-| `native-image-pr-reports` *) | `'false'` | If set to `'true'`, post a comment containing a Native Image build report on pull requests. Requires `write` permissions for the [`pull-requests` scope][gha-permissions]. |
+| `native-image-job-reports` *) | `'false'` | If set to `'true'`, post a job summary containing a Native Image build report. |
+| `native-image-pr-reports`  *) | `'false'` | If set to `'true'`, post a comment containing a Native Image build report on pull requests. Requires `write` permissions for the [`pull-requests` scope][gha-permissions]. |
 
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*
 
