@@ -74738,7 +74738,7 @@ function setUpGraalVMDevBuild(gdsToken, javaVersion) {
                 return utils_1.downloadAndExtractJDK(asset.browser_download_url);
             }
         }
-        throw new Error('Could not find GraalVM dev build');
+        throw new Error(`Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.`);
     });
 }
 exports.setUpGraalVMDevBuild = setUpGraalVMDevBuild;
