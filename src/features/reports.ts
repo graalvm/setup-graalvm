@@ -101,7 +101,7 @@ export async function setUpNativeImageBuildReports(
   ) // Escape backslashes for Windows
 }
 
-export function generateReports(): void {
+export async function generateReports(): Promise<void> {
   if (areJobReportsEnabled() || arePRReportsEnabled()) {
     if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
       core.warning(

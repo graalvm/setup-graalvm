@@ -73781,7 +73781,7 @@ function saveCache() {
  * @param promise the promise to ignore error from
  * @returns Promise that will ignore error reported by the given promise
  */
-function ignoreError(promise) {
+function ignoreErrors(promise) {
     return __awaiter(this, void 0, void 0, function* () {
         /* eslint-disable github/no-then */
         return new Promise(resolve => {
@@ -73796,8 +73796,8 @@ function ignoreError(promise) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        reports_1.generateReports();
-        yield ignoreError(saveCache());
+        yield ignoreErrors(reports_1.generateReports());
+        yield ignoreErrors(saveCache());
     });
 }
 exports.run = run;
@@ -74151,21 +74151,23 @@ function setUpNativeImageBuildReports(graalVMVersion) {
 }
 exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
 function generateReports() {
-    if (areJobReportsEnabled() || arePRReportsEnabled()) {
-        if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
-            core.warning('Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?');
-            return;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (areJobReportsEnabled() || arePRReportsEnabled()) {
+            if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
+                core.warning('Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?');
+                return;
+            }
+            const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
+            const report = createReport(buildOutput);
+            if (areJobReportsEnabled()) {
+                core.summary.addRaw(report);
+                core.summary.write();
+            }
+            if (arePRReportsEnabled()) {
+                utils_1.createPRComment(report);
+            }
         }
-        const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
-        const report = createReport(buildOutput);
-        if (areJobReportsEnabled()) {
-            core.summary.addRaw(report);
-            core.summary.write();
-        }
-        if (arePRReportsEnabled()) {
-            utils_1.createPRComment(report);
-        }
-    }
+    });
 }
 exports.generateReports = generateReports;
 function areJobReportsEnabled() {

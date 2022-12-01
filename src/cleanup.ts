@@ -44,7 +44,7 @@ async function saveCache(): Promise<void> {
  * @param promise the promise to ignore error from
  * @returns Promise that will ignore error reported by the given promise
  */
-async function ignoreError(promise: Promise<void>): Promise<unknown> {
+async function ignoreErrors(promise: Promise<void>): Promise<unknown> {
   /* eslint-disable github/no-then */
   return new Promise(resolve => {
     promise
@@ -57,8 +57,8 @@ async function ignoreError(promise: Promise<void>): Promise<unknown> {
 }
 
 export async function run(): Promise<void> {
-  generateReports()
-  await ignoreError(saveCache())
+  await ignoreErrors(generateReports())
+  await ignoreErrors(saveCache())
 }
 
 if (require.main === module) {

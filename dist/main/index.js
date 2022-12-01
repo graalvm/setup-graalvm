@@ -74253,21 +74253,23 @@ function setUpNativeImageBuildReports(graalVMVersion) {
 }
 exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
 function generateReports() {
-    if (areJobReportsEnabled() || arePRReportsEnabled()) {
-        if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
-            core.warning('Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?');
-            return;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (areJobReportsEnabled() || arePRReportsEnabled()) {
+            if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
+                core.warning('Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?');
+                return;
+            }
+            const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
+            const report = createReport(buildOutput);
+            if (areJobReportsEnabled()) {
+                core.summary.addRaw(report);
+                core.summary.write();
+            }
+            if (arePRReportsEnabled()) {
+                utils_1.createPRComment(report);
+            }
         }
-        const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
-        const report = createReport(buildOutput);
-        if (areJobReportsEnabled()) {
-            core.summary.addRaw(report);
-            core.summary.write();
-        }
-        if (arePRReportsEnabled()) {
-            utils_1.createPRComment(report);
-        }
-    }
+    });
 }
 exports.generateReports = generateReports;
 function areJobReportsEnabled() {
