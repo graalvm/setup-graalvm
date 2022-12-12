@@ -12,132 +12,132 @@ permissions:
   contents: read
 
 jobs:
-  build: # make sure build/ci work properly
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: |
-          npm install
-      - run: |
-          npm run all
-  test-ce: # make sure the action works on a clean machine without building
-    name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        version: [latest, dev]
-        java-version: ['17', '19']
-        components: ['native-image']
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        include:
-          - version: '22.2.0' # for update notifications
-            java-version: '17'
-            components: 'native-image'
-            os: ubuntu-18.04
-          - version: '22.3.0'
-            java-version: '11' # for JDK11 notification
-            components: 'native-image'
-            os: macos-11
-          - version: '22.3.0'
-            java-version: '17'
-            components: 'native-image'
-            os: windows-2022
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          version: ${{ matrix.version }}
-          java-version: ${{ matrix.java-version }}
-          components: ${{ matrix.components }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          if [[ "${{ matrix.version }}" == "dev" ]]; then
-            [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
-          else
-            [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
-          fi
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | grep "GraalVM CE" || exit 34
-          native-image --version
-        if: runner.os != 'Windows'
-      - name: Check Windows environment
-        run: |
-          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
-          echo "JAVA_HOME: $env:JAVA_HOME"
-          java --version
-          native-image --version
-        if: runner.os == 'Windows'
-  test-ee:
-    name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
-    if: github.event_name != 'pull_request'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        version: ['22.3.0', 'latest']
-        java-version: ['11', '17', '19']
-        components: ['native-image']
-        os: [macos-latest, windows-latest, ubuntu-latest]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          version: ${{ matrix.version }}
-          gds-token: ${{ secrets.GDS_TOKEN }}
-          java-version: ${{ matrix.java-version }}
-          components: ${{ matrix.components }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | grep "GraalVM EE" || exit 23
-          native-image --version
-        if: runner.os != 'Windows'
-      - name: Check Windows environment
-        run: |
-          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
-          echo "JAVA_HOME: $env:JAVA_HOME"
-          java --version
-          native-image --version
-        if: runner.os == 'Windows'
-  test-mandrel:
-    name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        version: ['mandrel-22.2.0.0-Final', 'mandrel-latest']
-        java-version: ['17']
-        os: [windows-latest, ubuntu-latest]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          version: ${{ matrix.version }}
-          java-version: ${{ matrix.java-version }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          native-image --version
-        if: runner.os != 'Windows'
-      - name: Check Windows environment
-        run: |
-          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
-          echo "JAVA_HOME: $env:JAVA_HOME"
-          java --version
-          native-image --version
-        if: runner.os == 'Windows'
+  # build: # make sure build/ci work properly
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: |
+  #         npm install
+  #     - run: |
+  #         npm run all
+  # test-ce: # make sure the action works on a clean machine without building
+  #   name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       version: [latest, dev]
+  #       java-version: ['17', '19']
+  #       components: ['native-image']
+  #       os: [macos-latest, windows-latest, ubuntu-latest]
+  #       include:
+  #         - version: '22.2.0' # for update notifications
+  #           java-version: '17'
+  #           components: 'native-image'
+  #           os: ubuntu-18.04
+  #         - version: '22.3.0'
+  #           java-version: '11' # for JDK11 notification
+  #           components: 'native-image'
+  #           os: macos-11
+  #         - version: '22.3.0'
+  #           java-version: '17'
+  #           components: 'native-image'
+  #           os: windows-2022
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         version: ${{ matrix.version }}
+  #         java-version: ${{ matrix.java-version }}
+  #         components: ${{ matrix.components }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         if [[ "${{ matrix.version }}" == "dev" ]]; then
+  #           [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
+  #         else
+  #           [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
+  #         fi
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         java --version
+  #         java --version | grep "GraalVM CE" || exit 34
+  #         native-image --version
+  #       if: runner.os != 'Windows'
+  #     - name: Check Windows environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+  #         echo "JAVA_HOME: $env:JAVA_HOME"
+  #         java --version
+  #         native-image --version
+  #       if: runner.os == 'Windows'
+  # test-ee:
+  #   name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+  #   if: github.event_name != 'pull_request'
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       version: ['22.3.0', 'latest']
+  #       java-version: ['11', '17', '19']
+  #       components: ['native-image']
+  #       os: [macos-latest, windows-latest, ubuntu-latest]
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         version: ${{ matrix.version }}
+  #         gds-token: ${{ secrets.GDS_TOKEN }}
+  #         java-version: ${{ matrix.java-version }}
+  #         components: ${{ matrix.components }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         java --version
+  #         java --version | grep "GraalVM EE" || exit 23
+  #         native-image --version
+  #       if: runner.os != 'Windows'
+  #     - name: Check Windows environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+  #         echo "JAVA_HOME: $env:JAVA_HOME"
+  #         java --version
+  #         native-image --version
+  #       if: runner.os == 'Windows'
+  # test-mandrel:
+  #   name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       version: ['mandrel-22.2.0.0-Final', 'mandrel-latest']
+  #       java-version: ['17']
+  #       os: [windows-latest, ubuntu-latest]
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         version: ${{ matrix.version }}
+  #         java-version: ${{ matrix.java-version }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         java --version
+  #         native-image --version
+  #       if: runner.os != 'Windows'
+  #     - name: Check Windows environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+  #         echo "JAVA_HOME: $env:JAVA_HOME"
+  #         java --version
+  #         native-image --version
+  #       if: runner.os == 'Windows'
   test-native-image-msvc:
     name: native-image on windows-latest
     runs-on: windows-latest
