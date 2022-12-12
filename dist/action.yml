@@ -26,9 +26,6 @@ inputs:
     required: false
     description: 'Set $JAVA_HOME to the GraalVM installation. Default: true.'
     default: 'true'
-  cache:
-    description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle", or "sbt".'
-    required: false
   check-for-updates:
     required: false
     description: 'Annotate jobs with update notifications, for example, when a new GraalVM release is available'
@@ -49,8 +46,6 @@ outputs:
   archive:
     description: 'The path to the downloaded JDK archive file'
     value: ${{ steps.download.outputs.archive }}
-  cache-hit:
-    description: 'A boolean value to indicate an exact match was found for the primary key'
 runs:
   using: 'node16'
   main: 'main/index.js'

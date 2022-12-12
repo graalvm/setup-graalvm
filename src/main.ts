@@ -1,9 +1,7 @@
 import * as c from './constants'
 import * as core from '@actions/core'
 import * as graalvm from './graalvm'
-import {isFeatureAvailable as isCacheAvailable} from '@actions/cache'
 import {join} from 'path'
-import {restore} from './features/cache'
 import {setUpDependencies} from './dependencies'
 import {setUpGUComponents} from './gu'
 import {setUpMandrel} from './mandrel'
@@ -21,7 +19,6 @@ async function run(): Promise<void> {
     const components: string[] =
       componentsString.length > 0 ? componentsString.split(',') : []
     const setJavaHome = core.getInput(c.INPUT_SET_JAVA_HOME) === 'true'
-    const cache = core.getInput(c.INPUT_CACHE)
     const enableCheckForUpdates =
       core.getInput(c.INPUT_CHECK_FOR_UPDATES) === 'true'
     const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
@@ -78,9 +75,6 @@ async function run(): Promise<void> {
       }
     }
 
-    if (cache && isCacheAvailable()) {
-      await restore(cache)
-    }
     setUpNativeImageBuildReports(graalvmVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
