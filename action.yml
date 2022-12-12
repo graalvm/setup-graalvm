@@ -45,11 +45,24 @@ inputs:
     required: false
     description: 'Post a comment containing a Native Image build report on pull requests.'
     default: 'false'
+  mvn-settings-path:
+    description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
+    required: false
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
 runs:
-  using: 'node16'
-  main: 'dist/main/index.js'
-  post: 'dist/cleanup/index.js'
-  post-if: 'success()'
+  using: "composite"
+  steps:
+    - uses: ./dist
+      id: graalvm
+    - name: 'Install Java Development Kit'
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: jdkfile
+        jdkFile: ${{ steps.graalvm.outputs.archive }}
+        cache: ${{ inputs.cache }}
+        settings-path: ${{ inputs.mvn-settings-path }}
+    - shell: bash
+      run: echo "GRAALVM_HOME=$JAVA_HOME" >> $GITHUB_ENV

@@ -75195,7 +75195,9 @@ function getLatestRelease(repo) {
 exports.getLatestRelease = getLatestRelease;
 function downloadAndExtractJDK(downloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
-        return findJavaHomeInSubfolder(yield extract(yield tc.downloadTool(downloadUrl)));
+        const archive = yield tc.downloadTool(downloadUrl);
+        core.setOutput('archive', archive);
+        return findJavaHomeInSubfolder(yield extract(archive));
     });
 }
 exports.downloadAndExtractJDK = downloadAndExtractJDK;

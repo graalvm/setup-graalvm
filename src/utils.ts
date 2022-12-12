@@ -50,9 +50,9 @@ export async function getLatestRelease(
 export async function downloadAndExtractJDK(
   downloadUrl: string
 ): Promise<string> {
-  return findJavaHomeInSubfolder(
-    await extract(await tc.downloadTool(downloadUrl))
-  )
+  const archive = await tc.downloadTool(downloadUrl)
+  core.setOutput('archive', archive)
+  return findJavaHomeInSubfolder(await extract(archive))
 }
 
 export async function downloadExtractAndCacheJDK(
