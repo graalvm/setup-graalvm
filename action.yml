@@ -56,6 +56,17 @@ runs:
   steps:
     - uses: ./dist
       id: graalvm
+      with:
+        version: ${{ inputs.version }}
+        gds-token: ${{ inputs.gds-token }}
+        java-version: ${{ inputs.java-version }}
+        components: ${{ inputs.components }}
+        github-token: ${{ inputs.github-token }}
+        check-for-updates: ${{ inputs.check-for-updates }}
+        native-image-musl: ${{ inputs.native-image-musl }}
+        native-image-job-reports: ${{ inputs.native-image-job-reports }}
+        native-image-pr-reports: ${{ inputs.native-image-pr-reports }}
+        mvn-settings-path: ${{ inputs.mvn-settings-path }}
     - name: 'Install Java Development Kit'
       uses: actions/setup-java@v3
       with:
