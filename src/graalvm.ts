@@ -1,4 +1,5 @@
 import * as c from './constants'
+import {join} from 'path'
 import {
   downloadAndExtractJDK,
   downloadExtractAndCacheJDK,
@@ -6,6 +7,7 @@ import {
 } from './utils'
 import {downloadGraalVMEE} from './gds'
 import {downloadTool} from '@actions/tool-cache'
+import {v4 as uuidv4} from 'uuid'
 
 const GRAALVM_CE_DL_BASE =
   'https://github.com/graalvm/graalvm-ce-builds/releases/download'
@@ -74,7 +76,14 @@ export async function setUpGraalVMRelease(
     downloader = async () => downloadGraalVMEE(gdsToken, version, javaVersion)
   } else {
     const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
-    downloader = async () => downloadTool(downloadUrl)
+    downloader = async () =>
+      downloadTool(
+        downloadUrl,
+        join(
+          process.env['RUNNER_TEMP'] || '',
+          `${uuidv4()}${c.GRAALVM_FILE_EXTENSION}`
+        )
+      )
   }
   return downloadExtractAndCacheJDK(downloader, toolName, version)
 }

@@ -18568,9 +18568,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.setUpGraalVMRelease = exports.setUpGraalVMDevBuild = exports.getLatestReleaseVersion = exports.setUpGraalVMLatest = void 0;
 const c = __importStar(__nccwpck_require__(9042));
+const path_1 = __nccwpck_require__(1017);
 const utils_1 = __nccwpck_require__(1314);
 const gds_1 = __nccwpck_require__(9543);
 const tool_cache_1 = __nccwpck_require__(7784);
+const uuid_1 = __nccwpck_require__(5840);
 const GRAALVM_CE_DL_BASE = 'https://github.com/graalvm/graalvm-ce-builds/releases/download';
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds';
 const GRAALVM_REPO_RELEASES = 'graalvm-ce-builds';
@@ -18624,7 +18626,9 @@ function setUpGraalVMRelease(gdsToken, version, javaVersion) {
         }
         else {
             const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
-            downloader = () => __awaiter(this, void 0, void 0, function* () { return tool_cache_1.downloadTool(downloadUrl); });
+            downloader = () => __awaiter(this, void 0, void 0, function* () {
+                return tool_cache_1.downloadTool(downloadUrl, path_1.join(process.env['RUNNER_TEMP'] || '', `${uuid_1.v4()}${c.GRAALVM_FILE_EXTENSION}`));
+            });
         }
         return utils_1.downloadExtractAndCacheJDK(downloader, toolName, version);
     });
