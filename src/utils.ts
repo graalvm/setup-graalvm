@@ -65,7 +65,9 @@ export async function downloadExtractAndCacheJDK(
   if (toolPath) {
     core.info(`Found ${toolName} ${version} in tool-cache @ ${toolPath}`)
   } else {
-    const extractDir = await extract(await downloader())
+    const archive = await downloader()
+    core.setOutput('archive', archive)
+    const extractDir = await extract(archive)
     core.info(`Adding ${toolName} ${version} to tool-cache ...`)
     toolPath = await tc.cacheDir(extractDir, toolName, semVersion)
   }

@@ -18293,7 +18293,9 @@ function downloadExtractAndCacheJDK(downloader, toolName, version) {
             core.info(`Found ${toolName} ${version} in tool-cache @ ${toolPath}`);
         }
         else {
-            const extractDir = yield extract(yield downloader());
+            const archive = yield downloader();
+            core.setOutput('archive', archive);
+            const extractDir = yield extract(archive);
             core.info(`Adding ${toolName} ${version} to tool-cache ...`);
             toolPath = yield tc.cacheDir(extractDir, toolName, semVersion);
         }
