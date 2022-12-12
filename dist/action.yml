@@ -46,6 +46,9 @@ inputs:
     description: 'Post a comment containing a Native Image build report on pull requests.'
     default: 'false'
 outputs:
+  archive:
+    description: 'The path to the downloaded JDK archive file'
+    value: ${{ steps.download.outputs.archive }}
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
 runs:

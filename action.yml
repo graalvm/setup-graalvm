@@ -66,12 +66,11 @@ runs:
         native-image-musl: ${{ inputs.native-image-musl }}
         native-image-job-reports: ${{ inputs.native-image-job-reports }}
         native-image-pr-reports: ${{ inputs.native-image-pr-reports }}
-        mvn-settings-path: ${{ inputs.mvn-settings-path }}
     - name: 'Install Java Development Kit'
       uses: actions/setup-java@v3
       with:
         java-version: ${{ inputs.java-version }}
-        distribution: jdkfile
+        distribution: 'jdkfile'
         jdkFile: ${{ steps.graalvm.outputs.archive }}
         cache: ${{ inputs.cache }}
         settings-path: ${{ inputs.mvn-settings-path }}
