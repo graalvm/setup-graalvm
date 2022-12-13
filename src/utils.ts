@@ -9,9 +9,9 @@ import {Octokit} from '@octokit/core'
 import {createHash} from 'crypto'
 import {join} from 'path'
 
-// Set up Octokit in the same way as @actions/github (see https://git.io/Jy9YP)
-const baseUrl = process.env['GITHUB_API_URL'] || 'https://api.github.com'
-const GitHub = Octokit.defaults({
+// Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
+const baseUrl = 'https://api.github.com'
+const GitHubDotCom = Octokit.defaults({
   baseUrl,
   request: {
     agent: new httpClient.HttpClient().getAgent(baseUrl)
@@ -38,7 +38,7 @@ export async function getLatestRelease(
 ): Promise<c.LatestReleaseResponse['data']> {
   const githubToken = getGitHubToken()
   const options = githubToken.length > 0 ? {auth: githubToken} : {}
-  const octokit = new GitHub(options)
+  const octokit = new GitHubDotCom(options)
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
       owner: c.GRAALVM_GH_USER,

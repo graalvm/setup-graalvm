@@ -74415,9 +74415,9 @@ const fs_1 = __nccwpck_require__(7147);
 const core_1 = __nccwpck_require__(6762);
 const crypto_1 = __nccwpck_require__(6113);
 const path_1 = __nccwpck_require__(1017);
-// Set up Octokit in the same way as @actions/github (see https://git.io/Jy9YP)
-const baseUrl = process.env['GITHUB_API_URL'] || 'https://api.github.com';
-const GitHub = core_1.Octokit.defaults({
+// Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
+const baseUrl = 'https://api.github.com';
+const GitHubDotCom = core_1.Octokit.defaults({
     baseUrl,
     request: {
         agent: new httpClient.HttpClient().getAgent(baseUrl)
@@ -74438,7 +74438,7 @@ function getLatestRelease(repo) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
         const options = githubToken.length > 0 ? { auth: githubToken } : {};
-        const octokit = new GitHub(options);
+        const octokit = new GitHubDotCom(options);
         return (yield octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
             owner: c.GRAALVM_GH_USER,
             repo
