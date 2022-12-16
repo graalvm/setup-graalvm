@@ -74747,15 +74747,13 @@ exports.setUpGraalVMDevBuild = setUpGraalVMDevBuild;
 function setUpGraalVMRelease(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const isEE = gdsToken.length > 0;
-        const graalVMIdentifier = determineGraalVMIdentifier(isEE, version, javaVersion);
         const toolName = determineToolName(isEE, javaVersion);
         let downloader;
         if (isEE) {
             downloader = () => __awaiter(this, void 0, void 0, function* () { return gds_1.downloadGraalVMEE(gdsToken, version, javaVersion); });
         }
         else {
-            const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
-            downloader = () => __awaiter(this, void 0, void 0, function* () { return tool_cache_1.downloadTool(downloadUrl); });
+            downloader = () => __awaiter(this, void 0, void 0, function* () { return downloadGraalVMCE(version, javaVersion); });
         }
         return utils_1.downloadExtractAndCacheJDK(downloader, toolName, version);
     });
@@ -74766,6 +74764,22 @@ function determineGraalVMIdentifier(isEE, version, javaVersion) {
 }
 function determineToolName(isEE, javaVersion) {
     return `graalvm-${isEE ? 'ee' : 'ce'}-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
+}
+function downloadGraalVMCE(version, javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const graalVMIdentifier = determineGraalVMIdentifier(false, version, javaVersion);
+        const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
+        try {
+            return yield tool_cache_1.downloadTool(downloadUrl);
+        }
+        catch (error) {
+            if (error instanceof Error && error.message.includes('404')) {
+                // Not Found
+                throw new Error(`Failed to download ${graalVMIdentifier}. Are you sure version: '${version}' and javaVersion: '${javaVersion}' are correct?`);
+            }
+            throw new Error(`Failed to download ${graalVMIdentifier} (error: ${error}).`);
+        }
+    });
 }
 
 

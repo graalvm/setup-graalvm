@@ -63,18 +63,12 @@ export async function setUpGraalVMRelease(
   javaVersion: string
 ): Promise<string> {
   const isEE = gdsToken.length > 0
-  const graalVMIdentifier = determineGraalVMIdentifier(
-    isEE,
-    version,
-    javaVersion
-  )
   const toolName = determineToolName(isEE, javaVersion)
   let downloader: () => Promise<string>
   if (isEE) {
     downloader = async () => downloadGraalVMEE(gdsToken, version, javaVersion)
   } else {
-    const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
-    downloader = async () => downloadTool(downloadUrl)
+    downloader = async () => downloadGraalVMCE(version, javaVersion)
   }
   return downloadExtractAndCacheJDK(downloader, toolName, version)
 }
@@ -93,4 +87,29 @@ function determineToolName(isEE: boolean, javaVersion: string): string {
   return `graalvm-${isEE ? 'ee' : 'ce'}-java${javaVersion}-${
     c.GRAALVM_PLATFORM
   }`
+}
+
+async function downloadGraalVMCE(
+  version: string,
+  javaVersion: string
+): Promise<string> {
+  const graalVMIdentifier = determineGraalVMIdentifier(
+    false,
+    version,
+    javaVersion
+  )
+  const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
+  try {
+    return await downloadTool(downloadUrl)
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('404')) {
+      // Not Found
+      throw new Error(
+        `Failed to download ${graalVMIdentifier}. Are you sure version: '${version}' and javaVersion: '${javaVersion}' are correct?`
+      )
+    }
+    throw new Error(
+      `Failed to download ${graalVMIdentifier} (error: ${error}).`
+    )
+  }
 }
