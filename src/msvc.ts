@@ -4,15 +4,21 @@ import {existsSync} from 'fs'
 
 // Keep in sync with https://github.com/actions/virtual-environments
 const KNOWN_VISUAL_STUDIO_INSTALLATIONS = [
-  'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise', // 'windows-2016'
-  'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise', // 'windows-2019' and 'windows-latest'
-  'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise' // 'windows-2022'
+  'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise', // 'windows-2022' and 'windows-latest'
+  'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise', // 'windows-2019'
+  'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise' // 'windows-2016' (deprecated and removed)
 ]
-const VCVARSALL_SUBPATH = '\\VC\\Auxiliary\\Build\\vcvarsall.bat'
+if (process.env['VSINSTALLDIR']) {
+  // if VSINSTALLDIR is set, make it the first known installation
+  KNOWN_VISUAL_STUDIO_INSTALLATIONS.unshift(
+    process.env['VSINSTALLDIR'].replace(/\\$/, '')
+  )
+}
+const VCVARSALL_SUBPATH = 'VC\\Auxiliary\\Build\\vcvarsall.bat'
 
 function findVcvarsallPath(): string {
   for (const installation of KNOWN_VISUAL_STUDIO_INSTALLATIONS) {
-    const candidate = `${installation}${VCVARSALL_SUBPATH}`
+    const candidate = `${installation}\\${VCVARSALL_SUBPATH}`
     if (existsSync(candidate)) {
       return candidate
     }
