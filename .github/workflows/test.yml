@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         version: [latest, dev]
-        java-version: ['17', '19']
+        java-version: ['19']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
         include:
@@ -42,6 +42,10 @@ jobs:
             java-version: '17'
             components: 'native-image'
             os: windows-2022
+          - version: 'dev'
+            java-version: 'dev'
+            components: 'native-image'
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Run setup-graalvm action
@@ -77,10 +81,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: ['22.3.0', 'latest']
-        java-version: ['11', '17', '19']
+        version: ['latest']
+        java-version: ['19']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - version: '22.3.0'
+            java-version: '11'
+            components: 'native-image'
+            os: ubuntu-latest
+          - version: '22.3.0'
+            java-version: '17'
+            components: 'native-image'
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Run setup-graalvm action
@@ -172,8 +185,8 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: 'latest'
-          java-version: '19'
+          version: 'dev'
+          java-version: 'dev'
           components: 'native-image'
           native-image-musl: 'true'
           native-image-job-reports: 'true'
@@ -196,7 +209,7 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: 'dev'
+          version: 'latest'
           java-version: '17'
           components: 'espresso,llvm-toolchain,native-image,nodejs,python,R,ruby,wasm'
           set-java-home: 'false'

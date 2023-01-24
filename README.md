@@ -116,7 +116,7 @@ jobs:
 |-----------------|:--------:|-------------|
 | `version`<br>*(required)* | n/a | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases]<br>`latest` for [latest stable release][stable],<br>`dev` for [latest dev build][dev-build],<br>`mandrel-X.Y.Z` (e.g., `mandrel-21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` for [latest Mandrel stable release][mandrel-stable]. |
 | `gds-token`     | `''`     | Download token for the GraalVM Download Service. If a non-empty token is provided, the action will set up GraalVM Enterprise Edition (see [GraalVM EE template](#basic-graalvm-enterprise-edition-template)). |
-| `java-version`<br>*(required)* | n/a | `'17'` or `'19'` for a specific Java version.<br>(`'8'`, `'11'`, `'16'` are supported for older GraalVM releases.) |
+| `java-version`<br>*(required)* | n/a | `'17'` or `'19'` for a specific Java version, `'dev'` for the highest Java version available (requires `version: 'dev'`).<br>(`'8'`, `'11'`, `'16'` are supported for older GraalVM releases.) |
 | `components`    | `''`     | Comma-spearated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
 | `github-token`  | `''`     | Token for communication with the GitHub API. Please set to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps to reduce rate limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
