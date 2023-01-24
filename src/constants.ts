@@ -21,6 +21,7 @@ export const GRAALVM_ARCH = determineGraalVMArchitecture()
 export const GRAALVM_FILE_EXTENSION = IS_WINDOWS ? '.zip' : '.tar.gz'
 export const GRAALVM_GH_USER = 'graalvm'
 export const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform
+export const GRAALVM_RELEASES_REPO = 'graalvm-ce-builds'
 export const JDK_HOME_SUFFIX = IS_MACOS ? '/Contents/Home' : ''
 
 export const MANDREL_NAMESPACE = 'mandrel-'

@@ -7,10 +7,8 @@ import {
 import {downloadGraalVMEE} from './gds'
 import {downloadTool} from '@actions/tool-cache'
 
-const GRAALVM_CE_DL_BASE =
-  'https://github.com/graalvm/graalvm-ce-builds/releases/download'
+const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds'
-const GRAALVM_REPO_RELEASES = 'graalvm-ce-builds'
 const GRAALVM_TAG_PREFIX = 'vm-'
 
 export async function setUpGraalVMLatest(
@@ -20,17 +18,17 @@ export async function setUpGraalVMLatest(
   if (gdsToken.length > 0) {
     return setUpGraalVMRelease(gdsToken, c.VERSION_LATEST, javaVersion)
   }
-  const latestReleaseVersion = await getLatestReleaseVersion()
-  return setUpGraalVMRelease(gdsToken, latestReleaseVersion, javaVersion)
+  const latestRelease = await getLatestRelease(c.GRAALVM_RELEASES_REPO)
+  const version = findGraalVMVersion(latestRelease)
+  return setUpGraalVMRelease(gdsToken, version, javaVersion)
 }
 
-export async function getLatestReleaseVersion(): Promise<string> {
-  const latestRelease = await getLatestRelease(GRAALVM_REPO_RELEASES)
-  const tag_name = latestRelease.tag_name
-  if (tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
-    return tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length)
+export function findGraalVMVersion(release: c.LatestReleaseResponse['data']) {
+  const tag_name = release.tag_name
+  if (!tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
+    throw new Error(`Could not find latest GraalVM release: ${tag_name}`)
   }
-  throw new Error(`Could not find latest GraalVM release: ${tag_name}`)
+  return tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length)
 }
 
 export async function setUpGraalVMDevBuild(
@@ -41,20 +39,14 @@ export async function setUpGraalVMDevBuild(
     throw new Error('Downloading GraalVM EE dev builds is not supported')
   }
   const latestDevBuild = await getLatestRelease(GRAALVM_REPO_DEV_BUILDS)
-  const graalVMIdentifier = determineGraalVMIdentifier(
-    false,
-    'dev',
-    javaVersion
-  )
-  const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
-  for (const asset of latestDevBuild.assets) {
-    if (asset.name === expectedFileName) {
-      return downloadAndExtractJDK(asset.browser_download_url)
-    }
+  let resolvedJavaVersion
+  if (javaVersion == c.VERSION_DEV) {
+    resolvedJavaVersion = findHighestJavaVersion(latestDevBuild, c.VERSION_DEV)
+  } else {
+    resolvedJavaVersion = javaVersion
   }
-  throw new Error(
-    `Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.`
-  )
+  const downloadUrl = findDownloadUrl(latestDevBuild, resolvedJavaVersion)
+  return downloadAndExtractJDK(downloadUrl)
 }
 
 export async function setUpGraalVMRelease(
@@ -71,6 +63,60 @@ export async function setUpGraalVMRelease(
     downloader = async () => downloadGraalVMCE(version, javaVersion)
   }
   return downloadExtractAndCacheJDK(downloader, toolName, version)
+}
+
+export function findHighestJavaVersion(
+  release: c.LatestReleaseResponse['data'],
+  version: string
+): string {
+  const graalVMIdentifierPattern = determineGraalVMIdentifier(
+    false,
+    version,
+    '(\\d+)'
+  )
+  const expectedFileNameRegExp = new RegExp(
+    `^${graalVMIdentifierPattern}${c.GRAALVM_FILE_EXTENSION.replace(
+      /\./g,
+      '\\.'
+    )}$`
+  )
+  let highestJavaVersion = 0
+  for (const asset of release.assets) {
+    const matches = asset.name.match(expectedFileNameRegExp)
+    if (matches) {
+      const javaVersion = +matches[1]
+      if (javaVersion > highestJavaVersion) {
+        highestJavaVersion = javaVersion
+      }
+    }
+  }
+  if (highestJavaVersion > 0) {
+    return String(highestJavaVersion)
+  } else {
+    throw new Error(
+      'Could not find highest Java version. Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
+    )
+  }
+}
+
+function findDownloadUrl(
+  release: c.LatestReleaseResponse['data'],
+  javaVersion: string
+): string {
+  const graalVMIdentifier = determineGraalVMIdentifier(
+    false,
+    c.VERSION_DEV,
+    javaVersion
+  )
+  const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
+  for (const asset of release.assets) {
+    if (asset.name === expectedFileName) {
+      return asset.browser_download_url
+    }
+  }
+  throw new Error(
+    `Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.`
+  )
 }
 
 function determineGraalVMIdentifier(
@@ -105,7 +151,7 @@ async function downloadGraalVMCE(
     if (error instanceof Error && error.message.includes('404')) {
       // Not Found
       throw new Error(
-        `Failed to download ${graalVMIdentifier}. Are you sure version: '${version}' and javaVersion: '${javaVersion}' are correct?`
+        `Failed to download ${graalVMIdentifier}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`
       )
     }
     throw new Error(
