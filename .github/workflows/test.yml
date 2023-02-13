@@ -155,7 +155,7 @@ jobs:
           java --version
           native-image --version
         if: runner.os == 'Windows'
-  test-native-image-msvc:
+  test-native-image-windows:
     name: native-image on windows-latest
     runs-on: windows-latest
     permissions:
@@ -166,7 +166,30 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: 'latest'
+          version: 'dev'
+          java-version: 'dev'
+          components: 'native-image'
+          native-image-job-reports: 'true'
+          native-image-pr-reports: 'true'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build HelloWorld executable with GraalVM Native Image on Windows
+        run: |
+          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
+          javac HelloWorld.java
+          native-image HelloWorld
+          ./helloworld
+  test-native-image-windows-msvc:
+    name: native-image on windows-2019
+    runs-on: windows-2019
+    permissions:
+      contents: read
+      pull-requests: write # for `native-image-pr-reports` option
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          version: '22.3.1'
           java-version: '17'
           components: 'native-image'
           native-image-job-reports: 'true'
