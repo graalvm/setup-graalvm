@@ -27,7 +27,7 @@ async function run(): Promise<void> {
     const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
 
     if (c.IS_WINDOWS) {
-      setUpWindowsEnvironment()
+      setUpWindowsEnvironment(graalvmVersion)
     }
     await setUpDependencies(components)
     if (enableNativeImageMusl) {

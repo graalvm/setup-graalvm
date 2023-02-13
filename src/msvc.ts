@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import {execSync} from 'child_process'
 import {existsSync} from 'fs'
+import {VERSION_DEV} from './constants'
 
 // Keep in sync with https://github.com/actions/virtual-environments
 const KNOWN_VISUAL_STUDIO_INSTALLATIONS = [
@@ -26,7 +27,11 @@ function findVcvarsallPath(): string {
   throw new Error('Failed to find vcvarsall.bat')
 }
 
-export function setUpWindowsEnvironment(): void {
+export function setUpWindowsEnvironment(graalVMVersion: string): void {
+  if (graalVMVersion === VERSION_DEV) {
+    return // no longer required in dev builds
+  }
+
   core.startGroup('Updating Windows environment...')
 
   const vcvarsallPath = findVcvarsallPath()
