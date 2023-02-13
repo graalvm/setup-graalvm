@@ -74085,8 +74085,8 @@ const graalvm_1 = __nccwpck_require__(5254);
 const constants_1 = __nccwpck_require__(9042);
 function checkForUpdates(graalVMVersion, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (graalVMVersion === '22.3.0' && javaVersion === '11') {
-            core.notice('Please consider upgrading your project to Java 17+. The GraalVM 22.3.0 release is the last to support JDK11: https://github.com/oracle/graal/issues/5063');
+        if (graalVMVersion.startsWith('22.3.') && javaVersion === '11') {
+            core.notice('Please consider upgrading your project to Java 17+. GraalVM 22.3.X releases are the last to support JDK11: https://github.com/oracle/graal/issues/5063');
             return;
         }
         const latestRelease = yield utils_1.getLatestRelease(constants_1.GRAALVM_RELEASES_REPO);
@@ -74524,7 +74524,7 @@ const assert_1 = __nccwpck_require__(9491);
 const uuid_1 = __nccwpck_require__(5840);
 function downloadGraalVMEE(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const userAgent = `GraalVMGitHubAction/1.0.9 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`;
+        const userAgent = `GraalVMGitHubAction/1.0.10 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`;
         const baseArtifact = yield fetchArtifact(userAgent, 'isBase:True', version, javaVersion);
         return downloadArtifact(gdsToken, userAgent, baseArtifact);
     });
@@ -74935,7 +74935,7 @@ function run() {
             const enableCheckForUpdates = core.getInput(c.INPUT_CHECK_FOR_UPDATES) === 'true';
             const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true';
             if (c.IS_WINDOWS) {
-                msvc_1.setUpWindowsEnvironment();
+                msvc_1.setUpWindowsEnvironment(graalvmVersion);
             }
             yield dependencies_1.setUpDependencies(components);
             if (enableNativeImageMusl) {
@@ -75109,6 +75109,7 @@ exports.setUpWindowsEnvironment = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 const fs_1 = __nccwpck_require__(7147);
+const constants_1 = __nccwpck_require__(9042);
 // Keep in sync with https://github.com/actions/virtual-environments
 const KNOWN_VISUAL_STUDIO_INSTALLATIONS = [
     'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise',
@@ -75129,7 +75130,10 @@ function findVcvarsallPath() {
     }
     throw new Error('Failed to find vcvarsall.bat');
 }
-function setUpWindowsEnvironment() {
+function setUpWindowsEnvironment(graalVMVersion) {
+    if (graalVMVersion === constants_1.VERSION_DEV) {
+        return; // no longer required in dev builds
+    }
     core.startGroup('Updating Windows environment...');
     const vcvarsallPath = findVcvarsallPath();
     core.debug(`Calling "${vcvarsallPath}"...`);
