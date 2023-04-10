@@ -25,10 +25,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: [latest, dev]
-        java-version: ['19']
+        version: ['latest', 'dev']
+        java-version: ['19', '20']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
+        exclude:
+          - version: 'latest'
+            java-version: '20'
+          - version: 'dev'
+            java-version: '19'
         include:
           - version: '22.2.0' # for update notifications
             java-version: '17'
@@ -67,7 +72,7 @@ jobs:
           java --version
           java --version | grep "GraalVM CE" || exit 34
           native-image --version
-          gu remove native-image
+          gu list
         if: runner.os != 'Windows'
       - name: Check Windows environment
         run: |
@@ -114,7 +119,7 @@ jobs:
           java --version
           java --version | grep "GraalVM EE" || exit 23
           native-image --version
-          gu remove native-image
+          gu list
         if: runner.os != 'Windows'
       - name: Check Windows environment
         run: |
@@ -281,4 +286,4 @@ jobs:
           bundle exec rake test
           popd > /dev/null
       - name: Remove components
-        run: gu remove espresso llvm-toolchain native-image nodejs python R ruby wasm
+        run: gu remove espresso llvm-toolchain nodejs python R ruby wasm
