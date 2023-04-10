@@ -38,7 +38,7 @@ jobs:
           - version: '22.2.0' # for update notifications
             java-version: '17'
             components: 'native-image'
-            os: ubuntu-18.04
+            os: ubuntu-20.04
           - version: '22.3.1'
             java-version: '11' # for JDK11 notification
             components: 'native-image'
