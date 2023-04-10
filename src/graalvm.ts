@@ -55,7 +55,7 @@ export async function setUpGraalVMRelease(
   javaVersion: string
 ): Promise<string> {
   const isEE = gdsToken.length > 0
-  const toolName = determineToolName(isEE, javaVersion)
+  const toolName = determineToolName(isEE, version, javaVersion)
   let downloader: () => Promise<string>
   if (isEE) {
     downloader = async () => downloadGraalVMEE(gdsToken, version, javaVersion)
@@ -124,15 +124,18 @@ function determineGraalVMIdentifier(
   version: string,
   javaVersion: string
 ): string {
-  return `graalvm-${isEE ? 'ee' : 'ce'}-java${javaVersion}-${
-    c.GRAALVM_PLATFORM
-  }-${c.GRAALVM_ARCH}-${version}`
+  return `${determineToolName(isEE, version, javaVersion)}-${
+    c.GRAALVM_ARCH
+  }-${version}`
 }
 
-function determineToolName(isEE: boolean, javaVersion: string): string {
-  return `graalvm-${isEE ? 'ee' : 'ce'}-java${javaVersion}-${
-    c.GRAALVM_PLATFORM
-  }`
+function determineToolName(
+  isEE: boolean,
+  version: string,
+  javaVersion: string
+): string {
+  const infix = isEE ? 'ee' : version === c.VERSION_DEV ? 'community' : 'ce'
+  return `graalvm-${infix}-java${javaVersion}-${c.GRAALVM_PLATFORM}`
 }
 
 async function downloadGraalVMCE(

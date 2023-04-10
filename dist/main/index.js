@@ -74748,7 +74748,7 @@ exports.setUpGraalVMDevBuild = setUpGraalVMDevBuild;
 function setUpGraalVMRelease(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const isEE = gdsToken.length > 0;
-        const toolName = determineToolName(isEE, javaVersion);
+        const toolName = determineToolName(isEE, version, javaVersion);
         let downloader;
         if (isEE) {
             downloader = () => __awaiter(this, void 0, void 0, function* () { return gds_1.downloadGraalVMEE(gdsToken, version, javaVersion); });
@@ -74792,10 +74792,11 @@ function findDownloadUrl(release, javaVersion) {
     throw new Error(`Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.`);
 }
 function determineGraalVMIdentifier(isEE, version, javaVersion) {
-    return `graalvm-${isEE ? 'ee' : 'ce'}-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-${version}`;
+    return `${determineToolName(isEE, version, javaVersion)}-${c.GRAALVM_ARCH}-${version}`;
 }
-function determineToolName(isEE, javaVersion) {
-    return `graalvm-${isEE ? 'ee' : 'ce'}-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
+function determineToolName(isEE, version, javaVersion) {
+    const infix = isEE ? 'ee' : version === c.VERSION_DEV ? 'community' : 'ce';
+    return `graalvm-${infix}-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
 }
 function downloadGraalVMCE(version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
