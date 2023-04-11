@@ -20,8 +20,8 @@ inputs:
     default: ''
   github-token:
     required: false
-    description: 'Set it to secrets.GITHUB_TOKEN to increase rate limits when accessing the GitHub API.'
-    default: ''
+    description: 'Set it to secrets.GITHUB_TOKEN to increase rate limits when accessing the GitHub API. Defaults to github.token.'
+    default: ${{ github.token }}
   set-java-home:
     required: false
     description: 'Set $JAVA_HOME to the GraalVM installation. Default: true.'
