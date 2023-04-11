@@ -167,6 +167,10 @@ export async function save(id: string): Promise<void> {
     await cache.saveCache(packageManager.path, primaryKey)
     core.info(`Cache saved with the key: ${primaryKey}`)
   } catch (error) {
+    if (!(error instanceof Error)) {
+      core.info(`Not an Error: ${error}`)
+      throw error
+    }
     if (error.name === cache.ReserveCacheError.name) {
       core.info(error.message)
     } else {
