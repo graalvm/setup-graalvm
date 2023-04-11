@@ -1,6 +1,6 @@
 {
   "name": "setup-graalvm",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "private": true,
   "description": "GitHub Action for GraalVM",
   "main": "lib/main.js",
