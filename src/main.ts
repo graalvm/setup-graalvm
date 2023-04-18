@@ -19,7 +19,9 @@ async function run(): Promise<void> {
     const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
     const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
     const components: string[] =
-      componentsString.length > 0 ? componentsString.split(',') : []
+      componentsString.length > 0
+        ? componentsString.split(',').map(x => x.trim())
+        : []
     const setJavaHome = core.getInput(c.INPUT_SET_JAVA_HOME) === 'true'
     const cache = core.getInput(c.INPUT_CACHE)
     const enableCheckForUpdates =
