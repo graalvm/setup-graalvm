@@ -11,6 +11,7 @@ inputs:
   gds-token:
     required: false
     description: 'Download token for the GraalVM Download Service. If provided, the action will set up GraalVM Enterprise Edition.'
+    default: ''
   java-version:
     required: true
     description: 'Java version (11 or 17, 8 or 16 for older releases).'
