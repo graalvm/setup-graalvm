@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {getLatestRelease, toSemVer} from '../utils'
+import {getTaggedRelease, toSemVer} from '../utils'
 import {lt, major, minor, valid} from 'semver'
 import {findGraalVMVersion} from '../graalvm'
 import {GRAALVM_RELEASES_REPO} from '../constants'
@@ -15,7 +15,10 @@ export async function checkForUpdates(
     return
   }
 
-  const latestRelease = await getLatestRelease(GRAALVM_RELEASES_REPO)
+  const latestRelease = await getTaggedRelease(
+    GRAALVM_RELEASES_REPO,
+    'vm-22.3.1'
+  )
   const latestGraalVMVersion = findGraalVMVersion(latestRelease)
   const selectedVersion = toSemVer(graalVMVersion)
   const latestVersion = toSemVer(latestGraalVMVersion)

@@ -70461,7 +70461,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
+exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
@@ -70503,6 +70503,19 @@ function getLatestRelease(repo) {
     });
 }
 exports.getLatestRelease = getLatestRelease;
+function getTaggedRelease(repo, tag) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const githubToken = getGitHubToken();
+        const options = githubToken.length > 0 ? { auth: githubToken } : {};
+        const octokit = new GitHubDotCom(options);
+        return (yield octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
+            owner: c.GRAALVM_GH_USER,
+            repo,
+            tag
+        })).data;
+    });
+}
+exports.getTaggedRelease = getTaggedRelease;
 function downloadAndExtractJDK(downloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         return findJavaHomeInSubfolder(yield extract(yield tc.downloadTool(downloadUrl)));

@@ -47,6 +47,22 @@ export async function getLatestRelease(
   ).data
 }
 
+export async function getTaggedRelease(
+  repo: string,
+  tag: string
+): Promise<c.LatestReleaseResponse['data']> {
+  const githubToken = getGitHubToken()
+  const options = githubToken.length > 0 ? {auth: githubToken} : {}
+  const octokit = new GitHubDotCom(options)
+  return (
+    await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
+      owner: c.GRAALVM_GH_USER,
+      repo,
+      tag
+    })
+  ).data
+}
+
 export async function downloadAndExtractJDK(
   downloadUrl: string
 ): Promise<string> {

@@ -1,7 +1,7 @@
 import * as path from 'path'
 import * as graalvm from '../src/graalvm'
 import {expect, test} from '@jest/globals'
-import {getLatestRelease} from '../src/utils'
+import {getTaggedRelease} from '../src/utils'
 import {findGraalVMVersion, findHighestJavaVersion} from '../src/graalvm'
 import {GRAALVM_RELEASES_REPO} from '../src/constants'
 
@@ -31,7 +31,10 @@ test('request invalid version/javaVersion', async () => {
 })
 
 test('find version/javaVersion', async () => {
-  const latestRelease = await getLatestRelease(GRAALVM_RELEASES_REPO)
+  const latestRelease = await getTaggedRelease(
+    GRAALVM_RELEASES_REPO,
+    'vm-22.3.1'
+  )
   const latestVersion = findGraalVMVersion(latestRelease)
   expect(latestVersion).not.toBe('')
   const latestJavaVersion = findHighestJavaVersion(latestRelease, latestVersion)
@@ -43,7 +46,7 @@ test('find version/javaVersion', async () => {
     findGraalVMVersion(invalidRelease)
   } catch (err) {
     if (!(err instanceof Error)) {
-      fail(`Unexpected non-Erro: ${err}`)
+      fail(`Unexpected non-Error: ${err}`)
     }
     error = err
   }

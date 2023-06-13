@@ -2,7 +2,8 @@ import * as c from './constants'
 import {
   downloadAndExtractJDK,
   downloadExtractAndCacheJDK,
-  getLatestRelease
+  getLatestRelease,
+  getTaggedRelease
 } from './utils'
 import {downloadGraalVMEE} from './gds'
 import {downloadTool} from '@actions/tool-cache'
@@ -15,10 +16,14 @@ export async function setUpGraalVMLatest(
   gdsToken: string,
   javaVersion: string
 ): Promise<string> {
+  const lockedVersion = '22.3.1'
   if (gdsToken.length > 0) {
-    return setUpGraalVMRelease(gdsToken, c.VERSION_LATEST, javaVersion)
+    return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion)
   }
-  const latestRelease = await getLatestRelease(c.GRAALVM_RELEASES_REPO)
+  const latestRelease = await getTaggedRelease(
+    c.GRAALVM_RELEASES_REPO,
+    GRAALVM_TAG_PREFIX + lockedVersion
+  )
   const version = findGraalVMVersion(latestRelease)
   return setUpGraalVMRelease(gdsToken, version, javaVersion)
 }

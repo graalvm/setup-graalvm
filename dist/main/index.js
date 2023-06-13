@@ -70141,7 +70141,7 @@ function checkForUpdates(graalVMVersion, javaVersion) {
             core.notice('Please consider upgrading your project to Java 17+. GraalVM 22.3.X releases are the last to support JDK11: https://github.com/oracle/graal/issues/5063');
             return;
         }
-        const latestRelease = yield (0, utils_1.getLatestRelease)(constants_1.GRAALVM_RELEASES_REPO);
+        const latestRelease = yield (0, utils_1.getTaggedRelease)(constants_1.GRAALVM_RELEASES_REPO, 'vm-22.3.1');
         const latestGraalVMVersion = (0, graalvm_1.findGraalVMVersion)(latestRelease);
         const selectedVersion = (0, utils_1.toSemVer)(graalVMVersion);
         const latestVersion = (0, utils_1.toSemVer)(latestGraalVMVersion);
@@ -70778,10 +70778,11 @@ const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds';
 const GRAALVM_TAG_PREFIX = 'vm-';
 function setUpGraalVMLatest(gdsToken, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
+        const lockedVersion = '22.3.1';
         if (gdsToken.length > 0) {
-            return setUpGraalVMRelease(gdsToken, c.VERSION_LATEST, javaVersion);
+            return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion);
         }
-        const latestRelease = yield (0, utils_1.getLatestRelease)(c.GRAALVM_RELEASES_REPO);
+        const latestRelease = yield (0, utils_1.getTaggedRelease)(c.GRAALVM_RELEASES_REPO, GRAALVM_TAG_PREFIX + lockedVersion);
         const version = findGraalVMVersion(latestRelease);
         return setUpGraalVMRelease(gdsToken, version, javaVersion);
     });
@@ -71292,7 +71293,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getLatestRelease = exports.exec = void 0;
+exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
@@ -71334,6 +71335,19 @@ function getLatestRelease(repo) {
     });
 }
 exports.getLatestRelease = getLatestRelease;
+function getTaggedRelease(repo, tag) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const githubToken = getGitHubToken();
+        const options = githubToken.length > 0 ? { auth: githubToken } : {};
+        const octokit = new GitHubDotCom(options);
+        return (yield octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
+            owner: c.GRAALVM_GH_USER,
+            repo,
+            tag
+        })).data;
+    });
+}
+exports.getTaggedRelease = getTaggedRelease;
 function downloadAndExtractJDK(downloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         return findJavaHomeInSubfolder(yield extract(yield tc.downloadTool(downloadUrl)));
