@@ -137,6 +137,10 @@ jobs:
         version: ['mandrel-22.2.0.0-Final', 'mandrel-latest']
         java-version: ['17']
         os: [windows-latest, ubuntu-latest]
+        exclude: # temporarily disable Mandrel latest builds on Windows due to unavailability
+          - version: 'mandrel-latest'
+            java-version: '17'
+            os: windows-latest
     steps:
       - uses: actions/checkout@v3
       - name: Run setup-graalvm action
