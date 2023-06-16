@@ -55,7 +55,7 @@ async function run(): Promise<void> {
         case '':
           if (javaVersion === c.VERSION_DEV) {
             core.info(
-              `This build is using the GraalVM Community Edition. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
+              `This build is using GraalVM Community Edition. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )
             graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
           } else {

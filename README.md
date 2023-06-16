@@ -1,5 +1,5 @@
 # GitHub Action for GraalVM [![build-test](https://github.com/graalvm/setup-graalvm/actions/workflows/test.yml/badge.svg)](https://github.com/graalvm/setup-graalvm/actions/workflows/test.yml)
-This GitHub action sets up [Oracle GraalVM][graalvm], GraalVM [Community Edition (CE)][repo], [Enterprise Edition (EE)][graalvm-ee], or [Mandrel][mandrel], as well as [Native Image][native-image] and GraalVM components such as [Truffle languages][truffle-languages].
+This GitHub action sets up [Oracle GraalVM][graalvm-medium], GraalVM [Community Edition (CE)][repo], [Enterprise Edition (EE)][graalvm-ee], or [Mandrel][mandrel], as well as [Native Image][native-image] and GraalVM components such as [Truffle languages][truffle-languages].
 
 ## Key Features
 
@@ -15,7 +15,7 @@ This action:
 - has built-in support for GraalVM components and the [GraalVM Updater][gu]
 
 
-## Migrating from GraalVM 22.3 or earlier to the new GraalVM for JDK 17 and later
+## Migrating from GraalVM 22.3 or Earlier to the New GraalVM for JDK 17 and Later
 
 The new [GraalVM for JDK 17 and JDK 20 release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the GraalVM version scheme with OpenJDK.
 As a result, this action no longer requires the `version` option to select a specific GraalVM version.
@@ -198,6 +198,7 @@ Only pull requests from committers that can be verified as having signed the OCA
 [gu]: https://www.graalvm.org/reference-manual/graalvm-updater/
 [graalvm]: https://www.graalvm.org/
 [graalvm-dl]: https://www.oracle.com/java/technologies/downloads/
+[graalvm-medium]: https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5
 [graalvm-ee]: https://www.oracle.com/downloads/graalvm-downloads.html
 [mandrel]: https://github.com/graalvm/mandrel
 [mandrel-releases]: https://github.com/graalvm/mandrel/releases

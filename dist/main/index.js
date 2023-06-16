@@ -71150,7 +71150,7 @@ function run() {
                         throw new Error(`Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
                     case '':
                         if (javaVersion === c.VERSION_DEV) {
-                            core.info(`This build is using the GraalVM Community Edition. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
+                            core.info(`This build is using GraalVM Community Edition. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
                             graalVMHome = yield graalvm.setUpGraalVMJDKDevBuild();
                         }
                         else {
