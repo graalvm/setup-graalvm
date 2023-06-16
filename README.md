@@ -17,10 +17,10 @@ This action:
 
 ## Migrating from GraalVM 22.3 or earlier to the new GraalVM for JDK 17 and later
 
-The new [GraalVM release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the version scheme with OpenJDK.
-As a result, this action no longer requires the `version` option that was used to select a specific GraalVM version.
-At the same time, it introduces a new `distribution` option that can be used to select a specific GraalVM distribution (`graalvm`, `graalvm-community`, and `mandrel`).
-Therefore, to migrate workflows to use the latest GraalVM release, replace the `version` with the `distribution` option in your workflow `yml` config, for example:
+The new [GraalVM for JDK 17 and JDK 20 release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the GraalVM version scheme with OpenJDK.
+As a result, this action no longer requires the `version` option to select a specific GraalVM version.
+At the same time, it introduces a new `distribution` option to select a specific GraalVM distribution (`graalvm`, `graalvm-community`, or `mandrel`).
+Therefore, to migrate your workflow to use the latest GraalVM release, replace the `version` with the `distribution` option in the workflow `yml` config, for example:
 
 ```yml
 # ...
@@ -31,7 +31,7 @@ Therefore, to migrate workflows to use the latest GraalVM release, replace the `
     # ...
 ```
 
-can be turned into:
+can be replaced with:
 
 ```yml
 # ...
@@ -166,17 +166,17 @@ jobs:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | `'17.0.7'` or `'20.0.1'` for a specific Java version, `'dev'` for a dev build with the highest Java version available.<br>(`'8'`, `'11'`, `'16'`, `'19'` are supported for older GraalVM releases.) |
+| `java-version`<br>*(required)* | n/a | `'17.0.7'` or `'20.0.1'` for a specific Java version, `'dev'` for a dev build with the latest Java version available.<br>(`'8'`, `'11'`, `'16'`, `'19'` are supported for older GraalVM releases.) |
 | `distribution`  | `''` | GraalVM distribution (`graalvm` for Oracle GraalVM, `graalvm-community` for GraalVM Community Edition, `mandrel` for Mandrel). |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
-| `cache`         | `''`     | Name of the build platform to cache dependencies. It can be `'maven'`, `'gradle'`, or `'sbt'` and works the same way as described in [actions/setup-java][setup-java-caching]. |
+| `cache`         | `''`     | Name of the build platform to cache dependencies. Turned off by default (`''`). It can also be `'maven'`, `'gradle'`, or `'sbt'` and works the same way as described in [actions/setup-java][setup-java-caching]. |
 | `check-for-updates` | `'true'`  | [Annotate jobs][gha-annotations] with update notifications, for example when a new GraalVM release is available. |
 | `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] to build [static binaries][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
 | `native-image-job-reports` *) | `'false'` | If set to `'true'`, post a job summary containing a Native Image build report. |
 | `native-image-pr-reports`  *) | `'false'` | If set to `'true'`, post a comment containing a Native Image build report on pull requests. Requires `write` permissions for the [`pull-requests` scope][gha-permissions]. |
 | `components`    | `''`     | Comma-separated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
-| `version` | n/a | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z` (e.g., `mandrel-21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` for [latest Mandrel stable release][mandrel-stable]. |
+| `version` | `''` | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z` (e.g., `mandrel-21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` for [latest Mandrel stable release][mandrel-stable]. |
 | `gds-token`     | `''`     | Download token for the GraalVM Download Service. If a non-empty token is provided, the action will set up GraalVM Enterprise Edition (see [GraalVM EE template](#template-for-graalvm-enterprise-edition)). |
 
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*
