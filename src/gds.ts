@@ -27,7 +27,7 @@ interface GDSErrorResponse {
   readonly message: string
 }
 
-export async function downloadGraalVMEE(
+export async function downloadGraalVMEELegacy(
   gdsToken: string,
   version: string,
   javaVersion: string

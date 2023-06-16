@@ -88,6 +88,7 @@ export async function setUpNativeImageBuildReports(
   const isSupported =
     graalVMVersion === c.VERSION_LATEST ||
     graalVMVersion === c.VERSION_DEV ||
+    graalVMVersion.length === 0 ||
     (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
       gte(toSemVer(graalVMVersion), '22.2.0'))
   if (!isSupported) {

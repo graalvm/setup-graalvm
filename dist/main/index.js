@@ -69743,10 +69743,11 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
+exports.INPUT_DISTRIBUTION = 'distribution';
 exports.INPUT_COMPONENTS = 'components';
 exports.INPUT_GITHUB_TOKEN = 'github-token';
 exports.INPUT_SET_JAVA_HOME = 'set-java-home';
@@ -69756,19 +69757,54 @@ exports.INPUT_NI_MUSL = 'native-image-musl';
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
+exports.DISTRIBUTION_GRAALVM = 'graalvm';
+exports.DISTRIBUTION_GRAALVM_COMMUNITY = 'graalvm-community';
+exports.DISTRIBUTION_MANDREL = 'mandrel';
 exports.VERSION_DEV = 'dev';
 exports.VERSION_LATEST = 'latest';
+exports.JDK_ARCH = determineJDKArchitecture();
+exports.JDK_PLATFORM = determineJDKPlatform();
+exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
 exports.GRAALVM_ARCH = determineGraalVMArchitecture();
 exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
 exports.GRAALVM_GH_USER = 'graalvm';
 exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
 exports.GRAALVM_RELEASES_REPO = 'graalvm-ce-builds';
-exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
 exports.MANDREL_NAMESPACE = 'mandrel-';
 exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
 exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
 exports.ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
 exports.EVENT_NAME_PULL_REQUEST = 'pull_request';
+exports.ERROR_HINT = 'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.';
+function determineJDKArchitecture() {
+    switch (process.arch) {
+        case 'x64': {
+            return 'x64';
+        }
+        case 'arm64': {
+            return 'aarch64';
+        }
+        default: {
+            throw new Error(`Unsupported architecture: ${process.arch}`);
+        }
+    }
+}
+function determineJDKPlatform() {
+    switch (process.platform) {
+        case 'linux': {
+            return 'linux';
+        }
+        case 'darwin': {
+            return 'macos';
+        }
+        case 'win32': {
+            return 'windows';
+        }
+        default: {
+            throw new Error(`Unsupported platform: ${process.platform}`);
+        }
+    }
+}
 function determineGraalVMArchitecture() {
     switch (process.arch) {
         case 'x64': {
@@ -70137,6 +70173,12 @@ const graalvm_1 = __nccwpck_require__(5254);
 const constants_1 = __nccwpck_require__(9042);
 function checkForUpdates(graalVMVersion, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (graalVMVersion.length > 0 &&
+            (javaVersion === '17' || javaVersion === '19')) {
+            const recommendedJDK = javaVersion === '17' ? '17' : '20';
+            core.notice(`A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Release notes: https://www.graalvm.org/release-notes/JDK_${recommendedJDK}/`);
+            return;
+        }
         if (graalVMVersion.startsWith('22.3.') && javaVersion === '11') {
             core.notice('Please consider upgrading your project to Java 17+. GraalVM 22.3.X releases are the last to support JDK11: https://github.com/oracle/graal/issues/5063');
             return;
@@ -70305,6 +70347,7 @@ function setUpNativeImageBuildReports(graalVMVersion) {
         }
         const isSupported = graalVMVersion === c.VERSION_LATEST ||
             graalVMVersion === c.VERSION_DEV ||
+            graalVMVersion.length === 0 ||
             (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
                 (0, semver_1.gte)((0, utils_1.toSemVer)(graalVMVersion), '22.2.0'));
         if (!isSupported) {
@@ -70573,7 +70616,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.fetchArtifact = exports.downloadGraalVMEE = void 0;
+exports.fetchArtifact = exports.downloadGraalVMEELegacy = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -70586,14 +70629,14 @@ const retry_helper_1 = __nccwpck_require__(8279);
 const utils_1 = __nccwpck_require__(1314);
 const assert_1 = __nccwpck_require__(9491);
 const uuid_1 = __nccwpck_require__(5840);
-function downloadGraalVMEE(gdsToken, version, javaVersion) {
+function downloadGraalVMEELegacy(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const userAgent = `GraalVMGitHubAction/1.0.12 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`;
         const baseArtifact = yield fetchArtifact(userAgent, 'isBase:True', version, javaVersion);
         return downloadArtifact(gdsToken, userAgent, baseArtifact);
     });
 }
-exports.downloadGraalVMEE = downloadGraalVMEE;
+exports.downloadGraalVMEELegacy = downloadGraalVMEELegacy;
 function fetchArtifact(userAgent, metadata, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const http = new httpClient.HttpClient(userAgent);
@@ -70768,14 +70811,126 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findHighestJavaVersion = exports.setUpGraalVMRelease = exports.setUpGraalVMDevBuild = exports.findGraalVMVersion = exports.setUpGraalVMLatest = void 0;
+exports.setUpGraalVMRelease = exports.findGraalVMVersion = exports.setUpGraalVMLatest = exports.findHighestJavaVersion = exports.setUpGraalVMJDKDevBuild = exports.findLatestGraalVMJDKCEJavaVersion = exports.setUpGraalVMJDKCE = exports.setUpGraalVMJDK = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const utils_1 = __nccwpck_require__(1314);
 const gds_1 = __nccwpck_require__(9543);
 const tool_cache_1 = __nccwpck_require__(7784);
+const path_1 = __nccwpck_require__(1017);
+const semver_1 = __nccwpck_require__(1383);
+const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
 const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`;
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds';
+const GRAALVM_JDK_TAG_PREFIX = 'jdk-';
 const GRAALVM_TAG_PREFIX = 'vm-';
+// Support for GraalVM for JDK 17 and later
+function setUpGraalVMJDK(javaVersionOrDev) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (javaVersionOrDev === c.VERSION_DEV) {
+            return setUpGraalVMJDKDevBuild();
+        }
+        const javaVersion = javaVersionOrDev;
+        const toolName = determineToolName(javaVersion, false);
+        let downloadUrl;
+        if (javaVersion.includes('.')) {
+            const majorJavaVersion = javaVersion.split('.')[0];
+            downloadUrl = `${GRAALVM_DL_BASE}/${majorJavaVersion}/archive/${toolName}${c.GRAALVM_FILE_EXTENSION}`;
+        }
+        else {
+            downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${toolName}${c.GRAALVM_FILE_EXTENSION}`;
+        }
+        const downloader = () => __awaiter(this, void 0, void 0, function* () { return downloadGraalVMJDK(downloadUrl, javaVersion); });
+        return (0, utils_1.downloadExtractAndCacheJDK)(downloader, toolName, javaVersion);
+    });
+}
+exports.setUpGraalVMJDK = setUpGraalVMJDK;
+function setUpGraalVMJDKCE(javaVersionOrDev) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (javaVersionOrDev === c.VERSION_DEV) {
+            return setUpGraalVMJDKDevBuild();
+        }
+        let javaVersion = javaVersionOrDev;
+        if (!javaVersion.includes('.')) {
+            javaVersion = yield findLatestGraalVMJDKCEJavaVersion(javaVersion);
+        }
+        if (javaVersion.split('.').length != 3) {
+            throw new Error(`java-version set to '${javaVersionOrDev}', which was resolved to '${javaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`);
+        }
+        const toolName = determineToolName(javaVersion, true);
+        const downloadUrl = `${GRAALVM_CE_DL_BASE}/jdk-${javaVersion}/${toolName}${c.GRAALVM_FILE_EXTENSION}`;
+        const downloader = () => __awaiter(this, void 0, void 0, function* () { return downloadGraalVMJDK(downloadUrl, javaVersion); });
+        return (0, utils_1.downloadExtractAndCacheJDK)(downloader, toolName, javaVersion);
+    });
+}
+exports.setUpGraalVMJDKCE = setUpGraalVMJDKCE;
+function findLatestGraalVMJDKCEJavaVersion(majorJavaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const matchingRefs = yield (0, utils_1.getMatchingTags)(`${GRAALVM_JDK_TAG_PREFIX}${majorJavaVersion}`);
+        const lowestNonExistingVersion = '0.0.1';
+        let highestVersion = lowestNonExistingVersion;
+        const versionNumberStartIndex = `refs/tags/${GRAALVM_JDK_TAG_PREFIX}`.length;
+        for (const matchingRef of matchingRefs) {
+            const currentVersion = matchingRef.ref.substring(versionNumberStartIndex);
+            if ((0, semver_1.gt)(currentVersion, highestVersion)) {
+                highestVersion = currentVersion;
+            }
+        }
+        if (highestVersion === lowestNonExistingVersion) {
+            throw new Error(`Unable to find the latest Java version for '${majorJavaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`);
+        }
+        return highestVersion;
+    });
+}
+exports.findLatestGraalVMJDKCEJavaVersion = findLatestGraalVMJDKCEJavaVersion;
+function determineToolName(javaVersion, isCommunity) {
+    return `graalvm${isCommunity ? '-community' : ''}-jdk-${javaVersion}_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin`;
+}
+function downloadGraalVMJDK(downloadUrl, javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            return yield (0, tool_cache_1.downloadTool)(downloadUrl);
+        }
+        catch (error) {
+            if (error instanceof Error && error.message.includes('404')) {
+                // Not Found
+                throw new Error(`Failed to download ${(0, path_1.basename)(downloadUrl)}. Are you sure java-version: '${javaVersion}' is correct?`);
+            }
+            throw new Error(`Failed to download ${(0, path_1.basename)(downloadUrl)} (error: ${error}).`);
+        }
+    });
+}
+// Support for GraalVM dev builds
+function setUpGraalVMJDKDevBuild() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const latestDevBuild = yield (0, utils_1.getLatestRelease)(GRAALVM_REPO_DEV_BUILDS);
+        const resolvedJavaVersion = findHighestJavaVersion(latestDevBuild, c.VERSION_DEV);
+        const downloadUrl = findDownloadUrl(latestDevBuild, resolvedJavaVersion);
+        return (0, utils_1.downloadAndExtractJDK)(downloadUrl);
+    });
+}
+exports.setUpGraalVMJDKDevBuild = setUpGraalVMJDKDevBuild;
+function findHighestJavaVersion(release, version) {
+    const graalVMIdentifierPattern = determineGraalVMLegacyIdentifier(false, version, '(\\d+)');
+    const expectedFileNameRegExp = new RegExp(`^${graalVMIdentifierPattern}${c.GRAALVM_FILE_EXTENSION.replace(/\./g, '\\.')}$`);
+    let highestJavaVersion = 0;
+    for (const asset of release.assets) {
+        const matches = asset.name.match(expectedFileNameRegExp);
+        if (matches) {
+            const javaVersion = +matches[1];
+            if (javaVersion > highestJavaVersion) {
+                highestJavaVersion = javaVersion;
+            }
+        }
+    }
+    if (highestJavaVersion > 0) {
+        return String(highestJavaVersion);
+    }
+    else {
+        throw new Error('Could not find highest Java version. Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.');
+    }
+}
+exports.findHighestJavaVersion = findHighestJavaVersion;
+// Support for GraalVM 22.X releases and earlier
 function setUpGraalVMLatest(gdsToken, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const lockedVersion = '22.3.1';
@@ -70796,80 +70951,41 @@ function findGraalVMVersion(release) {
     return tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length);
 }
 exports.findGraalVMVersion = findGraalVMVersion;
-function setUpGraalVMDevBuild(gdsToken, javaVersion) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (gdsToken.length > 0) {
-            throw new Error('Downloading GraalVM EE dev builds is not supported');
-        }
-        const latestDevBuild = yield (0, utils_1.getLatestRelease)(GRAALVM_REPO_DEV_BUILDS);
-        let resolvedJavaVersion;
-        if (javaVersion == c.VERSION_DEV) {
-            resolvedJavaVersion = findHighestJavaVersion(latestDevBuild, c.VERSION_DEV);
-        }
-        else {
-            resolvedJavaVersion = javaVersion;
-        }
-        const downloadUrl = findDownloadUrl(latestDevBuild, resolvedJavaVersion);
-        return (0, utils_1.downloadAndExtractJDK)(downloadUrl);
-    });
-}
-exports.setUpGraalVMDevBuild = setUpGraalVMDevBuild;
 function setUpGraalVMRelease(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const isEE = gdsToken.length > 0;
-        const toolName = determineToolName(isEE, version, javaVersion);
+        const toolName = determineLegacyToolName(isEE, version, javaVersion);
         let downloader;
         if (isEE) {
-            downloader = () => __awaiter(this, void 0, void 0, function* () { return (0, gds_1.downloadGraalVMEE)(gdsToken, version, javaVersion); });
+            downloader = () => __awaiter(this, void 0, void 0, function* () { return (0, gds_1.downloadGraalVMEELegacy)(gdsToken, version, javaVersion); });
         }
         else {
-            downloader = () => __awaiter(this, void 0, void 0, function* () { return downloadGraalVMCE(version, javaVersion); });
+            downloader = () => __awaiter(this, void 0, void 0, function* () { return downloadGraalVMCELegacy(version, javaVersion); });
         }
         return (0, utils_1.downloadExtractAndCacheJDK)(downloader, toolName, version);
     });
 }
 exports.setUpGraalVMRelease = setUpGraalVMRelease;
-function findHighestJavaVersion(release, version) {
-    const graalVMIdentifierPattern = determineGraalVMIdentifier(false, version, '(\\d+)');
-    const expectedFileNameRegExp = new RegExp(`^${graalVMIdentifierPattern}${c.GRAALVM_FILE_EXTENSION.replace(/\./g, '\\.')}$`);
-    let highestJavaVersion = 0;
-    for (const asset of release.assets) {
-        const matches = asset.name.match(expectedFileNameRegExp);
-        if (matches) {
-            const javaVersion = +matches[1];
-            if (javaVersion > highestJavaVersion) {
-                highestJavaVersion = javaVersion;
-            }
-        }
-    }
-    if (highestJavaVersion > 0) {
-        return String(highestJavaVersion);
-    }
-    else {
-        throw new Error('Could not find highest Java version. Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.');
-    }
-}
-exports.findHighestJavaVersion = findHighestJavaVersion;
 function findDownloadUrl(release, javaVersion) {
-    const graalVMIdentifier = determineGraalVMIdentifier(false, c.VERSION_DEV, javaVersion);
+    const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, c.VERSION_DEV, javaVersion);
     const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
     for (const asset of release.assets) {
         if (asset.name === expectedFileName) {
             return asset.browser_download_url;
         }
     }
-    throw new Error(`Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.`);
+    throw new Error(`Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. ${c.ERROR_HINT}`);
 }
-function determineGraalVMIdentifier(isEE, version, javaVersion) {
-    return `${determineToolName(isEE, version, javaVersion)}-${c.GRAALVM_ARCH}-${version}`;
+function determineGraalVMLegacyIdentifier(isEE, version, javaVersion) {
+    return `${determineLegacyToolName(isEE, version, javaVersion)}-${c.GRAALVM_ARCH}-${version}`;
 }
-function determineToolName(isEE, version, javaVersion) {
+function determineLegacyToolName(isEE, version, javaVersion) {
     const infix = isEE ? 'ee' : version === c.VERSION_DEV ? 'community' : 'ce';
     return `graalvm-${infix}-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
 }
-function downloadGraalVMCE(version, javaVersion) {
+function downloadGraalVMCELegacy(version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const graalVMIdentifier = determineGraalVMIdentifier(false, version, javaVersion);
+        const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, version, javaVersion);
         const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
         try {
             return yield (0, tool_cache_1.downloadTool)(downloadUrl);
@@ -70999,9 +71115,10 @@ const reports_1 = __nccwpck_require__(2046);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const graalvmVersion = core.getInput(c.INPUT_VERSION, { required: true });
-            const gdsToken = core.getInput(c.INPUT_GDS_TOKEN);
             const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, { required: true });
+            const distribution = core.getInput(c.INPUT_DISTRIBUTION);
+            const graalvmVersion = core.getInput(c.INPUT_VERSION);
+            const gdsToken = core.getInput(c.INPUT_GDS_TOKEN);
             const componentsString = core.getInput(c.INPUT_COMPONENTS);
             const components = componentsString.length > 0
                 ? componentsString.split(',').map(x => x.trim())
@@ -71019,24 +71136,58 @@ function run() {
             }
             // Download or build GraalVM
             let graalVMHome;
-            switch (graalvmVersion) {
-                case c.VERSION_LATEST:
-                    graalVMHome = yield graalvm.setUpGraalVMLatest(gdsToken, javaVersion);
-                    break;
-                case c.VERSION_DEV:
-                    graalVMHome = yield graalvm.setUpGraalVMDevBuild(gdsToken, javaVersion);
-                    break;
-                default:
-                    if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
-                        graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalvmVersion, javaVersion);
-                    }
-                    else {
-                        if (enableCheckForUpdates) {
-                            yield (0, check_for_updates_1.checkForUpdates)(graalvmVersion, javaVersion);
+            if (distribution.length > 0 || graalvmVersion.length == 0) {
+                switch (distribution) {
+                    case c.DISTRIBUTION_GRAALVM:
+                        graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
+                        break;
+                    case c.DISTRIBUTION_GRAALVM_COMMUNITY:
+                        graalVMHome = yield graalvm.setUpGraalVMJDKCE(javaVersion);
+                        break;
+                    case c.DISTRIBUTION_MANDREL:
+                        throw new Error(`Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
+                    case '':
+                        if (javaVersion === c.VERSION_DEV) {
+                            core.info(`This build is using the GraalVM Community Edition. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
+                            graalVMHome = yield graalvm.setUpGraalVMJDKDevBuild();
                         }
-                        graalVMHome = yield graalvm.setUpGraalVMRelease(gdsToken, graalvmVersion, javaVersion);
-                    }
-                    break;
+                        else {
+                            core.info(`This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
+                            graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
+                        }
+                    default:
+                        throw new Error(`Unsupported distribution: ${distribution}`);
+                }
+            }
+            else {
+                switch (graalvmVersion) {
+                    case c.VERSION_LATEST:
+                        if (javaVersion.startsWith('17') || javaVersion.startsWith('20')) {
+                            core.info(`This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
+                            graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
+                        }
+                        else {
+                            graalVMHome = yield graalvm.setUpGraalVMLatest(gdsToken, javaVersion);
+                        }
+                        break;
+                    case c.VERSION_DEV:
+                        if (gdsToken.length > 0) {
+                            throw new Error('Downloading GraalVM EE dev builds is not supported');
+                        }
+                        graalVMHome = yield graalvm.setUpGraalVMJDKDevBuild();
+                        break;
+                    default:
+                        if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+                            graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalvmVersion, javaVersion);
+                        }
+                        else {
+                            if (enableCheckForUpdates) {
+                                yield (0, check_for_updates_1.checkForUpdates)(graalvmVersion, javaVersion);
+                            }
+                            graalVMHome = yield graalvm.setUpGraalVMRelease(gdsToken, graalvmVersion, javaVersion);
+                        }
+                        break;
+                }
             }
             // Activate GraalVM
             core.debug(`Activating GraalVM located at '${graalVMHome}'...`);
@@ -71293,7 +71444,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
+exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
@@ -71348,6 +71499,19 @@ function getTaggedRelease(repo, tag) {
     });
 }
 exports.getTaggedRelease = getTaggedRelease;
+function getMatchingTags(tagPrefix) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const githubToken = getGitHubToken();
+        const options = githubToken.length > 0 ? { auth: githubToken } : {};
+        const octokit = new GitHubDotCom(options);
+        return (yield octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}', {
+            owner: c.GRAALVM_GH_USER,
+            repo: c.GRAALVM_RELEASES_REPO,
+            tagPrefix
+        })).data;
+    });
+}
+exports.getMatchingTags = getMatchingTags;
 function downloadAndExtractJDK(downloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         return findJavaHomeInSubfolder(yield extract(yield tc.downloadTool(downloadUrl)));

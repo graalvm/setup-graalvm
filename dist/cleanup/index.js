@@ -69858,10 +69858,11 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.JDK_HOME_SUFFIX = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
+exports.INPUT_DISTRIBUTION = 'distribution';
 exports.INPUT_COMPONENTS = 'components';
 exports.INPUT_GITHUB_TOKEN = 'github-token';
 exports.INPUT_SET_JAVA_HOME = 'set-java-home';
@@ -69871,19 +69872,54 @@ exports.INPUT_NI_MUSL = 'native-image-musl';
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
+exports.DISTRIBUTION_GRAALVM = 'graalvm';
+exports.DISTRIBUTION_GRAALVM_COMMUNITY = 'graalvm-community';
+exports.DISTRIBUTION_MANDREL = 'mandrel';
 exports.VERSION_DEV = 'dev';
 exports.VERSION_LATEST = 'latest';
+exports.JDK_ARCH = determineJDKArchitecture();
+exports.JDK_PLATFORM = determineJDKPlatform();
+exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
 exports.GRAALVM_ARCH = determineGraalVMArchitecture();
 exports.GRAALVM_FILE_EXTENSION = exports.IS_WINDOWS ? '.zip' : '.tar.gz';
 exports.GRAALVM_GH_USER = 'graalvm';
 exports.GRAALVM_PLATFORM = exports.IS_WINDOWS ? 'windows' : process.platform;
 exports.GRAALVM_RELEASES_REPO = 'graalvm-ce-builds';
-exports.JDK_HOME_SUFFIX = exports.IS_MACOS ? '/Contents/Home' : '';
 exports.MANDREL_NAMESPACE = 'mandrel-';
 exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
 exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
 exports.ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
 exports.EVENT_NAME_PULL_REQUEST = 'pull_request';
+exports.ERROR_HINT = 'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.';
+function determineJDKArchitecture() {
+    switch (process.arch) {
+        case 'x64': {
+            return 'x64';
+        }
+        case 'arm64': {
+            return 'aarch64';
+        }
+        default: {
+            throw new Error(`Unsupported architecture: ${process.arch}`);
+        }
+    }
+}
+function determineJDKPlatform() {
+    switch (process.platform) {
+        case 'linux': {
+            return 'linux';
+        }
+        case 'darwin': {
+            return 'macos';
+        }
+        case 'win32': {
+            return 'windows';
+        }
+        default: {
+            throw new Error(`Unsupported platform: ${process.platform}`);
+        }
+    }
+}
 function determineGraalVMArchitecture() {
     switch (process.arch) {
         case 'x64': {
@@ -70193,6 +70229,7 @@ function setUpNativeImageBuildReports(graalVMVersion) {
         }
         const isSupported = graalVMVersion === c.VERSION_LATEST ||
             graalVMVersion === c.VERSION_DEV ||
+            graalVMVersion.length === 0 ||
             (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
                 (0, semver_1.gte)((0, utils_1.toSemVer)(graalVMVersion), '22.2.0'));
         if (!isSupported) {
@@ -70461,7 +70498,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
+exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
@@ -70516,6 +70553,19 @@ function getTaggedRelease(repo, tag) {
     });
 }
 exports.getTaggedRelease = getTaggedRelease;
+function getMatchingTags(tagPrefix) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const githubToken = getGitHubToken();
+        const options = githubToken.length > 0 ? { auth: githubToken } : {};
+        const octokit = new GitHubDotCom(options);
+        return (yield octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}', {
+            owner: c.GRAALVM_GH_USER,
+            repo: c.GRAALVM_RELEASES_REPO,
+            tagPrefix
+        })).data;
+    });
+}
+exports.getMatchingTags = getMatchingTags;
 function downloadAndExtractJDK(downloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         return findJavaHomeInSubfolder(yield extract(yield tc.downloadTool(downloadUrl)));

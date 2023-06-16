@@ -3,78 +3,129 @@ import {
   downloadAndExtractJDK,
   downloadExtractAndCacheJDK,
   getLatestRelease,
+  getMatchingTags,
   getTaggedRelease
 } from './utils'
-import {downloadGraalVMEE} from './gds'
+import {downloadGraalVMEELegacy} from './gds'
 import {downloadTool} from '@actions/tool-cache'
+import {basename} from 'path'
+import {gt} from 'semver'
 
+const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm'
 const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds'
+const GRAALVM_JDK_TAG_PREFIX = 'jdk-'
 const GRAALVM_TAG_PREFIX = 'vm-'
 
-export async function setUpGraalVMLatest(
-  gdsToken: string,
-  javaVersion: string
-): Promise<string> {
-  const lockedVersion = '22.3.1'
-  if (gdsToken.length > 0) {
-    return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion)
-  }
-  const latestRelease = await getTaggedRelease(
-    c.GRAALVM_RELEASES_REPO,
-    GRAALVM_TAG_PREFIX + lockedVersion
-  )
-  const version = findGraalVMVersion(latestRelease)
-  return setUpGraalVMRelease(gdsToken, version, javaVersion)
-}
+// Support for GraalVM for JDK 17 and later
 
-export function findGraalVMVersion(release: c.LatestReleaseResponse['data']) {
-  const tag_name = release.tag_name
-  if (!tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
-    throw new Error(`Could not find latest GraalVM release: ${tag_name}`)
-  }
-  return tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length)
-}
-
-export async function setUpGraalVMDevBuild(
-  gdsToken: string,
-  javaVersion: string
+export async function setUpGraalVMJDK(
+  javaVersionOrDev: string
 ): Promise<string> {
-  if (gdsToken.length > 0) {
-    throw new Error('Downloading GraalVM EE dev builds is not supported')
+  if (javaVersionOrDev === c.VERSION_DEV) {
+    return setUpGraalVMJDKDevBuild()
   }
-  const latestDevBuild = await getLatestRelease(GRAALVM_REPO_DEV_BUILDS)
-  let resolvedJavaVersion
-  if (javaVersion == c.VERSION_DEV) {
-    resolvedJavaVersion = findHighestJavaVersion(latestDevBuild, c.VERSION_DEV)
+  const javaVersion = javaVersionOrDev
+  const toolName = determineToolName(javaVersion, false)
+  let downloadUrl: string
+  if (javaVersion.includes('.')) {
+    const majorJavaVersion = javaVersion.split('.')[0]
+    downloadUrl = `${GRAALVM_DL_BASE}/${majorJavaVersion}/archive/${toolName}${c.GRAALVM_FILE_EXTENSION}`
   } else {
-    resolvedJavaVersion = javaVersion
+    downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${toolName}${c.GRAALVM_FILE_EXTENSION}`
   }
+  const downloader = async () => downloadGraalVMJDK(downloadUrl, javaVersion)
+  return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
+}
+
+export async function setUpGraalVMJDKCE(
+  javaVersionOrDev: string
+): Promise<string> {
+  if (javaVersionOrDev === c.VERSION_DEV) {
+    return setUpGraalVMJDKDevBuild()
+  }
+  let javaVersion = javaVersionOrDev
+  if (!javaVersion.includes('.')) {
+    javaVersion = await findLatestGraalVMJDKCEJavaVersion(javaVersion)
+  }
+  if (javaVersion.split('.').length != 3) {
+    throw new Error(
+      `java-version set to '${javaVersionOrDev}', which was resolved to '${javaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
+    )
+  }
+  const toolName = determineToolName(javaVersion, true)
+  const downloadUrl = `${GRAALVM_CE_DL_BASE}/jdk-${javaVersion}/${toolName}${c.GRAALVM_FILE_EXTENSION}`
+  const downloader = async () => downloadGraalVMJDK(downloadUrl, javaVersion)
+  return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
+}
+
+export async function findLatestGraalVMJDKCEJavaVersion(
+  majorJavaVersion: string
+): Promise<string> {
+  const matchingRefs = await getMatchingTags(
+    `${GRAALVM_JDK_TAG_PREFIX}${majorJavaVersion}`
+  )
+  const lowestNonExistingVersion = '0.0.1'
+  let highestVersion = lowestNonExistingVersion
+  const versionNumberStartIndex = `refs/tags/${GRAALVM_JDK_TAG_PREFIX}`.length
+  for (const matchingRef of matchingRefs) {
+    const currentVersion = matchingRef.ref.substring(versionNumberStartIndex)
+    if (gt(currentVersion, highestVersion)) {
+      highestVersion = currentVersion
+    }
+  }
+  if (highestVersion === lowestNonExistingVersion) {
+    throw new Error(
+      `Unable to find the latest Java version for '${majorJavaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
+    )
+  }
+  return highestVersion
+}
+
+function determineToolName(javaVersion: string, isCommunity: boolean) {
+  return `graalvm${isCommunity ? '-community' : ''}-jdk-${javaVersion}_${
+    c.JDK_PLATFORM
+  }-${c.JDK_ARCH}_bin`
+}
+
+async function downloadGraalVMJDK(
+  downloadUrl: string,
+  javaVersion: string
+): Promise<string> {
+  try {
+    return await downloadTool(downloadUrl)
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('404')) {
+      // Not Found
+      throw new Error(
+        `Failed to download ${basename(
+          downloadUrl
+        )}. Are you sure java-version: '${javaVersion}' is correct?`
+      )
+    }
+    throw new Error(
+      `Failed to download ${basename(downloadUrl)} (error: ${error}).`
+    )
+  }
+}
+
+// Support for GraalVM dev builds
+
+export async function setUpGraalVMJDKDevBuild(): Promise<string> {
+  const latestDevBuild = await getLatestRelease(GRAALVM_REPO_DEV_BUILDS)
+  const resolvedJavaVersion = findHighestJavaVersion(
+    latestDevBuild,
+    c.VERSION_DEV
+  )
   const downloadUrl = findDownloadUrl(latestDevBuild, resolvedJavaVersion)
   return downloadAndExtractJDK(downloadUrl)
-}
-
-export async function setUpGraalVMRelease(
-  gdsToken: string,
-  version: string,
-  javaVersion: string
-): Promise<string> {
-  const isEE = gdsToken.length > 0
-  const toolName = determineToolName(isEE, version, javaVersion)
-  let downloader: () => Promise<string>
-  if (isEE) {
-    downloader = async () => downloadGraalVMEE(gdsToken, version, javaVersion)
-  } else {
-    downloader = async () => downloadGraalVMCE(version, javaVersion)
-  }
-  return downloadExtractAndCacheJDK(downloader, toolName, version)
 }
 
 export function findHighestJavaVersion(
   release: c.LatestReleaseResponse['data'],
   version: string
 ): string {
-  const graalVMIdentifierPattern = determineGraalVMIdentifier(
+  const graalVMIdentifierPattern = determineGraalVMLegacyIdentifier(
     false,
     version,
     '(\\d+)'
@@ -104,11 +155,54 @@ export function findHighestJavaVersion(
   }
 }
 
+// Support for GraalVM 22.X releases and earlier
+
+export async function setUpGraalVMLatest(
+  gdsToken: string,
+  javaVersion: string
+): Promise<string> {
+  const lockedVersion = '22.3.1'
+  if (gdsToken.length > 0) {
+    return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion)
+  }
+  const latestRelease = await getTaggedRelease(
+    c.GRAALVM_RELEASES_REPO,
+    GRAALVM_TAG_PREFIX + lockedVersion
+  )
+  const version = findGraalVMVersion(latestRelease)
+  return setUpGraalVMRelease(gdsToken, version, javaVersion)
+}
+
+export function findGraalVMVersion(release: c.LatestReleaseResponse['data']) {
+  const tag_name = release.tag_name
+  if (!tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
+    throw new Error(`Could not find latest GraalVM release: ${tag_name}`)
+  }
+  return tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length)
+}
+
+export async function setUpGraalVMRelease(
+  gdsToken: string,
+  version: string,
+  javaVersion: string
+): Promise<string> {
+  const isEE = gdsToken.length > 0
+  const toolName = determineLegacyToolName(isEE, version, javaVersion)
+  let downloader: () => Promise<string>
+  if (isEE) {
+    downloader = async () =>
+      downloadGraalVMEELegacy(gdsToken, version, javaVersion)
+  } else {
+    downloader = async () => downloadGraalVMCELegacy(version, javaVersion)
+  }
+  return downloadExtractAndCacheJDK(downloader, toolName, version)
+}
+
 function findDownloadUrl(
   release: c.LatestReleaseResponse['data'],
   javaVersion: string
 ): string {
-  const graalVMIdentifier = determineGraalVMIdentifier(
+  const graalVMIdentifier = determineGraalVMLegacyIdentifier(
     false,
     c.VERSION_DEV,
     javaVersion
@@ -120,21 +214,21 @@ function findDownloadUrl(
     }
   }
   throw new Error(
-    `Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.`
+    `Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. ${c.ERROR_HINT}`
   )
 }
 
-function determineGraalVMIdentifier(
+function determineGraalVMLegacyIdentifier(
   isEE: boolean,
   version: string,
   javaVersion: string
 ): string {
-  return `${determineToolName(isEE, version, javaVersion)}-${
+  return `${determineLegacyToolName(isEE, version, javaVersion)}-${
     c.GRAALVM_ARCH
   }-${version}`
 }
 
-function determineToolName(
+function determineLegacyToolName(
   isEE: boolean,
   version: string,
   javaVersion: string
@@ -143,11 +237,11 @@ function determineToolName(
   return `graalvm-${infix}-java${javaVersion}-${c.GRAALVM_PLATFORM}`
 }
 
-async function downloadGraalVMCE(
+async function downloadGraalVMCELegacy(
   version: string,
   javaVersion: string
 ): Promise<string> {
-  const graalVMIdentifier = determineGraalVMIdentifier(
+  const graalVMIdentifier = determineGraalVMLegacyIdentifier(
     false,
     version,
     javaVersion
