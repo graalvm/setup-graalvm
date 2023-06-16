@@ -1,6 +1,7 @@
 import * as c from './constants'
 import * as core from '@actions/core'
 import * as graalvm from './graalvm'
+import {gte as semverGte, valid as semverValid} from 'semver'
 import {isFeatureAvailable as isCacheAvailable} from '@actions/cache'
 import {join} from 'path'
 import {restore} from './features/cache'
@@ -69,7 +70,10 @@ async function run(): Promise<void> {
     } else {
       switch (graalvmVersion) {
         case c.VERSION_LATEST:
-          if (javaVersion.startsWith('17') || javaVersion.startsWith('20')) {
+          if (
+            javaVersion.startsWith('17') ||
+            (semverValid(javaVersion) && semverGte(javaVersion, '20'))
+          ) {
             core.info(
               `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )

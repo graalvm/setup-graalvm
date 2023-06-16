@@ -14,7 +14,7 @@ export async function checkForUpdates(
   ) {
     const recommendedJDK = javaVersion === '17' ? '17' : '20'
     core.notice(
-      `A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Release notes: https://www.graalvm.org/release-notes/JDK_${recommendedJDK}/`
+      `A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Instructions: https://github.com/graalvm/setup-graalvm#migrating-from-graalvm-223-or-earlier-to-the-new-graalvm-for-jdk-17-and-later`
     )
     return
   }

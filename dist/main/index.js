@@ -70176,7 +70176,7 @@ function checkForUpdates(graalVMVersion, javaVersion) {
         if (graalVMVersion.length > 0 &&
             (javaVersion === '17' || javaVersion === '19')) {
             const recommendedJDK = javaVersion === '17' ? '17' : '20';
-            core.notice(`A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Release notes: https://www.graalvm.org/release-notes/JDK_${recommendedJDK}/`);
+            core.notice(`A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Instructions: https://github.com/graalvm/setup-graalvm#migrating-from-graalvm-223-or-earlier-to-the-new-graalvm-for-jdk-17-and-later`);
             return;
         }
         if (graalVMVersion.startsWith('22.3.') && javaVersion === '11') {
@@ -70871,7 +70871,8 @@ function findLatestGraalVMJDKCEJavaVersion(majorJavaVersion) {
         const versionNumberStartIndex = `refs/tags/${GRAALVM_JDK_TAG_PREFIX}`.length;
         for (const matchingRef of matchingRefs) {
             const currentVersion = matchingRef.ref.substring(versionNumberStartIndex);
-            if ((0, semver_1.gt)(currentVersion, highestVersion)) {
+            if ((0, semver_1.valid)(currentVersion) &&
+                (0, semver_1.gt)(currentVersion, highestVersion)) {
                 highestVersion = currentVersion;
             }
         }
@@ -71102,6 +71103,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const graalvm = __importStar(__nccwpck_require__(5254));
+const semver_1 = __nccwpck_require__(1383);
 const cache_1 = __nccwpck_require__(7799);
 const path_1 = __nccwpck_require__(1017);
 const cache_2 = __nccwpck_require__(9179);
@@ -71162,7 +71164,8 @@ function run() {
             else {
                 switch (graalvmVersion) {
                     case c.VERSION_LATEST:
-                        if (javaVersion.startsWith('17') || javaVersion.startsWith('20')) {
+                        if (javaVersion.startsWith('17') ||
+                            ((0, semver_1.valid)(javaVersion) && (0, semver_1.gte)(javaVersion, '20'))) {
                             core.info(`This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
                             graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
                         }
