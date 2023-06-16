@@ -9,7 +9,7 @@ import {
 import {downloadGraalVMEELegacy} from './gds'
 import {downloadTool} from '@actions/tool-cache'
 import {basename} from 'path'
-import {gt} from 'semver'
+import {gt as semverGt, valid as semverValid} from 'semver'
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm'
 const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`
@@ -70,7 +70,10 @@ export async function findLatestGraalVMJDKCEJavaVersion(
   const versionNumberStartIndex = `refs/tags/${GRAALVM_JDK_TAG_PREFIX}`.length
   for (const matchingRef of matchingRefs) {
     const currentVersion = matchingRef.ref.substring(versionNumberStartIndex)
-    if (gt(currentVersion, highestVersion)) {
+    if (
+      semverValid(currentVersion) &&
+      semverGt(currentVersion, highestVersion)
+    ) {
       highestVersion = currentVersion
     }
   }
