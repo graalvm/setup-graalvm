@@ -63,6 +63,24 @@ export async function getTaggedRelease(
   ).data
 }
 
+export async function getMatchingTags(
+  tagPrefix: string
+): Promise<c.MatchingRefsResponse['data']> {
+  const githubToken = getGitHubToken()
+  const options = githubToken.length > 0 ? {auth: githubToken} : {}
+  const octokit = new GitHubDotCom(options)
+  return (
+    await octokit.request(
+      'GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}',
+      {
+        owner: c.GRAALVM_GH_USER,
+        repo: c.GRAALVM_RELEASES_REPO,
+        tagPrefix
+      }
+    )
+  ).data
+}
+
 export async function downloadAndExtractJDK(
   downloadUrl: string
 ): Promise<string> {

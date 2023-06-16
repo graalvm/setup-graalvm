@@ -20,13 +20,49 @@ jobs:
           npm install
       - run: |
           npm run all
+  test:
+    name: GraalVM
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        java-version: ['17', '20', 'dev']
+        distribution: ['graalvm', 'graalvm-community']
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: ${{ matrix.distribution }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check environment
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          if [[ "${{ matrix.java-version }}" == "dev" ]]; then
+            [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
+          else
+            [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
+          fi
+          echo "JAVA_HOME: $JAVA_HOME"
+          java --version
+          java --version | grep "GraalVM" || exit 34
+          native-image --version
+        if: runner.os != 'Windows'
+      - name: Check Windows environment
+        run: |
+          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+          echo "JAVA_HOME: $env:JAVA_HOME"
+          java --version
+          native-image --version
   test-ce: # make sure the action works on a clean machine without building
+    needs: test  
     name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         version: ['latest', 'dev']
-        java-version: ['19', '20']
+        java-version: ['17', '20']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
         exclude:
@@ -70,7 +106,7 @@ jobs:
           fi
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
-          java --version | grep "GraalVM CE" || exit 34
+          java --version | grep "GraalVM" || exit 34
           native-image --version
           gu list
         if: runner.os != 'Windows'
@@ -83,6 +119,7 @@ jobs:
           gu.cmd remove native-image
         if: runner.os == 'Windows'
   test-ee:
+    needs: test
     name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.os }}
@@ -130,6 +167,7 @@ jobs:
           gu.cmd remove native-image
         if: runner.os == 'Windows'
   test-mandrel:
+    needs: test
     name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -175,9 +213,8 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: 'dev'
           java-version: 'dev'
-          components: 'native-image'
+          distribution: 'graalvm-community'
           native-image-job-reports: 'true'
           native-image-pr-reports: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -188,8 +225,8 @@ jobs:
           native-image HelloWorld
           ./helloworld
   test-native-image-windows-msvc:
-    name: native-image on windows-2019
-    runs-on: windows-2019
+    name: native-image on windows-2022
+    runs-on: windows-2022
     permissions:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
@@ -198,9 +235,8 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: '22.3.1'
           java-version: '17'
-          components: 'native-image'
+          distribution: 'graalvm'
           native-image-job-reports: 'true'
           native-image-pr-reports: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -221,9 +257,8 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: 'dev'
           java-version: 'dev'
-          components: 'native-image'
+          distribution: 'graalvm-community'
           native-image-musl: 'true'
           native-image-job-reports: 'true'
           native-image-pr-reports: 'true'
@@ -245,9 +280,9 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          version: 'latest'
           java-version: '17'
-          components: 'espresso,llvm-toolchain,native-image,nodejs,python,R,ruby,wasm'
+          distribution: 'graalvm'
+          components: 'espresso,llvm-toolchain,native-image,nodejs,python,ruby,wasm'
           set-java-home: 'false'
           native-image-job-reports: 'true'
           native-image-pr-reports: 'true'
@@ -268,8 +303,6 @@ jobs:
           [[ $(which node) == *"graalvm"* ]] || exit 45
           node --version
           graalpy --version
-          [[ $(which R) == *"graalvm"* ]] || exit 56
-          R --version
           truffleruby --version
           wasm --version
       - name: Build HelloWorld.java with GraalVM Native Image
@@ -290,4 +323,4 @@ jobs:
           bundle exec rake test
           popd > /dev/null
       - name: Remove components
-        run: gu remove espresso llvm-toolchain nodejs python R ruby wasm
+        run: gu remove espresso llvm-toolchain nodejs python ruby wasm

@@ -14,9 +14,10 @@ import {setUpNativeImageBuildReports} from './features/reports'
 
 async function run(): Promise<void> {
   try {
-    const graalvmVersion = core.getInput(c.INPUT_VERSION, {required: true})
-    const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
     const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
+    const distribution = core.getInput(c.INPUT_DISTRIBUTION)
+    const graalvmVersion = core.getInput(c.INPUT_VERSION)
+    const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
     const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
     const components: string[] =
       componentsString.length > 0
@@ -38,27 +39,71 @@ async function run(): Promise<void> {
 
     // Download or build GraalVM
     let graalVMHome
-    switch (graalvmVersion) {
-      case c.VERSION_LATEST:
-        graalVMHome = await graalvm.setUpGraalVMLatest(gdsToken, javaVersion)
-        break
-      case c.VERSION_DEV:
-        graalVMHome = await graalvm.setUpGraalVMDevBuild(gdsToken, javaVersion)
-        break
-      default:
-        if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
-          graalVMHome = await setUpMandrel(graalvmVersion, javaVersion)
-        } else {
-          if (enableCheckForUpdates) {
-            await checkForUpdates(graalvmVersion, javaVersion)
-          }
-          graalVMHome = await graalvm.setUpGraalVMRelease(
-            gdsToken,
-            graalvmVersion,
-            javaVersion
+    if (distribution.length > 0 || graalvmVersion.length == 0) {
+      switch (distribution) {
+        case c.DISTRIBUTION_GRAALVM:
+          graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+          break
+        case c.DISTRIBUTION_GRAALVM_COMMUNITY:
+          graalVMHome = await graalvm.setUpGraalVMJDKCE(javaVersion)
+          break
+        case c.DISTRIBUTION_MANDREL:
+          throw new Error(
+            `Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
           )
-        }
-        break
+        case '':
+          if (javaVersion === c.VERSION_DEV) {
+            core.info(
+              `This build is using the GraalVM Community Edition. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
+            )
+            graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
+          } else {
+            core.info(
+              `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
+            )
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+          }
+        default:
+          throw new Error(`Unsupported distribution: ${distribution}`)
+      }
+    } else {
+      switch (graalvmVersion) {
+        case c.VERSION_LATEST:
+          if (javaVersion.startsWith('17') || javaVersion.startsWith('20')) {
+            core.info(
+              `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
+            )
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+          } else {
+            graalVMHome = await graalvm.setUpGraalVMLatest(
+              gdsToken,
+              javaVersion
+            )
+          }
+          break
+        case c.VERSION_DEV:
+          if (gdsToken.length > 0) {
+            throw new Error(
+              'Downloading GraalVM EE dev builds is not supported'
+            )
+          }
+          graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
+          break
+        default:
+          if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+            graalVMHome = await setUpMandrel(graalvmVersion, javaVersion)
+          } else {
+            if (enableCheckForUpdates) {
+              await checkForUpdates(graalvmVersion, javaVersion)
+            }
+            graalVMHome = await graalvm.setUpGraalVMRelease(
+              gdsToken,
+              graalvmVersion,
+              javaVersion
+            )
+          }
+          break
+      }
     }
 
     // Activate GraalVM

@@ -1,19 +1,17 @@
 name: 'GitHub Action for GraalVM'
-description: 'Set up a specific version of GraalVM Community Edition (CE) or Enterprise Edition (EE)'
+description: 'Set up a specific version of the GraalVM JDK and add the command-line tools to the PATH'
 author: 'GraalVM Community'
 branding:
   icon: 'terminal'  
   color: 'blue'
 inputs:
-  version:
-    required: true
-    description: 'GraalVM version (release, latest, dev).'
-  gds-token:
-    required: false
-    description: 'Download token for the GraalVM Download Service. If provided, the action will set up GraalVM Enterprise Edition.'
   java-version:
     required: true
-    description: 'Java version (11 or 17, 8 or 16 for older releases).'
+    description: 'Java version. See examples of supported syntax in the README file.'
+  distribution:
+    description: 'GraalVM distribution. See the list of available distributions in the README file.'
+    required: false
+    default: ''
   components:
     required: false
     description: 'Comma-separated list of GraalVM components to be installed.'
@@ -45,6 +43,13 @@ inputs:
     required: false
     description: 'Post a comment containing a Native Image build report on pull requests.'
     default: 'false'
+  version:
+    required: false
+    description: 'GraalVM version (release, latest, dev).'
+    default: ''
+  gds-token:
+    required: false
+    description: 'Download token for the GraalVM Download Service. If provided, the action will set up GraalVM Enterprise Edition.'
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'

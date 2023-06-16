@@ -1,18 +1,46 @@
 # GitHub Action for GraalVM [![build-test](https://github.com/graalvm/setup-graalvm/actions/workflows/test.yml/badge.svg)](https://github.com/graalvm/setup-graalvm/actions/workflows/test.yml)
-This GitHub action sets up GraalVM [Community Edition (CE)][repo] or [Enterprise Edition (EE)][graalvm-ee] as well as GraalVM components such as [Native Image][native-image] and [Truffle languages][truffle-languages].
+This GitHub action sets up [Oracle GraalVM][graalvm], GraalVM [Community Edition (CE)][repo], [Enterprise Edition (EE)][graalvm-ee], or [Mandrel][mandrel], as well as [Native Image][native-image] and GraalVM components such as [Truffle languages][truffle-languages].
 
 ## Key Features
 
 This action:
 
-- supports GraalVM Community Edition (CE) [releases], [dev builds][dev-builds], GraalVM Enterprise Edition (EE) [releases][graalvm-ee] (set [`gds-token`](#options)) 22.1.0 and later, and [Mandrel][mandrel] (see [options](#options))
-- has built-in support for GraalVM components and the [GraalVM Updater][gu]
+- supports Oracle GraalVM [releases][graalvm-dl], GraalVM Community Edition (CE) [releases], [dev builds][dev-builds], GraalVM Enterprise Edition (EE) [releases][graalvm-ee] (set [`gds-token`](#options)) 22.1.0 and later, and [Mandrel][mandrel] (see [Options](#options))
 - exports a `$GRAALVM_HOME` environment variable
-- adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(Truffle languages and tools can be invoked directly)
-- sets `$JAVA_HOME` to `$GRAALVM_HOME` by default<br>(can be disabled via `set-java-home: 'false'`, see [options](#options))
-- supports `amd64` and `aarch64` (selected automatically, `aarch64` requires a [self-hosted runner][gha-self-hosted-runners])
-- sets up Windows environments with build tools using [vcvarsall.bat][vcvarsall]
+- adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(Native Image, Truffle languages, and tools can be invoked directly)
+- sets `$JAVA_HOME` to `$GRAALVM_HOME` by default<br>(can be disabled via `set-java-home: 'false'`, see [Options](#options))
+- supports `x64` and `aarch64` (selected automatically, `aarch64` requires a [self-hosted runner][gha-self-hosted-runners])
 - supports dependency caching for Apache Maven, Gradle, and sbt (see [`cache` option](#options))
+- sets up Windows environments with build tools using [vcvarsall.bat][vcvarsall]
+- has built-in support for GraalVM components and the [GraalVM Updater][gu]
+
+
+## Migrating from GraalVM 22.3 or earlier to the new GraalVM for JDK 17 and later
+
+The new [GraalVM release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the version scheme with OpenJDK.
+As a result, this action no longer requires the `version` option that was used to select a specific GraalVM version.
+At the same time, it introduces a new `distribution` option that can be used to select a specific GraalVM distribution (`graalvm`, `graalvm-community`, and `mandrel`).
+Therefore, to migrate workflows to use the latest GraalVM release, replace the `version` with the `distribution` option in your workflow `yml` config, for example:
+
+```yml
+# ...
+- uses: graalvm/setup-graalvm@v1
+  with:
+    java-version: '17'
+    version: '22.3.2' # Old 'version' option for the GraalVM version
+    # ...
+```
+
+can be turned into:
+
+```yml
+# ...
+- uses: graalvm/setup-graalvm@v1
+  with:
+    java-version: '17.0.7' # for a specific JDK 17; or '17' for the latest JDK 17
+    distribution: 'graalvm' # New 'distribution' option
+    # ...
+```
 
 
 ## Templates
@@ -20,7 +48,7 @@ This action:
 ### Quickstart Template
 
 ```yml
-name: GraalVM Community Edition build
+name: GraalVM build
 on: [push, pull_request]
 jobs:
   build:
@@ -29,17 +57,19 @@ jobs:
       - uses: actions/checkout@v3
       - uses: graalvm/setup-graalvm@v1
         with:
-          version: 'latest'
-          java-version: '17'
-          components: 'native-image'
+          java-version: '17.0.7'
+          distribution: 'graalvm' # See 'Options' for all available distributions
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Example step
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
-          gu --version
           native-image --version
+      - name: Example step using Maven plugin  # https://graalvm.github.io/native-build-tools/latest/maven-plugin.html
+        run: mvn -Pnative package
+      - name: Example step using Gradle plugin # https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html
+        run: gradlew nativeCompile
 ```
 
 ### Building a HelloWorld with GraalVM Native Image on Different Platforms
@@ -59,9 +89,8 @@ jobs:
 
       - uses: graalvm/setup-graalvm@v1
         with:
-          version: '22.3.0'
-          java-version: '17'
-          components: 'native-image'
+          java-version: '17.0.7'
+          distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
 
@@ -79,7 +108,29 @@ jobs:
           path: helloworld*
 ```
 
-### Basic GraalVM Enterprise Edition Template
+<details>
+<summary><h4>Template for older GraalVM releases</h4></summary>
+
+```yml
+name: GraalVM build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          version: '22.3.2' # GraalVM version
+          java-version: '17'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+</details>
+
+<details>
+<summary><h4>Template for GraalVM Enterprise Edition</h4></summary>
 
 #### Prerequisites
 
@@ -109,22 +160,24 @@ jobs:
           native-image --version
 ```
 
+</details>
 
 ## Options
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `version`<br>*(required)* | n/a | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases]<br>`latest` for [latest stable release][stable],<br>`dev` for [latest dev build][dev-build],<br>`mandrel-X.Y.Z` (e.g., `mandrel-21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` for [latest Mandrel stable release][mandrel-stable]. |
-| `gds-token`     | `''`     | Download token for the GraalVM Download Service. If a non-empty token is provided, the action will set up GraalVM Enterprise Edition (see [GraalVM EE template](#basic-graalvm-enterprise-edition-template)). |
-| `java-version`<br>*(required)* | n/a | `'17'` or `'19'` for a specific Java version, `'dev'` for the highest Java version available (requires `version: 'dev'`).<br>(`'8'`, `'11'`, `'16'` are supported for older GraalVM releases.) |
-| `components`    | `''`     | Comma-spearated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
-| `github-token`  | `'${{ github.token }}'`     | Token for communication with the GitHub API. Please set to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps to reduce rate limiting issues. |
+| `java-version`<br>*(required)* | n/a | `'17.0.7'` or `'20.0.1'` for a specific Java version, `'dev'` for a dev build with the highest Java version available.<br>(`'8'`, `'11'`, `'16'`, `'19'` are supported for older GraalVM releases.) |
+| `distribution`  | `''` | GraalVM distribution (`graalvm` for Oracle GraalVM, `graalvm-community` for GraalVM Community Edition, `mandrel` for Mandrel). |
+| `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
 | `cache`         | `''`     | Name of the build platform to cache dependencies. It can be `'maven'`, `'gradle'`, or `'sbt'` and works the same way as described in [actions/setup-java][setup-java-caching]. |
-| `check-for-updates` | `'true'`  | [Annotate jobs][gha-annotations] with update notifications, for example, when a new GraalVM release is available. |
+| `check-for-updates` | `'true'`  | [Annotate jobs][gha-annotations] with update notifications, for example when a new GraalVM release is available. |
 | `native-image-musl` | `'false'` | If set to `'true'`, sets up [musl] to build [static binaries][native-image-static] with GraalVM Native Image *(Linux only)*. [Example usage][native-image-musl-build] (be sure to replace `uses: ./` with `uses: graalvm/setup-graalvm@v1`). |
 | `native-image-job-reports` *) | `'false'` | If set to `'true'`, post a job summary containing a Native Image build report. |
 | `native-image-pr-reports`  *) | `'false'` | If set to `'true'`, post a comment containing a Native Image build report on pull requests. Requires `write` permissions for the [`pull-requests` scope][gha-permissions]. |
+| `components`    | `''`     | Comma-separated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
+| `version` | n/a | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z` (e.g., `mandrel-21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` for [latest Mandrel stable release][mandrel-stable]. |
+| `gds-token`     | `''`     | Download token for the GraalVM Download Service. If a non-empty token is provided, the action will set up GraalVM Enterprise Edition (see [GraalVM EE template](#template-for-graalvm-enterprise-edition)). |
 
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*
 
@@ -143,6 +196,8 @@ Only pull requests from committers that can be verified as having signed the OCA
 [gha-secrets]: https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository
 [gha-self-hosted-runners]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [gu]: https://www.graalvm.org/reference-manual/graalvm-updater/
+[graalvm]: https://www.graalvm.org/
+[graalvm-dl]: https://www.oracle.com/java/technologies/downloads/
 [graalvm-ee]: https://www.oracle.com/downloads/graalvm-downloads.html
 [mandrel]: https://github.com/graalvm/mandrel
 [mandrel-releases]: https://github.com/graalvm/mandrel/releases

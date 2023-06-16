@@ -19,7 +19,7 @@ test('request invalid version/javaVersion', async () => {
       await graalvm.setUpGraalVMRelease('', combination[0], combination[1])
     } catch (err) {
       if (!(err instanceof Error)) {
-        fail(`Unexpected non-Erro: ${err}`)
+        fail(`Unexpected non-Error: ${err}`)
       }
       error = err
     }
@@ -31,6 +31,23 @@ test('request invalid version/javaVersion', async () => {
 })
 
 test('find version/javaVersion', async () => {
+  // Make sure the action can find the latest Java version for known major versions
+  for (var majorJavaVersion of ['17', '20']) {
+    await graalvm.findLatestGraalVMJDKCEJavaVersion(majorJavaVersion)
+  }
+
+  let error = new Error('unexpected')
+  try {
+    await graalvm.findLatestGraalVMJDKCEJavaVersion('11')
+    fail('Should not find Java version for 11')
+  } catch (err) {
+    if (!(err instanceof Error)) {
+      fail(`Unexpected non-Error: ${err}`)
+    }
+    error = err
+  }
+  expect(error.message).toContain('Unable to find the latest Java version for')
+
   const latestRelease = await getTaggedRelease(
     GRAALVM_RELEASES_REPO,
     'vm-22.3.1'
@@ -40,7 +57,7 @@ test('find version/javaVersion', async () => {
   const latestJavaVersion = findHighestJavaVersion(latestRelease, latestVersion)
   expect(latestJavaVersion).not.toBe('')
 
-  let error = new Error('unexpected')
+  error = new Error('unexpected')
   try {
     const invalidRelease = {...latestRelease, tag_name: 'invalid'}
     findGraalVMVersion(invalidRelease)
@@ -56,7 +73,7 @@ test('find version/javaVersion', async () => {
     findHighestJavaVersion(latestRelease, 'invalid')
   } catch (err) {
     if (!(err instanceof Error)) {
-      fail(`Unexpected non-Erro: ${err}`)
+      fail(`Unexpected non-Error: ${err}`)
     }
     error = err
   }

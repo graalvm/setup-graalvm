@@ -1,5 +1,5 @@
 import * as path from 'path'
-import {downloadGraalVMEE, fetchArtifact} from '../src/gds'
+import {downloadGraalVMEELegacy, fetchArtifact} from '../src/gds'
 import {expect, test} from '@jest/globals'
 
 const TEST_USER_AGENT = 'GraalVMGitHubActionTest/1.0.4'
@@ -32,13 +32,15 @@ test('fetch artifacts', async () => {
 })
 
 test('errors when downloading artifacts', async () => {
-  await expect(downloadGraalVMEE('invalid', '22.1.0', '11')).rejects.toThrow(
+  await expect(
+    downloadGraalVMEELegacy('invalid', '22.1.0', '11')
+  ).rejects.toThrow(
     'The provided "gds-token" was rejected (reason: "Invalid download token", opc-request-id: /'
   )
-  await expect(downloadGraalVMEE('invalid', '1.0.0', '11')).rejects.toThrow(
-    'Unable to find JDK11-based GraalVM EE 1.0.0'
-  )
-  await expect(downloadGraalVMEE('invalid', '22.1.0', '1')).rejects.toThrow(
-    'Unable to find JDK1-based GraalVM EE 22.1.0'
-  )
+  await expect(
+    downloadGraalVMEELegacy('invalid', '1.0.0', '11')
+  ).rejects.toThrow('Unable to find JDK11-based GraalVM EE 1.0.0')
+  await expect(
+    downloadGraalVMEELegacy('invalid', '22.1.0', '1')
+  ).rejects.toThrow('Unable to find JDK1-based GraalVM EE 22.1.0')
 })

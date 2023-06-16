@@ -8,6 +8,17 @@ export async function checkForUpdates(
   graalVMVersion: string,
   javaVersion: string
 ): Promise<void> {
+  if (
+    graalVMVersion.length > 0 &&
+    (javaVersion === '17' || javaVersion === '19')
+  ) {
+    const recommendedJDK = javaVersion === '17' ? '17' : '20'
+    core.notice(
+      `A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Release notes: https://www.graalvm.org/release-notes/JDK_${recommendedJDK}/`
+    )
+    return
+  }
+
   if (graalVMVersion.startsWith('22.3.') && javaVersion === '11') {
     core.notice(
       'Please consider upgrading your project to Java 17+. GraalVM 22.3.X releases are the last to support JDK11: https://github.com/oracle/graal/issues/5063'
