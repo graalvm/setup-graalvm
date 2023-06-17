@@ -79,6 +79,7 @@ interface BuildOutput {
 }
 
 export async function setUpNativeImageBuildReports(
+  isGraalVMforJDK17OrLater: boolean,
   graalVMVersion: string
 ): Promise<void> {
   const isRequired = areJobReportsEnabled() || arePRReportsEnabled()
@@ -88,7 +89,7 @@ export async function setUpNativeImageBuildReports(
   const isSupported =
     graalVMVersion === c.VERSION_LATEST ||
     graalVMVersion === c.VERSION_DEV ||
-    graalVMVersion.length === 0 ||
+    isGraalVMforJDK17OrLater ||
     (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
       gte(toSemVer(graalVMVersion), '22.2.0'))
   if (!isSupported) {

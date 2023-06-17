@@ -38,9 +38,11 @@ async function run(): Promise<void> {
       await setUpNativeImageMusl()
     }
 
-    // Download or build GraalVM
+    // Download GraalVM JDK
+    const isGraalVMforJDK17OrLater =
+      distribution.length > 0 || graalvmVersion.length == 0
     let graalVMHome
-    if (distribution.length > 0 || graalvmVersion.length == 0) {
+    if (isGraalVMforJDK17OrLater) {
       switch (distribution) {
         case c.DISTRIBUTION_GRAALVM:
           graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
@@ -132,7 +134,7 @@ async function run(): Promise<void> {
     if (cache && isCacheAvailable()) {
       await restore(cache)
     }
-    setUpNativeImageBuildReports(graalvmVersion)
+    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalvmVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

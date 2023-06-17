@@ -70339,7 +70339,7 @@ const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
 const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
-function setUpNativeImageBuildReports(graalVMVersion) {
+function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const isRequired = areJobReportsEnabled() || arePRReportsEnabled();
         if (!isRequired) {
@@ -70347,7 +70347,7 @@ function setUpNativeImageBuildReports(graalVMVersion) {
         }
         const isSupported = graalVMVersion === c.VERSION_LATEST ||
             graalVMVersion === c.VERSION_DEV ||
-            graalVMVersion.length === 0 ||
+            isGraalVMforJDK17OrLater ||
             (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
                 (0, semver_1.gte)((0, utils_1.toSemVer)(graalVMVersion), '22.2.0'));
         if (!isSupported) {
@@ -71136,9 +71136,10 @@ function run() {
             if (enableNativeImageMusl) {
                 yield (0, musl_1.setUpNativeImageMusl)();
             }
-            // Download or build GraalVM
+            // Download GraalVM JDK
+            const isGraalVMforJDK17OrLater = distribution.length > 0 || graalvmVersion.length == 0;
             let graalVMHome;
-            if (distribution.length > 0 || graalvmVersion.length == 0) {
+            if (isGraalVMforJDK17OrLater) {
                 switch (distribution) {
                     case c.DISTRIBUTION_GRAALVM:
                         graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
@@ -71211,7 +71212,7 @@ function run() {
             if (cache && (0, cache_1.isFeatureAvailable)()) {
                 yield (0, cache_2.restore)(cache);
             }
-            (0, reports_1.setUpNativeImageBuildReports)(graalvmVersion);
+            (0, reports_1.setUpNativeImageBuildReports)(isGraalVMforJDK17OrLater, graalvmVersion);
         }
         catch (error) {
             if (error instanceof Error)

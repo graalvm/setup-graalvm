@@ -70221,7 +70221,7 @@ const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
 const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
-function setUpNativeImageBuildReports(graalVMVersion) {
+function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const isRequired = areJobReportsEnabled() || arePRReportsEnabled();
         if (!isRequired) {
@@ -70229,7 +70229,7 @@ function setUpNativeImageBuildReports(graalVMVersion) {
         }
         const isSupported = graalVMVersion === c.VERSION_LATEST ||
             graalVMVersion === c.VERSION_DEV ||
-            graalVMVersion.length === 0 ||
+            isGraalVMforJDK17OrLater ||
             (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
                 (0, semver_1.gte)((0, utils_1.toSemVer)(graalVMVersion), '22.2.0'));
         if (!isSupported) {
