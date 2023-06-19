@@ -66,6 +66,7 @@ async function run(): Promise<void> {
             )
             graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
           }
+          break
         default:
           throw new Error(`Unsupported distribution: ${distribution}`)
       }

@@ -71158,6 +71158,7 @@ function run() {
                             core.info(`This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
                             graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
                         }
+                        break;
                     default:
                         throw new Error(`Unsupported distribution: ${distribution}`);
                 }
