@@ -187,7 +187,7 @@ jobs:
           - version: 'mandrel-latest'
             java-version: '17'
             distribution: '' # test empty distribution for backward compatibility
-            os: ubuntu-linux
+            os: ubuntu-latest
         exclude: # temporarily disable Mandrel latest builds on Windows due to unavailability
           - version: 'mandrel-latest'
             java-version: '17'
