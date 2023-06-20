@@ -71200,7 +71200,12 @@ function run() {
                         graalVMHome = yield graalvm.setUpGraalVMJDKCE(javaVersion);
                         break;
                     case c.DISTRIBUTION_MANDREL:
-                        throw new Error(`Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
+                        if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
+                            graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalvmVersion, javaVersion);
+                        }
+                        else {
+                            throw new Error(`Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
+                        }
                     case '':
                         if (javaVersion === c.VERSION_DEV) {
                             core.info(`This build is using GraalVM Community Edition. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);

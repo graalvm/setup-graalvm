@@ -181,7 +181,13 @@ jobs:
       matrix:
         version: ['mandrel-22.2.0.0-Final', 'mandrel-latest']
         java-version: ['17']
+        distribution: ['mandrel']
         os: [windows-latest, ubuntu-latest]
+        include:
+          - version: 'mandrel-latest'
+            java-version: '17'
+            distribution: '' # test empty distribution for backward compatibility
+            os: ubuntu-linux
         exclude: # temporarily disable Mandrel latest builds on Windows due to unavailability
           - version: 'mandrel-latest'
             java-version: '17'
@@ -192,6 +198,7 @@ jobs:
         uses: ./
         with:
           version: ${{ matrix.version }}
+          distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java-version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check environment
