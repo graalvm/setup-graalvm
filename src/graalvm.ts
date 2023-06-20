@@ -160,11 +160,11 @@ export function findHighestJavaVersion(
 
 // Support for GraalVM 22.X releases and earlier
 
-export async function setUpGraalVMLatest(
+export async function setUpGraalVMLatest_22_X(
   gdsToken: string,
   javaVersion: string
 ): Promise<string> {
-  const lockedVersion = '22.3.1'
+  const lockedVersion = '22.3.2'
   if (gdsToken.length > 0) {
     return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion)
   }

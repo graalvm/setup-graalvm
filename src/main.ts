@@ -86,7 +86,7 @@ async function run(): Promise<void> {
             )
             graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
           } else {
-            graalVMHome = await graalvm.setUpGraalVMLatest(
+            graalVMHome = await graalvm.setUpGraalVMLatest_22_X(
               gdsToken,
               javaVersion
             )

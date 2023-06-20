@@ -70863,7 +70863,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpGraalVMRelease = exports.findGraalVMVersion = exports.setUpGraalVMLatest = exports.findHighestJavaVersion = exports.setUpGraalVMJDKDevBuild = exports.findLatestGraalVMJDKCEJavaVersion = exports.setUpGraalVMJDKCE = exports.setUpGraalVMJDK = void 0;
+exports.setUpGraalVMRelease = exports.findGraalVMVersion = exports.setUpGraalVMLatest_22_X = exports.findHighestJavaVersion = exports.setUpGraalVMJDKDevBuild = exports.findLatestGraalVMJDKCEJavaVersion = exports.setUpGraalVMJDKCE = exports.setUpGraalVMJDK = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const utils_1 = __nccwpck_require__(1314);
 const gds_1 = __nccwpck_require__(9543);
@@ -70984,9 +70984,9 @@ function findHighestJavaVersion(release, version) {
 }
 exports.findHighestJavaVersion = findHighestJavaVersion;
 // Support for GraalVM 22.X releases and earlier
-function setUpGraalVMLatest(gdsToken, javaVersion) {
+function setUpGraalVMLatest_22_X(gdsToken, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const lockedVersion = '22.3.1';
+        const lockedVersion = '22.3.2';
         if (gdsToken.length > 0) {
             return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion);
         }
@@ -70995,7 +70995,7 @@ function setUpGraalVMLatest(gdsToken, javaVersion) {
         return setUpGraalVMRelease(gdsToken, version, javaVersion);
     });
 }
-exports.setUpGraalVMLatest = setUpGraalVMLatest;
+exports.setUpGraalVMLatest_22_X = setUpGraalVMLatest_22_X;
 function findGraalVMVersion(release) {
     const tag_name = release.tag_name;
     if (!tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
@@ -71229,7 +71229,7 @@ function run() {
                             graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
                         }
                         else {
-                            graalVMHome = yield graalvm.setUpGraalVMLatest(gdsToken, javaVersion);
+                            graalVMHome = yield graalvm.setUpGraalVMLatest_22_X(gdsToken, javaVersion);
                         }
                         break;
                     case c.VERSION_DEV:
