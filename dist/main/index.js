@@ -70167,10 +70167,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.checkForUpdates = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const utils_1 = __nccwpck_require__(1314);
-const semver_1 = __nccwpck_require__(1383);
-const graalvm_1 = __nccwpck_require__(5254);
-const constants_1 = __nccwpck_require__(9042);
 function checkForUpdates(graalVMVersion, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         if (graalVMVersion.length > 0 &&
@@ -70183,15 +70179,7 @@ function checkForUpdates(graalVMVersion, javaVersion) {
             core.notice('Please consider upgrading your project to Java 17+. GraalVM 22.3.X releases are the last to support JDK11: https://github.com/oracle/graal/issues/5063');
             return;
         }
-        const latestRelease = yield (0, utils_1.getTaggedRelease)(constants_1.GRAALVM_RELEASES_REPO, 'vm-22.3.1');
-        const latestGraalVMVersion = (0, graalvm_1.findGraalVMVersion)(latestRelease);
-        const selectedVersion = (0, utils_1.toSemVer)(graalVMVersion);
-        const latestVersion = (0, utils_1.toSemVer)(latestGraalVMVersion);
-        if ((0, semver_1.valid)(selectedVersion) &&
-            (0, semver_1.valid)(latestVersion) &&
-            (0, semver_1.lt)(selectedVersion, latestVersion)) {
-            core.notice(`A new GraalVM release is available! Please consider upgrading to GraalVM ${latestGraalVMVersion}. Release notes: https://www.graalvm.org/release-notes/${(0, semver_1.major)(latestVersion)}_${(0, semver_1.minor)(latestVersion)}/`);
-        }
+        // TODO: add support for JDK-specific update checks (e.g., 17.0.X)
     });
 }
 exports.checkForUpdates = checkForUpdates;
