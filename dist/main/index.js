@@ -70696,7 +70696,9 @@ function fetchArtifact(userAgent, metadata, version, javaVersion) {
         }
         const artifactResponse = JSON.parse(yield response.readBody());
         if (artifactResponse.items.length !== 1) {
-            throw new Error(`Found more than one GDS artifact`);
+            throw new Error(artifactResponse.items.length > 1
+                ? `Found more than one GDS artifact. ${c.ERROR_HINT}`
+                : `Unable to find GDS artifact. Are you sure version: '${version}' is correct?`);
         }
         return artifactResponse.items[0];
     });
@@ -70974,7 +70976,7 @@ exports.findHighestJavaVersion = findHighestJavaVersion;
 // Support for GraalVM 22.X releases and earlier
 function setUpGraalVMLatest_22_X(gdsToken, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const lockedVersion = '22.3.2';
+        const lockedVersion = javaVersion === '19' ? '22.3.1' : '22.3.2';
         if (gdsToken.length > 0) {
             return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion);
         }

@@ -70,7 +70,11 @@ export async function fetchArtifact(
     await response.readBody()
   ) as GDSArtifactsResponse
   if (artifactResponse.items.length !== 1) {
-    throw new Error(`Found more than one GDS artifact`)
+    throw new Error(
+      artifactResponse.items.length > 1
+        ? `Found more than one GDS artifact. ${c.ERROR_HINT}`
+        : `Unable to find GDS artifact. Are you sure version: '${version}' is correct?`
+    )
   }
   return artifactResponse.items[0]
 }
