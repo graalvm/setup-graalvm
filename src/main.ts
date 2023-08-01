@@ -58,6 +58,7 @@ async function run(): Promise<void> {
               `Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )
           }
+          break
         case '':
           if (javaVersion === c.VERSION_DEV) {
             core.info(

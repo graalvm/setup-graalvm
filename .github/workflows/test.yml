@@ -207,6 +207,7 @@ jobs:
           [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
+          java --version | grep "Temurin" || exit 23
           native-image --version
         if: runner.os != 'Windows'
       - name: Check Windows environment
