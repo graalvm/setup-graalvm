@@ -164,7 +164,7 @@ export async function setUpGraalVMLatest_22_X(
   gdsToken: string,
   javaVersion: string
 ): Promise<string> {
-  const lockedVersion = javaVersion === '19' ? '22.3.1' : '22.3.2'
+  const lockedVersion = javaVersion === '19' ? '22.3.1' : '22.3.3'
   if (gdsToken.length > 0) {
     return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion)
   }

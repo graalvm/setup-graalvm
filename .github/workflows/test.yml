@@ -133,15 +133,15 @@ jobs:
     strategy:
       matrix:
         version: ['latest']
-        java-version: ['19']
+        java-version: ['17']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
         include:
-          - version: '22.3.0'
+          - version: '22.3.3'
             java-version: '11'
             components: 'native-image'
             os: ubuntu-latest
-          - version: '22.3.0'
+          - version: '22.3.3'
             java-version: '17'
             components: 'native-image'
             os: ubuntu-latest
