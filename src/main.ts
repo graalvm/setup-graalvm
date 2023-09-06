@@ -1,7 +1,7 @@
 import * as c from './constants'
 import * as core from '@actions/core'
 import * as graalvm from './graalvm'
-import {gte as semverGte, valid as semverValid} from 'semver'
+import * as semver from 'semver'
 import {isFeatureAvailable as isCacheAvailable} from '@actions/cache'
 import {join} from 'path'
 import {restore} from './features/cache'
@@ -80,7 +80,7 @@ async function run(): Promise<void> {
         case c.VERSION_LATEST:
           if (
             javaVersion.startsWith('17') ||
-            (semverValid(javaVersion) && semverGte(javaVersion, '20'))
+            (semver.valid(javaVersion) && semver.gte(javaVersion, '20.0.0'))
           ) {
             core.info(
               `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
@@ -99,7 +99,18 @@ async function run(): Promise<void> {
               'Downloading GraalVM EE dev builds is not supported'
             )
           }
-          graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
+          const coercedJavaVersion = semver.coerce(javaVersion)
+          if (
+            coercedJavaVersion !== null &&
+            !semver.gte(coercedJavaVersion, '21.0.0')
+          ) {
+            core.warning(
+              `GraalVM dev builds are only available for JDK 21. This build is now using a stable release of GraalVM for JDK ${javaVersion}.`
+            )
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+          } else {
+            graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
+          }
           break
         default:
           if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
