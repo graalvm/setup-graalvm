@@ -17,7 +17,7 @@ async function run(): Promise<void> {
   try {
     const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
     const distribution = core.getInput(c.INPUT_DISTRIBUTION)
-    const graalvmVersion = core.getInput(c.INPUT_VERSION)
+    const graalVMVersion = core.getInput(c.INPUT_VERSION)
     const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
     const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
     const components: string[] =
@@ -31,7 +31,7 @@ async function run(): Promise<void> {
     const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
 
     if (c.IS_WINDOWS) {
-      setUpWindowsEnvironment(graalvmVersion)
+      setUpWindowsEnvironment(graalVMVersion)
     }
     await setUpDependencies(components)
     if (enableNativeImageMusl) {
@@ -40,7 +40,7 @@ async function run(): Promise<void> {
 
     // Download GraalVM JDK
     const isGraalVMforJDK17OrLater =
-      distribution.length > 0 || graalvmVersion.length == 0
+      distribution.length > 0 || graalVMVersion.length == 0
     let graalVMHome
     if (isGraalVMforJDK17OrLater) {
       switch (distribution) {
@@ -51,8 +51,8 @@ async function run(): Promise<void> {
           graalVMHome = await graalvm.setUpGraalVMJDKCE(javaVersion)
           break
         case c.DISTRIBUTION_MANDREL:
-          if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
-            graalVMHome = await setUpMandrel(graalvmVersion, javaVersion)
+          if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
+            graalVMHome = await setUpMandrel(graalVMVersion, javaVersion)
           } else {
             throw new Error(
               `Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
@@ -76,7 +76,7 @@ async function run(): Promise<void> {
           throw new Error(`Unsupported distribution: ${distribution}`)
       }
     } else {
-      switch (graalvmVersion) {
+      switch (graalVMVersion) {
         case c.VERSION_LATEST:
           if (
             javaVersion.startsWith('17') ||
@@ -102,15 +102,15 @@ async function run(): Promise<void> {
           graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
           break
         default:
-          if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
-            graalVMHome = await setUpMandrel(graalvmVersion, javaVersion)
+          if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
+            graalVMHome = await setUpMandrel(graalVMVersion, javaVersion)
           } else {
             if (enableCheckForUpdates) {
-              await checkForUpdates(graalvmVersion, javaVersion)
+              await checkForUpdates(graalVMVersion, javaVersion)
             }
             graalVMHome = await graalvm.setUpGraalVMRelease(
               gdsToken,
-              graalvmVersion,
+              graalVMVersion,
               javaVersion
             )
           }
@@ -126,21 +126,18 @@ async function run(): Promise<void> {
       core.exportVariable('JAVA_HOME', graalVMHome)
     }
 
-    // Set up GraalVM components (if any)
-    if (components.length > 0) {
-      if (graalvmVersion.startsWith(c.MANDREL_NAMESPACE)) {
-        core.warning(
-          `Mandrel does not support GraalVM components: ${componentsString}`
-        )
-      } else {
-        await setUpGUComponents(gdsToken, graalVMHome, components)
-      }
-    }
+    await setUpGUComponents(
+      javaVersion,
+      graalVMVersion,
+      graalVMHome,
+      components,
+      gdsToken
+    )
 
     if (cache && isCacheAvailable()) {
       await restore(cache)
     }
-    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalvmVersion)
+    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
