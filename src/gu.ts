@@ -37,13 +37,19 @@ export async function setUpGUComponents(
   if (
     graalVMVersion === c.VERSION_DEV ||
     javaVersion === c.VERSION_DEV ||
-    (semverValid(javaVersion) && semverGte(javaVersion, '21'))
+    (semverValid(javaVersion) && semverGte(javaVersion, '21.0.0'))
   ) {
-    core.warning(
-      `Unable to install component(s): '${components.join(
-        ','
-      )}'. The latest GraalVM dev builds and the upcoming GraalVM for JDK 21 no longer include the GraalVM Updater: https://github.com/oracle/graal/issues/6855`
-    )
+    if (components.length == 1 && components[0] === 'native-image') {
+      core.warning(
+        `Please remove "components: 'native-image'" from your workflow file. It is automatically included since GraalVM for JDK 17: https://github.com/oracle/graal/pull/5995`
+      )
+    } else {
+      core.warning(
+        `Unable to install component(s): '${components.join(
+          ','
+        )}'. The latest GraalVM dev builds and the upcoming GraalVM for JDK 21 no longer include the GraalVM Updater: https://github.com/oracle/graal/issues/6855`
+      )
+    }
   } else if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
     core.warning(
       `Mandrel does not support GraalVM component(s): '${components.join(',')}'`

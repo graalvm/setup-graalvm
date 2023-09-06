@@ -35,6 +35,10 @@ jobs:
           - java-version: 'dev'
             distribution: ''
             os: windows-latest
+          - java-version: '17.0.7'
+            distribution: 'graalvm-community'
+            os: ubuntu-latest
+            components: 'native-image' # should print a warning but not fail
     steps:
       - uses: actions/checkout@v3
       - name: Run setup-graalvm action
