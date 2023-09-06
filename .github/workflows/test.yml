@@ -106,7 +106,7 @@ jobs:
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
-          if [[ "${{ matrix.version }}" == "dev" ]]; then
+          if [[ "${{ matrix.version }}" == "dev" ]] && [[ "${{ matrix.java-version }}" == "dev" ]]; then
             [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
           else
             [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
@@ -115,7 +115,9 @@ jobs:
           java --version
           java --version | grep "GraalVM" || exit 34
           native-image --version
-          gu list
+          if [[ "${{ matrix.java-version }}" != "dev" ]]; then
+            gu list
+          fi
         if: runner.os != 'Windows'
       - name: Check Windows environment
         run: |
@@ -161,7 +163,7 @@ jobs:
           [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
-          java --version | grep "GraalVM EE" || exit 23
+          java --version | grep -e "GraalVM EE" -e "Oracle GraalVM" || exit 23
           native-image --version
           gu list
         if: runner.os != 'Windows'
