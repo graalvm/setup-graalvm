@@ -17,6 +17,7 @@ async function run(): Promise<void> {
   try {
     const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
     const distribution = core.getInput(c.INPUT_DISTRIBUTION)
+    const customDistributionUrl = core.getInput(c.INPUT_DISTRIBUTION_URL)
     const graalVMVersion = core.getInput(c.INPUT_VERSION)
     const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
     const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
@@ -45,10 +46,10 @@ async function run(): Promise<void> {
     if (isGraalVMforJDK17OrLater) {
       switch (distribution) {
         case c.DISTRIBUTION_GRAALVM:
-          graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+          graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, customDistributionUrl)
           break
         case c.DISTRIBUTION_GRAALVM_COMMUNITY:
-          graalVMHome = await graalvm.setUpGraalVMJDKCE(javaVersion)
+          graalVMHome = await graalvm.setUpGraalVMJDKCE(javaVersion, customDistributionUrl)
           break
         case c.DISTRIBUTION_MANDREL:
           if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
@@ -64,12 +65,12 @@ async function run(): Promise<void> {
             core.info(
               `This build is using GraalVM Community Edition. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )
-            graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
+            graalVMHome = await graalvm.setUpGraalVMJDKDevBuild(customDistributionUrl)
           } else {
             core.info(
               `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )
-            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, customDistributionUrl)
           }
           break
         default:
@@ -85,7 +86,7 @@ async function run(): Promise<void> {
             core.info(
               `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )
-            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, customDistributionUrl)
           } else {
             graalVMHome = await graalvm.setUpGraalVMLatest_22_X(
               gdsToken,
@@ -107,9 +108,9 @@ async function run(): Promise<void> {
             core.warning(
               `GraalVM dev builds are only available for JDK 21. This build is now using a stable release of GraalVM for JDK ${javaVersion}.`
             )
-            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, customDistributionUrl)
           } else {
-            graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
+            graalVMHome = await graalvm.setUpGraalVMJDKDevBuild(customDistributionUrl)
           }
           break
         default:
