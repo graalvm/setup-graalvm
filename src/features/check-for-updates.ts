@@ -4,11 +4,17 @@ export async function checkForUpdates(
   graalVMVersion: string,
   javaVersion: string
 ): Promise<void> {
+  if (javaVersion === '20') {
+    core.notice(
+      'A new GraalVM release is available! Please consider upgrading to GraalVM for JDK 21: https://medium.com/p/ee01177dd12d'
+    )
+    return
+  }
   if (
     graalVMVersion.length > 0 &&
     (javaVersion === '17' || javaVersion === '19')
   ) {
-    const recommendedJDK = javaVersion === '17' ? '17' : '20'
+    const recommendedJDK = javaVersion === '17' ? '17' : '21'
     core.notice(
       `A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Instructions: https://github.com/graalvm/setup-graalvm#migrating-from-graalvm-223-or-earlier-to-the-new-graalvm-for-jdk-17-and-later`
     )
