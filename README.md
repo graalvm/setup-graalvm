@@ -54,7 +54,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
           java-version: '17.0.7'
@@ -85,7 +85,7 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: graalvm/setup-graalvm@v1
         with:
@@ -118,7 +118,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
           version: '22.3.2' # GraalVM version
@@ -146,7 +146,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
           version: '22.3.0'

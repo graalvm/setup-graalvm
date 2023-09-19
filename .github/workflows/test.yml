@@ -15,7 +15,7 @@ jobs:
   build: # make sure build/ci work properly
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: |
           npm install
       - run: |
@@ -40,7 +40,7 @@ jobs:
             os: ubuntu-latest
             components: 'native-image' # should print a warning but not fail
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -99,7 +99,7 @@ jobs:
             components: 'native-image'
             os: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -152,7 +152,7 @@ jobs:
             components: 'native-image'
             os: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -199,7 +199,7 @@ jobs:
             java-version: '17'
             os: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -230,7 +230,7 @@ jobs:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -252,7 +252,7 @@ jobs:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -274,7 +274,7 @@ jobs:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run setup-graalvm action
         uses: ./
         with:
@@ -297,7 +297,7 @@ jobs:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run setup-graalvm action
         uses: ./
         with:
