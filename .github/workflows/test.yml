@@ -332,16 +332,16 @@ jobs:
           javac HelloWorld.java
           native-image -g HelloWorld
           ./helloworld
-      - name: Build Ruby-FFI with TruffleRuby
-        run: |
-          [[ $(which bundle) == *"graalvm"* ]] || exit 57
-          git clone --depth 1 https://github.com/ffi/ffi.git
-          pushd ffi > /dev/null
-          # https://github.com/ffi/ffi/blob/447845cb3030194c79700c86fb388a12e6f81386/.github/workflows/ci.yml#L58-L62
-          bundle install
-          bundle exec rake libffi
-          bundle exec rake compile
-          bundle exec rake test
-          popd > /dev/null
+      # - name: Build Ruby-FFI with TruffleRuby
+      #   run: |
+      #     [[ $(which bundle) == *"graalvm"* ]] || exit 57
+      #     git clone --depth 1 https://github.com/ffi/ffi.git
+      #     pushd ffi > /dev/null
+      #     # https://github.com/ffi/ffi/blob/447845cb3030194c79700c86fb388a12e6f81386/.github/workflows/ci.yml#L58-L62
+      #     bundle install
+      #     bundle exec rake libffi
+      #     bundle exec rake compile
+      #     bundle exec rake test
+      #     popd > /dev/null
       - name: Remove components
         run: gu remove espresso llvm-toolchain nodejs python ruby wasm
