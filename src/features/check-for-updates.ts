@@ -1,12 +1,12 @@
 import * as core from '@actions/core'
 
-export async function checkForUpdates(
+export function checkForUpdates(
   graalVMVersion: string,
   javaVersion: string
-): Promise<void> {
+): void {
   if (javaVersion === '20') {
     core.notice(
-      'A new GraalVM release is available! Please consider upgrading to GraalVM for JDK 21: https://medium.com/p/ee01177dd12d'
+      'A new GraalVM release is available! Please consider upgrading to GraalVM for JDK 21: https://medium.com/graalvm/graalvm-for-jdk-21-is-here-ee01177dd12d'
     )
     return
   }

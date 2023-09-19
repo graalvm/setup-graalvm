@@ -43,6 +43,13 @@ async function run(): Promise<void> {
       distribution.length > 0 || graalVMVersion.length == 0
     let graalVMHome
     if (isGraalVMforJDK17OrLater) {
+      if (
+        enableCheckForUpdates &&
+        (distribution === c.DISTRIBUTION_GRAALVM ||
+          distribution === c.DISTRIBUTION_GRAALVM_COMMUNITY)
+      ) {
+        checkForUpdates(graalVMVersion, javaVersion)
+      }
       switch (distribution) {
         case c.DISTRIBUTION_GRAALVM:
           graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
@@ -117,7 +124,7 @@ async function run(): Promise<void> {
             graalVMHome = await setUpMandrel(graalVMVersion, javaVersion)
           } else {
             if (enableCheckForUpdates) {
-              await checkForUpdates(graalVMVersion, javaVersion)
+              checkForUpdates(graalVMVersion, javaVersion)
             }
             graalVMHome = await graalvm.setUpGraalVMRelease(
               gdsToken,

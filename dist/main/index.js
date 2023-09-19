@@ -70308,36 +70308,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.checkForUpdates = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 function checkForUpdates(graalVMVersion, javaVersion) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (javaVersion === '20') {
-            core.notice('A new GraalVM release is available! Please consider upgrading to GraalVM for JDK 21: https://medium.com/p/ee01177dd12d');
-            return;
-        }
-        if (graalVMVersion.length > 0 &&
-            (javaVersion === '17' || javaVersion === '19')) {
-            const recommendedJDK = javaVersion === '17' ? '17' : '21';
-            core.notice(`A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Instructions: https://github.com/graalvm/setup-graalvm#migrating-from-graalvm-223-or-earlier-to-the-new-graalvm-for-jdk-17-and-later`);
-            return;
-        }
-        if (graalVMVersion.startsWith('22.3.') && javaVersion === '11') {
-            core.notice('Please consider upgrading your project to Java 17+. GraalVM 22.3.X releases are the last to support JDK11: https://github.com/oracle/graal/issues/5063');
-            return;
-        }
-        // TODO: add support for JDK-specific update checks (e.g., 17.0.X)
-    });
+    if (javaVersion === '20') {
+        core.notice('A new GraalVM release is available! Please consider upgrading to GraalVM for JDK 21: https://medium.com/graalvm/graalvm-for-jdk-21-is-here-ee01177dd12d');
+        return;
+    }
+    if (graalVMVersion.length > 0 &&
+        (javaVersion === '17' || javaVersion === '19')) {
+        const recommendedJDK = javaVersion === '17' ? '17' : '21';
+        core.notice(`A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Instructions: https://github.com/graalvm/setup-graalvm#migrating-from-graalvm-223-or-earlier-to-the-new-graalvm-for-jdk-17-and-later`);
+        return;
+    }
+    if (graalVMVersion.startsWith('22.3.') && javaVersion === '11') {
+        core.notice('Please consider upgrading your project to Java 17+. GraalVM 22.3.X releases are the last to support JDK11: https://github.com/oracle/graal/issues/5063');
+        return;
+    }
+    // TODO: add support for JDK-specific update checks (e.g., 17.0.X)
 }
 exports.checkForUpdates = checkForUpdates;
 
@@ -71388,6 +71377,11 @@ function run() {
             const isGraalVMforJDK17OrLater = distribution.length > 0 || graalVMVersion.length == 0;
             let graalVMHome;
             if (isGraalVMforJDK17OrLater) {
+                if (enableCheckForUpdates &&
+                    (distribution === c.DISTRIBUTION_GRAALVM ||
+                        distribution === c.DISTRIBUTION_GRAALVM_COMMUNITY)) {
+                    (0, check_for_updates_1.checkForUpdates)(graalVMVersion, javaVersion);
+                }
                 switch (distribution) {
                     case c.DISTRIBUTION_GRAALVM:
                         graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
@@ -71449,7 +71443,7 @@ function run() {
                         }
                         else {
                             if (enableCheckForUpdates) {
-                                yield (0, check_for_updates_1.checkForUpdates)(graalVMVersion, javaVersion);
+                                (0, check_for_updates_1.checkForUpdates)(graalVMVersion, javaVersion);
                             }
                             graalVMHome = yield graalvm.setUpGraalVMRelease(gdsToken, graalVMVersion, javaVersion);
                         }
