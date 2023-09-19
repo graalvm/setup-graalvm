@@ -17,7 +17,7 @@ This action:
 
 ## Migrating from GraalVM 22.3 or Earlier to the New GraalVM for JDK 17 and Later
 
-The new [GraalVM for JDK 17 and JDK 20 release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the GraalVM version scheme with OpenJDK.
+The [GraalVM for JDK 17 and JDK 20 release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the GraalVM version scheme with OpenJDK.
 As a result, this action no longer requires the `version` option to select a specific GraalVM version.
 At the same time, it introduces a new `distribution` option to select a specific GraalVM distribution (`graalvm`, `graalvm-community`, or `mandrel`).
 Therefore, to migrate your workflow to use the latest GraalVM release, replace the `version` with the `distribution` option in the workflow `yml` config, for example:
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17.0.7'
+          java-version: '21'
           distribution: 'graalvm' # See 'Options' for all available distributions
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Example step
@@ -89,7 +89,7 @@ jobs:
 
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17.0.7'
+          java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -166,7 +166,7 @@ jobs:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | `'17.0.7'` or `'20.0.1'` for a specific Java version, `'dev'` for a dev build with the latest Java version available.<br>(`'8'`, `'11'`, `'16'`, `'19'` are supported for older GraalVM releases.) |
+| `java-version`<br>*(required)* | n/a | `'21'` or `'17.0.7'` for a specific Java version, `'dev'` for a dev build with the latest Java version available.<br>(`'8'`, `'11'`, `'16'`, `'19'` are supported for older GraalVM releases.) |
 | `distribution`  | `''` | GraalVM distribution (`graalvm` for Oracle GraalVM, `graalvm-community` for GraalVM Community Edition, `mandrel` for Mandrel). |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |

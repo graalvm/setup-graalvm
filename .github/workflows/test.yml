@@ -25,17 +25,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java-version: ['17', '20', 'dev']
+        java-version: ['21', '17', '20', 'dev']
         distribution: ['graalvm', 'graalvm-community']
         os: [macos-latest, windows-latest, ubuntu-latest]
         include:
-          - java-version: '17.0.7'
+          - java-version: '21'
             distribution: ''
             os: ubuntu-latest
           - java-version: 'dev'
             distribution: ''
             os: windows-latest
-          - java-version: '17.0.7'
+          - java-version: '21'
             distribution: 'graalvm-community'
             os: ubuntu-latest
             components: 'native-image' # should print a warning but not fail
