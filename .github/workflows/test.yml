@@ -28,6 +28,7 @@ jobs:
         java-version: ['21', '17', '20', 'dev']
         distribution: ['graalvm', 'graalvm-community']
         os: [macos-latest, windows-latest, ubuntu-latest]
+        components: ['']
         include:
           - java-version: '21'
             distribution: ''
@@ -47,6 +48,7 @@ jobs:
           java-version: ${{ matrix.java-version }}
           distribution: ${{ matrix.distribution }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          components: ${{ matrix.components }}
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
