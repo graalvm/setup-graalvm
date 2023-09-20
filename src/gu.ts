@@ -1,9 +1,9 @@
 import * as c from './constants'
 import * as core from '@actions/core'
+import * as semver from 'semver'
 import {GRAALVM_PLATFORM} from './constants'
 import {exec} from './utils'
 import {join} from 'path'
-import {gte as semverGte, valid as semverValid} from 'semver'
 
 const BASE_FLAGS = ['--non-interactive', 'install', '--no-progress']
 const COMPONENT_TO_POST_INSTALL_HOOK = new Map<string, Map<string, string>>([
@@ -34,10 +34,11 @@ export async function setUpGUComponents(
   if (components.length == 0) {
     return // nothing to do
   }
+  const coercedJavaVersion = semver.coerce(javaVersion)
   if (
     graalVMVersion === c.VERSION_DEV ||
     javaVersion === c.VERSION_DEV ||
-    (semverValid(javaVersion) && semverGte(javaVersion, '21.0.0'))
+    (coercedJavaVersion != null && semver.gte(coercedJavaVersion, '21.0.0'))
   ) {
     if (components.length == 1 && components[0] === 'native-image') {
       core.warning(

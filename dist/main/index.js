@@ -58304,7 +58304,7 @@ class Range {
     this.set = this.raw
       .split('||')
       // map the range to a 2d array of comparators
-      .map(r => this.parseRange(r))
+      .map(r => this.parseRange(r.trim()))
       // throw out any comparator lists that are empty
       // this generally means that it was not a valid range, which is allowed
       // in loose mode, but will still throw if the WHOLE range is invalid.
@@ -58364,15 +58364,18 @@ class Range {
     const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE]
     range = range.replace(hr, hyphenReplace(this.options.includePrerelease))
     debug('hyphen replace', range)
+
     // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
     range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace)
     debug('comparator trim', range)
 
     // `~ 1.2.3` => `~1.2.3`
     range = range.replace(re[t.TILDETRIM], tildeTrimReplace)
+    debug('tilde trim', range)
 
     // `^ 1.2.3` => `^1.2.3`
     range = range.replace(re[t.CARETTRIM], caretTrimReplace)
+    debug('caret trim', range)
 
     // At this point, the range is completely trimmed and
     // ready to be split into comparators.
@@ -59674,6 +59677,10 @@ const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
 // Max safe segment length for coercion.
 const MAX_SAFE_COMPONENT_LENGTH = 16
 
+// Max safe length for a build identifier. The max length minus 6 characters for
+// the shortest version with a build 0.0.0+BUILD.
+const MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6
+
 const RELEASE_TYPES = [
   'major',
   'premajor',
@@ -59687,6 +59694,7 @@ const RELEASE_TYPES = [
 module.exports = {
   MAX_LENGTH,
   MAX_SAFE_COMPONENT_LENGTH,
+  MAX_SAFE_BUILD_LENGTH,
   MAX_SAFE_INTEGER,
   RELEASE_TYPES,
   SEMVER_SPEC_VERSION,
@@ -59768,7 +59776,11 @@ module.exports = parseOptions
 /***/ 9523:
 /***/ ((module, exports, __nccwpck_require__) => {
 
-const { MAX_SAFE_COMPONENT_LENGTH } = __nccwpck_require__(2293)
+const {
+  MAX_SAFE_COMPONENT_LENGTH,
+  MAX_SAFE_BUILD_LENGTH,
+  MAX_LENGTH,
+} = __nccwpck_require__(2293)
 const debug = __nccwpck_require__(427)
 exports = module.exports = {}
 
@@ -59779,16 +59791,31 @@ const src = exports.src = []
 const t = exports.t = {}
 let R = 0
 
+const LETTERDASHNUMBER = '[a-zA-Z0-9-]'
+
+// Replace some greedy regex tokens to prevent regex dos issues. These regex are
+// used internally via the safeRe object since all inputs in this library get
+// normalized first to trim and collapse all extra whitespace. The original
+// regexes are exported for userland consumption and lower level usage. A
+// future breaking change could export the safer regex only with a note that
+// all input should have extra whitespace removed.
+const safeRegexReplacements = [
+  ['\\s', 1],
+  ['\\d', MAX_LENGTH],
+  [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH],
+]
+
+const makeSafeRegex = (value) => {
+  for (const [token, max] of safeRegexReplacements) {
+    value = value
+      .split(`${token}*`).join(`${token}{0,${max}}`)
+      .split(`${token}+`).join(`${token}{1,${max}}`)
+  }
+  return value
+}
+
 const createToken = (name, value, isGlobal) => {
-  // Replace all greedy whitespace to prevent regex dos issues. These regex are
-  // used internally via the safeRe object since all inputs in this library get
-  // normalized first to trim and collapse all extra whitespace. The original
-  // regexes are exported for userland consumption and lower level usage. A
-  // future breaking change could export the safer regex only with a note that
-  // all input should have extra whitespace removed.
-  const safe = value
-    .split('\\s*').join('\\s{0,1}')
-    .split('\\s+').join('\\s')
+  const safe = makeSafeRegex(value)
   const index = R++
   debug(name, index, value)
   t[name] = index
@@ -59804,13 +59831,13 @@ const createToken = (name, value, isGlobal) => {
 // A single `0`, or a non-zero digit followed by zero or more digits.
 
 createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
-createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+')
+createToken('NUMERICIDENTIFIERLOOSE', '\\d+')
 
 // ## Non-numeric Identifier
 // Zero or more digits, followed by a letter or hyphen, and then zero or
 // more letters, digits, or hyphens.
 
-createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*')
+createToken('NONNUMERICIDENTIFIER', `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`)
 
 // ## Main Version
 // Three dot-separated numeric identifiers.
@@ -59845,7 +59872,7 @@ createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]
 // ## Build Metadata Identifier
 // Any combination of digits, letters, or hyphens.
 
-createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+')
+createToken('BUILDIDENTIFIER', `${LETTERDASHNUMBER}+`)
 
 // ## Build Metadata
 // Plus sign, followed by one or more period-separated build metadata
@@ -71233,10 +71260,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.setUpGUComponents = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
+const semver = __importStar(__nccwpck_require__(1383));
 const constants_1 = __nccwpck_require__(9042);
 const utils_1 = __nccwpck_require__(1314);
 const path_1 = __nccwpck_require__(1017);
-const semver_1 = __nccwpck_require__(1383);
 const BASE_FLAGS = ['--non-interactive', 'install', '--no-progress'];
 const COMPONENT_TO_POST_INSTALL_HOOK = new Map([
     [
@@ -71260,9 +71287,10 @@ function setUpGUComponents(javaVersion, graalVMVersion, graalVMHome, components,
         if (components.length == 0) {
             return; // nothing to do
         }
+        const coercedJavaVersion = semver.coerce(javaVersion);
         if (graalVMVersion === c.VERSION_DEV ||
             javaVersion === c.VERSION_DEV ||
-            ((0, semver_1.valid)(javaVersion) && (0, semver_1.gte)(javaVersion, '21.0.0'))) {
+            (coercedJavaVersion != null && semver.gte(coercedJavaVersion, '21.0.0'))) {
             if (components.length == 1 && components[0] === 'native-image') {
                 core.warning(`Please remove "components: 'native-image'" from your workflow file. It is automatically included since GraalVM for JDK 17: https://github.com/oracle/graal/pull/5995`);
             }
@@ -71412,10 +71440,12 @@ function run() {
                 }
             }
             else {
+                const coercedJavaVersion = semver.coerce(javaVersion);
                 switch (graalVMVersion) {
                     case c.VERSION_LATEST:
                         if (javaVersion.startsWith('17') ||
-                            (semver.valid(javaVersion) && semver.gte(javaVersion, '20.0.0'))) {
+                            (coercedJavaVersion !== null &&
+                                semver.gte(coercedJavaVersion, '20.0.0'))) {
                             core.info(`This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
                             graalVMHome = yield graalvm.setUpGraalVMJDK(javaVersion);
                         }
@@ -71427,7 +71457,6 @@ function run() {
                         if (gdsToken.length > 0) {
                             throw new Error('Downloading GraalVM EE dev builds is not supported');
                         }
-                        const coercedJavaVersion = semver.coerce(javaVersion);
                         if (coercedJavaVersion !== null &&
                             !semver.gte(coercedJavaVersion, '21.0.0')) {
                             core.warning(`GraalVM dev builds are only available for JDK 21. This build is now using a stable release of GraalVM for JDK ${javaVersion}.`);

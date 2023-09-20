@@ -83,11 +83,13 @@ async function run(): Promise<void> {
           throw new Error(`Unsupported distribution: ${distribution}`)
       }
     } else {
+      const coercedJavaVersion = semver.coerce(javaVersion)
       switch (graalVMVersion) {
         case c.VERSION_LATEST:
           if (
             javaVersion.startsWith('17') ||
-            (semver.valid(javaVersion) && semver.gte(javaVersion, '20.0.0'))
+            (coercedJavaVersion !== null &&
+              semver.gte(coercedJavaVersion, '20.0.0'))
           ) {
             core.info(
               `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
@@ -106,7 +108,6 @@ async function run(): Promise<void> {
               'Downloading GraalVM EE dev builds is not supported'
             )
           }
-          const coercedJavaVersion = semver.coerce(javaVersion)
           if (
             coercedJavaVersion !== null &&
             !semver.gte(coercedJavaVersion, '21.0.0')
