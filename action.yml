@@ -12,6 +12,10 @@ inputs:
     description: 'GraalVM distribution. See the list of available distributions in the README file.'
     required: false
     default: ''
+  distribution_url:
+    description: 'Custom GraalVM distribution URL. Expects an archive in the same structure as a GraalVM release.'
+    required: false
+    default: ''
   components:
     required: false
     description: 'Comma-separated list of GraalVM components to be installed.'

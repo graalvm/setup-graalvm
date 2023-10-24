@@ -20,15 +20,18 @@ const GRAALVM_TAG_PREFIX = 'vm-'
 // Support for GraalVM for JDK 17 and later
 
 export async function setUpGraalVMJDK(
-  javaVersionOrDev: string
+  javaVersionOrDev: string,
+  customDistributionUrl: string
 ): Promise<string> {
   if (javaVersionOrDev === c.VERSION_DEV) {
-    return setUpGraalVMJDKDevBuild()
+    return setUpGraalVMJDKDevBuild(customDistributionUrl)
   }
   const javaVersion = javaVersionOrDev
   const toolName = determineToolName(javaVersion, false)
   let downloadUrl: string
-  if (javaVersion.includes('.')) {
+  if (customDistributionUrl) {
+    downloadUrl = customDistributionUrl;
+  } else if (javaVersion.includes('.')) {
     const majorJavaVersion = javaVersion.split('.')[0]
     downloadUrl = `${GRAALVM_DL_BASE}/${majorJavaVersion}/archive/${toolName}${c.GRAALVM_FILE_EXTENSION}`
   } else {
@@ -39,10 +42,11 @@ export async function setUpGraalVMJDK(
 }
 
 export async function setUpGraalVMJDKCE(
-  javaVersionOrDev: string
+  javaVersionOrDev: string,
+  customDistributionUrl: string
 ): Promise<string> {
   if (javaVersionOrDev === c.VERSION_DEV) {
-    return setUpGraalVMJDKDevBuild()
+    return setUpGraalVMJDKDevBuild(customDistributionUrl)
   }
   let javaVersion = javaVersionOrDev
   if (!javaVersion.includes('.')) {
@@ -54,7 +58,7 @@ export async function setUpGraalVMJDKCE(
     )
   }
   const toolName = determineToolName(javaVersion, true)
-  const downloadUrl = `${GRAALVM_CE_DL_BASE}/jdk-${javaVersion}/${toolName}${c.GRAALVM_FILE_EXTENSION}`
+  const downloadUrl = customDistributionUrl || `${GRAALVM_CE_DL_BASE}/jdk-${javaVersion}/${toolName}${c.GRAALVM_FILE_EXTENSION}`
   const downloader = async () => downloadGraalVMJDK(downloadUrl, javaVersion)
   return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
 }
@@ -114,13 +118,13 @@ async function downloadGraalVMJDK(
 
 // Support for GraalVM dev builds
 
-export async function setUpGraalVMJDKDevBuild(): Promise<string> {
+export async function setUpGraalVMJDKDevBuild(customDistributionUrl: string): Promise<string> {
   const latestDevBuild = await getLatestRelease(GRAALVM_REPO_DEV_BUILDS)
   const resolvedJavaVersion = findHighestJavaVersion(
     latestDevBuild,
     c.VERSION_DEV
   )
-  const downloadUrl = findDownloadUrl(latestDevBuild, resolvedJavaVersion)
+  const downloadUrl = customDistributionUrl || findDownloadUrl(latestDevBuild, resolvedJavaVersion)
   return downloadAndExtractJDK(downloadUrl)
 }
 
