@@ -1,9 +1,10 @@
 import * as c from './constants'
 import {downloadExtractAndCacheJDK, getLatestRelease} from './utils'
 import {downloadTool} from '@actions/tool-cache'
+import {basename} from 'path'
 
-const MANDREL_REPO = 'mandrel'
-const MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE
+export const MANDREL_REPO = 'mandrel'
+export const MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE
 const MANDREL_DL_BASE = 'https://github.com/graalvm/mandrel/releases/download'
 
 export async function setUpMandrel(
@@ -45,14 +46,35 @@ async function setUpMandrelRelease(
   version: string,
   javaVersion: string
 ): Promise<string> {
-  const identifier = determineMandrelIdentifier(version, javaVersion)
-  const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`
   const toolName = determineToolName(javaVersion)
   return downloadExtractAndCacheJDK(
-    async () => downloadTool(downloadUrl),
+    async () => downloadMandrelJDK(version, javaVersion),
     toolName,
     version
   )
+}
+
+async function downloadMandrelJDK(
+  version: string,
+  javaVersion: string
+): Promise<string> {
+  const identifier = determineMandrelIdentifier(version, javaVersion)
+  const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`
+  try {
+    return await downloadTool(downloadUrl)
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('404')) {
+      // Not Found
+      throw new Error(
+        `Failed to download ${basename(
+          downloadUrl
+        )}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`
+      )
+    }
+    throw new Error(
+      `Failed to download ${basename(downloadUrl)} (error: ${error}).`
+    )
+  }
 }
 
 function determineMandrelIdentifier(
