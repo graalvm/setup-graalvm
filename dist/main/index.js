@@ -58304,7 +58304,7 @@ class Range {
     this.set = this.raw
       .split('||')
       // map the range to a 2d array of comparators
-      .map(r => this.parseRange(r.trim()))
+      .map(r => this.parseRange(r))
       // throw out any comparator lists that are empty
       // this generally means that it was not a valid range, which is allowed
       // in loose mode, but will still throw if the WHOLE range is invalid.
@@ -58364,18 +58364,15 @@ class Range {
     const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE]
     range = range.replace(hr, hyphenReplace(this.options.includePrerelease))
     debug('hyphen replace', range)
-
     // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
     range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace)
     debug('comparator trim', range)
 
     // `~ 1.2.3` => `~1.2.3`
     range = range.replace(re[t.TILDETRIM], tildeTrimReplace)
-    debug('tilde trim', range)
 
     // `^ 1.2.3` => `^1.2.3`
     range = range.replace(re[t.CARETTRIM], caretTrimReplace)
-    debug('caret trim', range)
 
     // At this point, the range is completely trimmed and
     // ready to be split into comparators.
@@ -59677,10 +59674,6 @@ const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
 // Max safe segment length for coercion.
 const MAX_SAFE_COMPONENT_LENGTH = 16
 
-// Max safe length for a build identifier. The max length minus 6 characters for
-// the shortest version with a build 0.0.0+BUILD.
-const MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6
-
 const RELEASE_TYPES = [
   'major',
   'premajor',
@@ -59694,7 +59687,6 @@ const RELEASE_TYPES = [
 module.exports = {
   MAX_LENGTH,
   MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_BUILD_LENGTH,
   MAX_SAFE_INTEGER,
   RELEASE_TYPES,
   SEMVER_SPEC_VERSION,
@@ -59776,11 +59768,7 @@ module.exports = parseOptions
 /***/ 9523:
 /***/ ((module, exports, __nccwpck_require__) => {
 
-const {
-  MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_BUILD_LENGTH,
-  MAX_LENGTH,
-} = __nccwpck_require__(2293)
+const { MAX_SAFE_COMPONENT_LENGTH } = __nccwpck_require__(2293)
 const debug = __nccwpck_require__(427)
 exports = module.exports = {}
 
@@ -59791,31 +59779,16 @@ const src = exports.src = []
 const t = exports.t = {}
 let R = 0
 
-const LETTERDASHNUMBER = '[a-zA-Z0-9-]'
-
-// Replace some greedy regex tokens to prevent regex dos issues. These regex are
-// used internally via the safeRe object since all inputs in this library get
-// normalized first to trim and collapse all extra whitespace. The original
-// regexes are exported for userland consumption and lower level usage. A
-// future breaking change could export the safer regex only with a note that
-// all input should have extra whitespace removed.
-const safeRegexReplacements = [
-  ['\\s', 1],
-  ['\\d', MAX_LENGTH],
-  [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH],
-]
-
-const makeSafeRegex = (value) => {
-  for (const [token, max] of safeRegexReplacements) {
-    value = value
-      .split(`${token}*`).join(`${token}{0,${max}}`)
-      .split(`${token}+`).join(`${token}{1,${max}}`)
-  }
-  return value
-}
-
 const createToken = (name, value, isGlobal) => {
-  const safe = makeSafeRegex(value)
+  // Replace all greedy whitespace to prevent regex dos issues. These regex are
+  // used internally via the safeRe object since all inputs in this library get
+  // normalized first to trim and collapse all extra whitespace. The original
+  // regexes are exported for userland consumption and lower level usage. A
+  // future breaking change could export the safer regex only with a note that
+  // all input should have extra whitespace removed.
+  const safe = value
+    .split('\\s*').join('\\s{0,1}')
+    .split('\\s+').join('\\s')
   const index = R++
   debug(name, index, value)
   t[name] = index
@@ -59831,13 +59804,13 @@ const createToken = (name, value, isGlobal) => {
 // A single `0`, or a non-zero digit followed by zero or more digits.
 
 createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
-createToken('NUMERICIDENTIFIERLOOSE', '\\d+')
+createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+')
 
 // ## Non-numeric Identifier
 // Zero or more digits, followed by a letter or hyphen, and then zero or
 // more letters, digits, or hyphens.
 
-createToken('NONNUMERICIDENTIFIER', `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`)
+createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*')
 
 // ## Main Version
 // Three dot-separated numeric identifiers.
@@ -59872,7 +59845,7 @@ createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]
 // ## Build Metadata Identifier
 // Any combination of digits, letters, or hyphens.
 
-createToken('BUILDIDENTIFIER', `${LETTERDASHNUMBER}+`)
+createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+')
 
 // ## Build Metadata
 // Plus sign, followed by one or more period-separated build metadata
@@ -71418,12 +71391,7 @@ function run() {
                         graalVMHome = yield graalvm.setUpGraalVMJDKCE(javaVersion);
                         break;
                     case c.DISTRIBUTION_MANDREL:
-                        if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
-                            graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalVMVersion, javaVersion);
-                        }
-                        else {
-                            throw new Error(`Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
-                        }
+                        graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalVMVersion, javaVersion);
                         break;
                     case '':
                         if (javaVersion === c.VERSION_DEV) {
@@ -71541,23 +71509,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpMandrel = void 0;
+exports.stripMandrelNamespace = exports.getLatestMandrelReleaseUrl = exports.setUpMandrel = exports.MANDREL_TAG_PREFIX = exports.MANDREL_REPO = void 0;
 const c = __importStar(__nccwpck_require__(9042));
+const httpClient = __importStar(__nccwpck_require__(9925));
 const utils_1 = __nccwpck_require__(1314);
 const tool_cache_1 = __nccwpck_require__(7784);
-const MANDREL_REPO = 'mandrel';
-const MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE;
+const path_1 = __nccwpck_require__(1017);
+exports.MANDREL_REPO = 'mandrel';
+exports.MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE;
 const MANDREL_DL_BASE = 'https://github.com/graalvm/mandrel/releases/download';
-function setUpMandrel(graalvmVersion, javaVersion) {
+const DISCO_API_BASE = 'https://api.foojay.io/disco/v3.0/packages/jdks';
+function setUpMandrel(mandrelVersion, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const mandrelVersion = graalvmVersion.substring(c.MANDREL_NAMESPACE.length, graalvmVersion.length);
+        const version = stripMandrelNamespace(mandrelVersion);
         let mandrelHome;
-        switch (mandrelVersion) {
+        switch (version) {
             case 'latest':
                 mandrelHome = yield setUpMandrelLatest(javaVersion);
                 break;
             default:
-                mandrelHome = yield setUpMandrelRelease(mandrelVersion, javaVersion);
+                mandrelHome = yield setUpMandrelRelease(version, javaVersion);
                 break;
         }
         return mandrelHome;
@@ -71566,21 +71537,79 @@ function setUpMandrel(graalvmVersion, javaVersion) {
 exports.setUpMandrel = setUpMandrel;
 function setUpMandrelLatest(javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const latestRelease = yield (0, utils_1.getLatestRelease)(MANDREL_REPO);
-        const tag_name = latestRelease.tag_name;
-        if (tag_name.startsWith(MANDREL_TAG_PREFIX)) {
-            const latestVersion = tag_name.substring(MANDREL_TAG_PREFIX.length, tag_name.length);
-            return setUpMandrelRelease(latestVersion, javaVersion);
+        const latest_release_url = yield getLatestMandrelReleaseUrl(javaVersion);
+        const version_tag = getTagFromURI(latest_release_url);
+        const version = stripMandrelNamespace(version_tag);
+        const toolName = determineToolName(javaVersion);
+        return (0, utils_1.downloadExtractAndCacheJDK)(() => __awaiter(this, void 0, void 0, function* () { return (0, tool_cache_1.downloadTool)(latest_release_url); }), toolName, version);
+    });
+}
+// Download URIs are of the form https://github.com/graalvm/mandrel/releases/download/<tag>/<archive-name>
+function getTagFromURI(uri) {
+    const parts = uri.split('/');
+    try {
+        return parts[parts.length - 2];
+    }
+    catch (error) {
+        throw new Error(`Failed to extract tag from URI ${uri}: ${error}`);
+    }
+}
+function getLatestMandrelReleaseUrl(javaVersion) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const url = `${DISCO_API_BASE}?jdk_version=${javaVersion}&distribution=${c.DISTRIBUTION_MANDREL}&architecture=${c.JDK_ARCH}&operating_system=${c.JDK_PLATFORM}&latest=per_distro`;
+        const _http = new httpClient.HttpClient('http-client-tests');
+        const response = yield _http.getJson(url);
+        if (response.statusCode !== 200) {
+            throw new Error(`Failed to fetch latest Mandrel release for Java ${javaVersion} from DISCO API: ${response.result}`);
         }
-        throw new Error(`Could not find latest Mandrel release: ${tag_name}`);
+        const result = (_a = response.result) === null || _a === void 0 ? void 0 : _a.result[0];
+        try {
+            const pkg_info_uri = result.links.pkg_info_uri;
+            return yield getLatestMandrelReleaseUrlHelper(_http, javaVersion, pkg_info_uri);
+        }
+        catch (error) {
+            throw new Error(`Failed to get latest Mandrel release for Java ${javaVersion} from DISCO API: ${error}`);
+        }
+    });
+}
+exports.getLatestMandrelReleaseUrl = getLatestMandrelReleaseUrl;
+function getLatestMandrelReleaseUrlHelper(_http, java_version, pkg_info_uri) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = yield _http.getJson(pkg_info_uri);
+        if (response.statusCode !== 200) {
+            throw new Error(`Failed to fetch package info of latest Mandrel release for Java ${java_version} from DISCO API: ${response.result}`);
+        }
+        const result = (_a = response.result) === null || _a === void 0 ? void 0 : _a.result[0];
+        try {
+            return result.direct_download_uri;
+        }
+        catch (error) {
+            throw new Error(`Failed to get download URI of latest Mandrel release for Java ${java_version} from DISCO API: ${error}`);
+        }
     });
 }
 function setUpMandrelRelease(version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const identifier = determineMandrelIdentifier(version, javaVersion);
-        const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`;
         const toolName = determineToolName(javaVersion);
-        return (0, utils_1.downloadExtractAndCacheJDK)(() => __awaiter(this, void 0, void 0, function* () { return (0, tool_cache_1.downloadTool)(downloadUrl); }), toolName, version);
+        return (0, utils_1.downloadExtractAndCacheJDK)(() => __awaiter(this, void 0, void 0, function* () { return downloadMandrelJDK(version, javaVersion); }), toolName, version);
+    });
+}
+function downloadMandrelJDK(version, javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const identifier = determineMandrelIdentifier(version, javaVersion);
+        const downloadUrl = `${MANDREL_DL_BASE}/${exports.MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`;
+        try {
+            return yield (0, tool_cache_1.downloadTool)(downloadUrl);
+        }
+        catch (error) {
+            if (error instanceof Error && error.message.includes('404')) {
+                // Not Found
+                throw new Error(`Failed to download ${(0, path_1.basename)(downloadUrl)}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`);
+            }
+            throw new Error(`Failed to download ${(0, path_1.basename)(downloadUrl)} (error: ${error}).`);
+        }
     });
 }
 function determineMandrelIdentifier(version, javaVersion) {
@@ -71589,6 +71618,15 @@ function determineMandrelIdentifier(version, javaVersion) {
 function determineToolName(javaVersion) {
     return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}`;
 }
+function stripMandrelNamespace(graalVMVersion) {
+    if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
+        return graalVMVersion.substring(c.MANDREL_NAMESPACE.length, graalVMVersion.length);
+    }
+    else {
+        return graalVMVersion;
+    }
+}
+exports.stripMandrelNamespace = stripMandrelNamespace;
 
 
 /***/ }),

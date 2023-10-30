@@ -9,7 +9,7 @@ process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
 test('request invalid version/javaVersion combination', async () => {
   for (var combination of [
     ['mandrel-23.1.1.0-Final', '17'],
-    ['mandrel-23.0.2.1-Final', '21'],
+    ['mandrel-23.0.2.1-Final', '21']
   ]) {
     let error = new Error('unexpected')
     try {
@@ -29,7 +29,7 @@ test('request invalid version/javaVersion combination', async () => {
 test('request invalid version', async () => {
   for (var combination of [
     ['mandrel-23.1.1.0', '21'],
-    ['mandrel-23.0.2.1', '17'],
+    ['mandrel-23.0.2.1', '17']
   ]) {
     let error = new Error('unexpected')
     try {
@@ -54,15 +54,19 @@ test('find latest', async () => {
   expect(tag_name).toContain(mandrel.MANDREL_TAG_PREFIX)
 })
 
-test('get latest Mandrel for specific JDK', async () => {
+test('get known latest Mandrel for specific JDK', async () => {
   // Test deprecated versions that won't get updates anymore
   for (var combination of [
     ['11', '22.2.0.0-Final'],
-    ['20', '23.0.1.2-Final']]) {
+    ['20', '23.0.1.2-Final']
+  ]) {
     const latest = await mandrel.getLatestMandrelReleaseUrl(combination[0])
     expect(latest).toContain(`mandrel-java${combination[0]}`)
     expect(latest).toContain(combination[1])
   }
+})
+
+test('get latest Mandrel for specific JDK', async () => {
   // Test supported versions
   for (var javaVersion of ['17', '21']) {
     const latest = await mandrel.getLatestMandrelReleaseUrl(javaVersion)
