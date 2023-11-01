@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/graalvm/setup-graalvm.git"
+    "url": "git+https://github.com/jessiscript/setup-graalvm.git"
   },
   "keywords": [
     "graalvm",
