@@ -238,7 +238,7 @@ function createReport(data: BuildOutput): string {
     )} of total time)`
   }
 
-  return `## GraalVM Native Image Build Report
+  return `## GraalVM Native Image Build Report example
 
 \`${info.name}\` generated${totalTime} as part of the '${
     context.job
