@@ -1,4 +1,5 @@
 import * as c from './constants'
+import * as semver from 'semver'
 import {
   downloadAndExtractJDK,
   downloadExtractAndCacheJDK,
@@ -9,7 +10,6 @@ import {
 import {downloadGraalVMEELegacy} from './gds'
 import {downloadTool} from '@actions/tool-cache'
 import {basename} from 'path'
-import {gt as semverGt, valid as semverValid} from 'semver'
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm'
 const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`
@@ -26,11 +26,25 @@ export async function setUpGraalVMJDK(
     return setUpGraalVMJDKDevBuild()
   }
   const javaVersion = javaVersionOrDev
-  const toolName = determineToolName(javaVersion, false)
+  let toolName = determineToolName(javaVersion, false)
   let downloadUrl: string
   if (javaVersion.includes('.')) {
-    const majorJavaVersion = javaVersion.split('.')[0]
-    downloadUrl = `${GRAALVM_DL_BASE}/${majorJavaVersion}/archive/${toolName}${c.GRAALVM_FILE_EXTENSION}`
+    if (semver.valid(javaVersion)) {
+      const majorJavaVersion = semver.major(javaVersion)
+      const minorJavaVersion = semver.minor(javaVersion)
+      const patchJavaVersion = semver.patch(javaVersion)
+      const isGARelease = minorJavaVersion === 0 && patchJavaVersion === 0
+      let downloadName = toolName
+      if (isGARelease) {
+        // For GA versions of JDKs, /archive/ does not use minor and patch version (see https://www.oracle.com/java/technologies/jdk-script-friendly-urls/)
+        downloadName = determineToolName(majorJavaVersion.toString(), false)
+      }
+      downloadUrl = `${GRAALVM_DL_BASE}/${majorJavaVersion}/archive/${downloadName}${c.GRAALVM_FILE_EXTENSION}`
+    } else {
+      throw new Error(
+        `java-version set to '${javaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
+      )
+    }
   } else {
     downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${toolName}${c.GRAALVM_FILE_EXTENSION}`
   }
@@ -71,8 +85,8 @@ export async function findLatestGraalVMJDKCEJavaVersion(
   for (const matchingRef of matchingRefs) {
     const currentVersion = matchingRef.ref.substring(versionNumberStartIndex)
     if (
-      semverValid(currentVersion) &&
-      semverGt(currentVersion, highestVersion)
+      semver.valid(currentVersion) &&
+      semver.gt(currentVersion, highestVersion)
     ) {
       highestVersion = currentVersion
     }

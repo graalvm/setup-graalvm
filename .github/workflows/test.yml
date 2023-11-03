@@ -40,6 +40,9 @@ jobs:
             distribution: 'graalvm-community'
             os: ubuntu-latest
             components: 'native-image' # should print a warning but not fail
+          - java-version: '21.0.0' # test for GA version (see #63)
+            distribution: 'graalvm'
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Run setup-graalvm action
