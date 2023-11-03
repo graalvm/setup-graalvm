@@ -299,7 +299,7 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          java-version: '17'
+          java-version: '17.0.8'
           distribution: 'graalvm'
           components: 'espresso,llvm-toolchain,native-image,nodejs,python,ruby,wasm'
           set-java-home: 'false'
