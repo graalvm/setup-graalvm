@@ -21,6 +21,8 @@ export async function setUpMandrel(
   const version = stripMandrelNamespace(mandrelVersion)
   let mandrelHome
   switch (version) {
+    case '':
+    // fetch latest if no version is specified
     case 'latest':
       mandrelHome = await setUpMandrelLatest(javaVersion)
       break
