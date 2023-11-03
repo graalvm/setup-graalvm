@@ -59,7 +59,7 @@ export async function getLatestMandrelReleaseUrl(
   javaVersion: string
 ): Promise<string> {
   const url = `${DISCO_API_BASE}?jdk_version=${javaVersion}&distribution=${c.DISTRIBUTION_MANDREL}&architecture=${c.JDK_ARCH}&operating_system=${c.JDK_PLATFORM}&latest=per_distro`
-  const _http = new httpClient.HttpClient('http-client-tests')
+  const _http = new httpClient.HttpClient()
   const response = await _http.getJson<JdkData>(url)
   if (response.statusCode !== 200) {
     throw new Error(
