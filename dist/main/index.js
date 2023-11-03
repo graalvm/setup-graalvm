@@ -71524,6 +71524,8 @@ function setUpMandrel(mandrelVersion, javaVersion) {
         const version = stripMandrelNamespace(mandrelVersion);
         let mandrelHome;
         switch (version) {
+            case '':
+            // fetch latest if no version is specified
             case 'latest':
                 mandrelHome = yield setUpMandrelLatest(javaVersion);
                 break;
@@ -71558,7 +71560,7 @@ function getLatestMandrelReleaseUrl(javaVersion) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const url = `${DISCO_API_BASE}?jdk_version=${javaVersion}&distribution=${c.DISTRIBUTION_MANDREL}&architecture=${c.JDK_ARCH}&operating_system=${c.JDK_PLATFORM}&latest=per_distro`;
-        const _http = new httpClient.HttpClient('http-client-tests');
+        const _http = new httpClient.HttpClient();
         const response = yield _http.getJson(url);
         if (response.statusCode !== 200) {
             throw new Error(`Failed to fetch latest Mandrel release for Java ${javaVersion} from DISCO API: ${response.result}`);

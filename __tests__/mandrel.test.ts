@@ -73,4 +73,3 @@ test('get latest Mandrel for specific JDK', async () => {
     expect(latest).toContain(`mandrel-java${javaVersion}`)
   }
 })
-

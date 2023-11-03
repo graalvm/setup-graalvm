@@ -196,6 +196,10 @@ jobs:
             java-version: '17'
             distribution: '' # test empty distribution for backward compatibility
             os: ubuntu-latest
+          - version: '' # test with no version
+            java-version: '21'
+            distribution: 'mandrel'
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Run setup-graalvm action
