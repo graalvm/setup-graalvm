@@ -20,6 +20,9 @@ const NATIVE_IMAGE_CONFIG_FILE = join(
   'native-image-options.properties'
 )
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
+const github = require('@actions/github');
+const core = require('@actions/core');
+const { Base64 } = require("js-base64");
 
 interface AnalysisResult {
   total: number
@@ -125,6 +128,29 @@ export async function generateReports(): Promise<void> {
     const buildOutput: BuildOutput = JSON.parse(
       fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )
+
+    const myToken = core.getInput('myToken')
+    const octokit = github.getOctokit(myToken)
+    const contentEncoded = Base64.encode(buildOutput)
+
+    const { data } = await octokit.repos.createOrUpdateFileContents({
+        owner: 'jessiscript',
+        repo: 're23_build_tracking',
+        path: 'OUTPUT.json',
+        content: contentEncoded,
+        message: 'Add Report JSON data',
+        committer: {
+          name: 'Chris Fleger',
+          email: 'cb.fleger@live.de',
+        },
+        author:{
+          name: 'Chris Fleger',
+          email: 'cb.fleger@live.de',
+        }
+    });
+
+    console.log(data);
+
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
       core.summary.addRaw(report)
