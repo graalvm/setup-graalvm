@@ -70783,9 +70783,8 @@ const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
 const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
-const github_api = __nccwpck_require__(7168);
-const core_api = __nccwpck_require__(2258);
-//const { Base64 } = require("js-base64");
+const { Octokit } = __nccwpck_require__(1401);
+const { createOrUpdateTextFile, composeCreateOrUpdateTextFile, } = __nccwpck_require__(7797);
 let REPORT_TOKEN = '';
 function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion, reportToken) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -70815,7 +70814,9 @@ function generateReports() {
                 return;
             }
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
-            const octokit = github_api.getOctokit(c.INPUT_GITHUB_TOKEN);
+            const octokit = new Octokit({
+                auth: c.INPUT_GITHUB_TOKEN,
+            });
             const contentEncoded = js_base64_1.Base64.encode(JSON.stringify(buildOutput));
             const { data } = yield octokit.repos.createOrUpdateFileContents({
                 owner: 'jessiscript',
@@ -72187,6 +72188,22 @@ function createPRComment(content) {
     });
 }
 exports.createPRComment = createPRComment;
+
+
+/***/ }),
+
+/***/ 7797:
+/***/ ((module) => {
+
+module.exports = eval("require")("@octokit/plugin-create-or-update-text-file");
+
+
+/***/ }),
+
+/***/ 1401:
+/***/ ((module) => {
+
+module.exports = eval("require")("@octokit/rest");
 
 
 /***/ }),

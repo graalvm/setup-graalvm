@@ -7,6 +7,7 @@ import {tmpdir} from 'os'
 import {createPRComment, isPREvent, toSemVer} from '../utils'
 import {gte} from 'semver'
 import {Base64} from 'js-base64';
+import objectContaining = jasmine.objectContaining;
 
 const BUILD_OUTPUT_JSON_PATH = join(tmpdir(), 'native-image-build-output.json')
 const BYTES_TO_KiB = 1024
@@ -21,9 +22,11 @@ const NATIVE_IMAGE_CONFIG_FILE = join(
   'native-image-options.properties'
 )
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
-const github_api = require('@actions/github');
-const core_api = require('@actions/core');
-//const { Base64 } = require("js-base64");
+const { Octokit } = require("@octokit/rest");
+const {
+  createOrUpdateTextFile,
+  composeCreateOrUpdateTextFile,
+} = require("@octokit/plugin-create-or-update-text-file");
 let REPORT_TOKEN = '';
 
 interface AnalysisResult {
@@ -133,8 +136,12 @@ export async function generateReports(): Promise<void> {
       fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )
 
-    const octokit = github_api.getOctokit(c.INPUT_GITHUB_TOKEN)
+    const octokit = new Octokit({
+        auth: c.INPUT_GITHUB_TOKEN,
+        });
     const contentEncoded = Base64.encode(JSON.stringify(buildOutput))
+
+
 
     const { data } = await octokit.repos.createOrUpdateFileContents({
         owner: 'jessiscript',
