@@ -10,6 +10,7 @@ export const INPUT_SET_JAVA_HOME = 'set-java-home'
 export const INPUT_CACHE = 'cache'
 export const INPUT_CHECK_FOR_UPDATES = 'check-for-updates'
 export const INPUT_NI_MUSL = 'native-image-musl'
+export const INPUT_REPORT_TOKEN = 'repo-token'
 
 export const IS_LINUX = process.platform === 'linux'
 export const IS_MACOS = process.platform === 'darwin'

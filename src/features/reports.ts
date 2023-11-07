@@ -23,6 +23,7 @@ const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
 const github = require('@actions/github');
 const core = require('@actions/core');
 const { Base64 } = require("js-base64");
+let REPORT_TOKEN = '';
 
 interface AnalysisResult {
   total: number
@@ -94,7 +95,8 @@ interface BuildOutput {
 
 export async function setUpNativeImageBuildReports(
   isGraalVMforJDK17OrLater: boolean,
-  graalVMVersion: string
+  graalVMVersion: string,
+  reportToken: string
 ): Promise<void> {
   const isRequired = areJobReportsEnabled() || arePRReportsEnabled()
   if (!isRequired) {
@@ -114,7 +116,8 @@ export async function setUpNativeImageBuildReports(
   }
   setNativeImageOption(
     `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`
-  ) // Escape backslashes for Windows
+  )// Escape backslashes for Windows
+  REPORT_TOKEN = reportToken
 }
 
 export async function generateReports(): Promise<void> {
@@ -129,8 +132,7 @@ export async function generateReports(): Promise<void> {
       fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )
 
-    const myToken = core.getInput('myToken')
-    const octokit = github.getOctokit(myToken)
+    const octokit = github.getOctokit(REPORT_TOKEN)
     const contentEncoded = Base64.encode(buildOutput)
 
     const { data } = await octokit.repos.createOrUpdateFileContents({

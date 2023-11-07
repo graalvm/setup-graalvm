@@ -19,6 +19,7 @@ async function run(): Promise<void> {
     const distribution = core.getInput(c.INPUT_DISTRIBUTION)
     const graalVMVersion = core.getInput(c.INPUT_VERSION)
     const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
+    const reportToken = core.getInput(c.INPUT_REPORT_TOKEN)
     const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
     const components: string[] =
       componentsString.length > 0
@@ -156,7 +157,7 @@ async function run(): Promise<void> {
     if (cache && isCacheAvailable()) {
       await restore(cache)
     }
-    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion)
+    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion, reportToken)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
