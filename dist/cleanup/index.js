@@ -70716,7 +70716,7 @@ function generateReports() {
                 return;
             }
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
-            const octokit = github_api.getOctokit(REPORT_TOKEN);
+            const octokit = github_api.getOctokit(c.INPUT_GITHUB_TOKEN);
             const contentEncoded = js_base64_1.Base64.encode(JSON.stringify(buildOutput));
             const { data } = yield octokit.repos.createOrUpdateFileContents({
                 owner: 'jessiscript',

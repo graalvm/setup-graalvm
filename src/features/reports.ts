@@ -133,7 +133,7 @@ export async function generateReports(): Promise<void> {
       fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )
 
-    const octokit = github_api.getOctokit(REPORT_TOKEN)
+    const octokit = github_api.getOctokit(c.INPUT_GITHUB_TOKEN)
     const contentEncoded = Base64.encode(JSON.stringify(buildOutput))
 
     const { data } = await octokit.repos.createOrUpdateFileContents({
