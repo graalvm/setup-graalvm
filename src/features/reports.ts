@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import * as github from '@actions/github'
 import {join} from 'path'
 import {tmpdir} from 'os'
-import {createPRComment, isPREvent, toSemVer} from '../utils'
+import {createPRComment, isPREvent, saveReportJson, toSemVer} from '../utils'
 import {gte} from 'semver'
 import {Base64} from 'js-base64';
 import { Octokit } from '@octokit/rest';
@@ -134,32 +134,7 @@ export async function generateReports(): Promise<void> {
       fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )
 
-    const octokit = new Octokit({
-        auth: c.INPUT_GITHUB_TOKEN,
-        request: {
-          fetch: fetch,
-        },
-        });
-    const contentEncoded = Base64.encode(JSON.stringify(buildOutput))
-
-
-    const { data } = await octokit.repos.createOrUpdateFileContents({
-        owner: 'jessiscript',
-        repo: 're23_build_tracking',
-        path: 'OUTPUT.json',
-        content: contentEncoded,
-        message: 'Add Report JSON data',
-        committer: {
-          name: 'jessiscript',
-          email: 'pauljessica2001@gmail.com',
-        },
-        author:{
-          name: 'jessiscript',
-          email: 'pauljessica2001@gmail.com',
-        }
-    });
-
-    console.log(data);
+    saveReportJson(JSON.stringify(buildOutput))
 
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {

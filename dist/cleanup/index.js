@@ -74035,6 +74035,12 @@ function ignoreErrors(promise) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        try {
+        }
+        catch (error) {
+            if (error instanceof Error)
+                core.setFailed(error.message);
+        }
         yield ignoreErrors((0, reports_1.generateReports)());
         yield ignoreErrors(saveCache());
     });
@@ -74402,9 +74408,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.generateReports = exports.setUpNativeImageBuildReports = void 0;
 const c = __importStar(__nccwpck_require__(2764));
@@ -74415,9 +74418,6 @@ const path_1 = __nccwpck_require__(1017);
 const os_1 = __nccwpck_require__(2037);
 const utils_1 = __nccwpck_require__(2867);
 const semver_1 = __nccwpck_require__(6560);
-const js_base64_1 = __nccwpck_require__(7821);
-const rest_1 = __nccwpck_require__(6175);
-const node_fetch_1 = __importDefault(__nccwpck_require__(831));
 const BUILD_OUTPUT_JSON_PATH = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-build-output.json');
 const BYTES_TO_KiB = 1024;
 const BYTES_TO_MiB = 1024 * 1024;
@@ -74457,29 +74457,7 @@ function generateReports() {
                 return;
             }
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
-            const octokit = new rest_1.Octokit({
-                auth: c.INPUT_GITHUB_TOKEN,
-                request: {
-                    fetch: node_fetch_1.default,
-                },
-            });
-            const contentEncoded = js_base64_1.Base64.encode(JSON.stringify(buildOutput));
-            const { data } = yield octokit.repos.createOrUpdateFileContents({
-                owner: 'jessiscript',
-                repo: 're23_build_tracking',
-                path: 'OUTPUT.json',
-                content: contentEncoded,
-                message: 'Add Report JSON data',
-                committer: {
-                    name: 'jessiscript',
-                    email: 'pauljessica2001@gmail.com',
-                },
-                author: {
-                    name: 'jessiscript',
-                    email: 'pauljessica2001@gmail.com',
-                }
-            });
-            console.log(data);
+            (0, utils_1.saveReportJson)(JSON.stringify(buildOutput));
             const report = createReport(buildOutput);
             if (areJobReportsEnabled()) {
                 core.summary.addRaw(report);
@@ -74781,8 +74759,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
+exports.saveReportJson = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(2764));
 const core = __importStar(__nccwpck_require__(2258));
 const github = __importStar(__nccwpck_require__(7168));
@@ -74790,12 +74771,15 @@ const httpClient = __importStar(__nccwpck_require__(9547));
 const tc = __importStar(__nccwpck_require__(5603));
 const exec_1 = __nccwpck_require__(1483);
 const fs_1 = __nccwpck_require__(7147);
-const core_1 = __nccwpck_require__(5013);
+//import {Octokit} from '@octokit/core'
 const crypto_1 = __nccwpck_require__(6113);
 const path_1 = __nccwpck_require__(1017);
+const node_fetch_1 = __importDefault(__nccwpck_require__(831));
+const js_base64_1 = __nccwpck_require__(7821);
+const rest_1 = __nccwpck_require__(6175);
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com';
-const GitHubDotCom = core_1.Octokit.defaults({
+const GitHubDotCom = rest_1.Octokit.defaults({
     baseUrl,
     request: {
         agent: new httpClient.HttpClient().getAgent(baseUrl)
@@ -74936,6 +74920,39 @@ function createPRComment(content) {
     });
 }
 exports.createPRComment = createPRComment;
+function saveReportJson(content) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const octokit = new rest_1.Octokit({
+                auth: getGitHubToken(),
+                request: {
+                    fetch: node_fetch_1.default,
+                },
+            });
+            const contentEncoded = js_base64_1.Base64.encode(content);
+            const { data } = yield octokit.repos.createOrUpdateFileContents({
+                owner: 'jessiscript',
+                repo: 're23_build_tracking',
+                path: 'OUTPUT.json',
+                content: contentEncoded,
+                message: 'Add Report JSON data',
+                committer: {
+                    name: 'jessiscript',
+                    email: 'pauljessica2001@gmail.com',
+                },
+                author: {
+                    name: 'jessiscript',
+                    email: 'pauljessica2001@gmail.com',
+                }
+            });
+            console.log(data);
+        }
+        catch (err) {
+            core.error(`Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`);
+        }
+    });
+}
+exports.saveReportJson = saveReportJson;
 
 
 /***/ }),

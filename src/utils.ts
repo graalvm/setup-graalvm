@@ -5,9 +5,12 @@ import * as httpClient from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
 import {ExecOptions, exec as e} from '@actions/exec'
 import {readFileSync, readdirSync} from 'fs'
-import {Octokit} from '@octokit/core'
+//import {Octokit} from '@octokit/core'
 import {createHash} from 'crypto'
 import {join} from 'path'
+import fetch from "node-fetch";
+import {Base64} from "js-base64";
+import { Octokit } from '@octokit/rest';
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
@@ -170,6 +173,42 @@ export async function createPRComment(content: string): Promise<void> {
   } catch (err) {
     core.error(
       `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
+    )
+  }
+}
+
+export async function saveReportJson(content: string): Promise<void> {
+  try {
+    const octokit = new Octokit({
+      auth: getGitHubToken(),
+      request: {
+        fetch: fetch,
+      },
+    });
+
+    const contentEncoded = Base64.encode(content)
+
+
+    const { data } = await octokit.repos.createOrUpdateFileContents({
+      owner: 'jessiscript',
+      repo: 're23_build_tracking',
+      path: 'OUTPUT.json',
+      content: contentEncoded,
+      message: 'Add Report JSON data',
+      committer: {
+        name: 'jessiscript',
+        email: 'pauljessica2001@gmail.com',
+      },
+      author:{
+        name: 'jessiscript',
+        email: 'pauljessica2001@gmail.com',
+      }
+    });
+
+    console.log(data);
+  } catch (err) {
+    core.error(
+        `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
     )
   }
 }
