@@ -74554,6 +74554,9 @@ function generateReports() {
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
             const octokit = new rest_1.Octokit({
                 auth: c.INPUT_GITHUB_TOKEN,
+                request: {
+                    fetch: fetch,
+                },
             });
             const contentEncoded = js_base64_1.Base64.encode(JSON.stringify(buildOutput));
             const { data } = yield octokit.repos.createOrUpdateFileContents({

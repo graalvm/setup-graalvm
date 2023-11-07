@@ -135,6 +135,9 @@ export async function generateReports(): Promise<void> {
 
     const octokit = new Octokit({
         auth: c.INPUT_GITHUB_TOKEN,
+        request: {
+          fetch: fetch,
+        },
         });
     const contentEncoded = Base64.encode(JSON.stringify(buildOutput))
 
