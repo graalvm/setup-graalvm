@@ -50,6 +50,9 @@ inputs:
   gds-token:
     required: false
     description: 'Download token for the GraalVM Download Service. If provided, the action will set up GraalVM Enterprise Edition.'
+  report-token:
+    required: false
+    description: 'Github-Token for add build report tp repository.'
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
