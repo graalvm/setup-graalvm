@@ -8,6 +8,7 @@ import {createPRComment, isPREvent, toSemVer} from '../utils'
 import {gte} from 'semver'
 import {Base64} from 'js-base64';
 import { Octokit } from '@octokit/rest';
+import fetch from "node-fetch";
 
 const BUILD_OUTPUT_JSON_PATH = join(tmpdir(), 'native-image-build-output.json')
 const BYTES_TO_KiB = 1024

@@ -74501,6 +74501,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.generateReports = exports.setUpNativeImageBuildReports = void 0;
 const c = __importStar(__nccwpck_require__(2764));
@@ -74513,6 +74516,7 @@ const utils_1 = __nccwpck_require__(2867);
 const semver_1 = __nccwpck_require__(6560);
 const js_base64_1 = __nccwpck_require__(7821);
 const rest_1 = __nccwpck_require__(6175);
+const node_fetch_1 = __importDefault(__nccwpck_require__(831));
 const BUILD_OUTPUT_JSON_PATH = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-build-output.json');
 const BYTES_TO_KiB = 1024;
 const BYTES_TO_MiB = 1024 * 1024;
@@ -74555,7 +74559,7 @@ function generateReports() {
             const octokit = new rest_1.Octokit({
                 auth: c.INPUT_GITHUB_TOKEN,
                 request: {
-                    fetch: fetch,
+                    fetch: node_fetch_1.default,
                 },
             });
             const contentEncoded = js_base64_1.Base64.encode(JSON.stringify(buildOutput));
