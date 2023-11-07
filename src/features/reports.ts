@@ -140,12 +140,12 @@ export async function generateReports(): Promise<void> {
         content: contentEncoded,
         message: 'Add Report JSON data',
         committer: {
-          name: 'Chris Fleger',
-          email: 'cb.fleger@live.de',
+          name: 'jessiscript',
+          email: 'pauljessica2001@gmail.com',
         },
         author:{
-          name: 'Chris Fleger',
-          email: 'cb.fleger@live.de',
+          name: 'jessiscript',
+          email: 'pauljessica2001@gmail.com',
         }
     });
 
