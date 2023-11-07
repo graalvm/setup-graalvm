@@ -1,7 +1,5 @@
 import * as c from '../constants'
-import * as core from '@actions/core'
 import * as fs from 'fs'
-import * as github from '@actions/github'
 import {join} from 'path'
 import {tmpdir} from 'os'
 import {createPRComment, isPREvent, toSemVer} from '../utils'
