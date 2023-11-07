@@ -36,8 +36,10 @@
     "@actions/io": "^1.1.1",
     "@actions/tool-cache": "^1.7.1",
     "@octokit/core": "^3.5.1",
+    "@octokit/rest": "^20.0.2",
     "@octokit/types": "^6.34.0",
     "js-base64": "^3.7.5",
+    "octokit": "^3.1.1",
     "semver": "^7.5.2",
     "uuid": "^8.3.2"
   },
