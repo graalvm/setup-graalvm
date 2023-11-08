@@ -176,8 +176,8 @@ export async function createPRComment(content: string): Promise<void> {
     )
   }
 }
-
 export async function saveReportJson(content: string): Promise<void> {
+
   try {
     const octokit = new Octokit({
       auth: getGitHubToken(),
@@ -211,4 +211,28 @@ export async function saveReportJson(content: string): Promise<void> {
         `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
     )
   }
+}
+
+export async function createTree(json: string): Promise<string> {
+  console.log(`creating tree at jessiscript/re_build_tracking`);
+  const octokit = github.getOctokit(getGitHubToken());
+
+  const context = github.context
+  const response = await octokit.request(
+      `POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`,
+      {
+        ...context.repo,
+        tree: [
+          {
+            path: "report.json",
+            mode: "100644",
+            type: "blob",
+            content: json,
+          },
+        ],
+      }
+  );
+
+  console.log(response);
+  return response.data.sha;
 }

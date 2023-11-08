@@ -74035,12 +74035,6 @@ function ignoreErrors(promise) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-        }
-        catch (error) {
-            if (error instanceof Error)
-                core.setFailed(error.message);
-        }
         yield ignoreErrors((0, reports_1.generateReports)());
         yield ignoreErrors(saveCache());
     });
@@ -74458,6 +74452,7 @@ function generateReports() {
             }
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
             (0, utils_1.saveReportJson)(JSON.stringify(buildOutput));
+            (0, utils_1.createTree)(JSON.stringify(buildOutput));
             const report = createReport(buildOutput);
             if (areJobReportsEnabled()) {
                 core.summary.addRaw(report);
@@ -74763,7 +74758,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.saveReportJson = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
+exports.createTree = exports.saveReportJson = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(2764));
 const core = __importStar(__nccwpck_require__(2258));
 const github = __importStar(__nccwpck_require__(7168));
@@ -74953,6 +74948,24 @@ function saveReportJson(content) {
     });
 }
 exports.saveReportJson = saveReportJson;
+function createTree(json) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(`creating tree at jessiscript/re_build_tracking`);
+        const octokit = github.getOctokit(getGitHubToken());
+        const context = github.context;
+        const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`, Object.assign(Object.assign({}, context.repo), { tree: [
+                {
+                    path: "report.json",
+                    mode: "100644",
+                    type: "blob",
+                    content: json,
+                },
+            ] }));
+        console.log(response);
+        return response.data.sha;
+    });
+}
+exports.createTree = createTree;
 
 
 /***/ }),
