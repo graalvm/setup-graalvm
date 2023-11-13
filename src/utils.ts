@@ -220,7 +220,7 @@ export async function saveReportJson(content: string): Promise<void> {
 export async function createRef(sha: string) {
   const ref = `refs/metrics/` + getCommitSha()
   console.log(`creating ref ${ref} for metrics tree ${sha}`);
-  const octokit = github.getOctokit(getGitHubToken());
+  const octokit =  new Octokit({ auth: process.env.GITHUB_TOKEN });
 
   const context = github.context
   const response = await octokit.request(
@@ -237,7 +237,7 @@ export async function createRef(sha: string) {
 
 export async function createTree(json: string): Promise<string> {
   console.log(`creating tree at jessiscript/re_build_tracking`);
-  const octokit = github.getOctokit(getGitHubToken());
+  const octokit =  new Octokit({ auth: process.env.GITHUB_TOKEN });
 
   const context = github.context
   const response = await octokit.request(

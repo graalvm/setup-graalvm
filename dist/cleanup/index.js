@@ -74956,7 +74956,7 @@ function createRef(sha) {
     return __awaiter(this, void 0, void 0, function* () {
         const ref = `refs/metrics/` + getCommitSha();
         console.log(`creating ref ${ref} for metrics tree ${sha}`);
-        const octokit = github.getOctokit(getGitHubToken());
+        const octokit = new rest_1.Octokit({ auth: process.env.GITHUB_TOKEN });
         const context = github.context;
         const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`, Object.assign(Object.assign({}, context.repo), { ref,
             sha }));
@@ -74967,7 +74967,7 @@ exports.createRef = createRef;
 function createTree(json) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`creating tree at jessiscript/re_build_tracking`);
-        const octokit = github.getOctokit(getGitHubToken());
+        const octokit = new rest_1.Octokit({ auth: process.env.GITHUB_TOKEN });
         const context = github.context;
         const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`, Object.assign(Object.assign({}, context.repo), { tree: [
                 {
