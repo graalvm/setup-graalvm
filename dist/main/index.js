@@ -74550,7 +74550,7 @@ function generateReports() {
                 return;
             }
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
-            yield (0, utils_1.saveReportJson)(JSON.stringify(buildOutput));
+            (0, utils_1.saveReportJson)(JSON.stringify(buildOutput));
             const report = createReport(buildOutput);
             if (areJobReportsEnabled()) {
                 core.summary.addRaw(report);

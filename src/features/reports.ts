@@ -15,12 +15,12 @@ const BYTES_TO_KiB = 1024
 const BYTES_TO_MiB = 1024 * 1024
 const BYTES_TO_GiB = 1024 * 1024 * 1024
 const DOCS_BASE =
-  'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md'
+    'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md'
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports'
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports'
 const NATIVE_IMAGE_CONFIG_FILE = join(
-  tmpdir(),
-  'native-image-options.properties'
+    tmpdir(),
+    'native-image-options.properties'
 )
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
 //const { Octokit } = require("@octokit/rest");
@@ -96,28 +96,28 @@ interface BuildOutput {
 }
 
 export async function setUpNativeImageBuildReports(
-  isGraalVMforJDK17OrLater: boolean,
-  graalVMVersion: string,
-  reportToken: string
+    isGraalVMforJDK17OrLater: boolean,
+    graalVMVersion: string,
+    reportToken: string
 ): Promise<void> {
   const isRequired = areJobReportsEnabled() || arePRReportsEnabled()
   if (!isRequired) {
     return
   }
   const isSupported =
-    isGraalVMforJDK17OrLater ||
-    graalVMVersion === c.VERSION_LATEST ||
-    graalVMVersion === c.VERSION_DEV ||
-    (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
-      gte(toSemVer(graalVMVersion), '22.2.0'))
+      isGraalVMforJDK17OrLater ||
+      graalVMVersion === c.VERSION_LATEST ||
+      graalVMVersion === c.VERSION_DEV ||
+      (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
+          gte(toSemVer(graalVMVersion), '22.2.0'))
   if (!isSupported) {
     core.warning(
-      `Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`
+        `Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`
     )
     return
   }
   setNativeImageOption(
-    `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`
+      `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`
   )// Escape backslashes for Windows
   REPORT_TOKEN = reportToken
 }
@@ -126,15 +126,15 @@ export async function generateReports(): Promise<void> {
   if (areJobReportsEnabled() || arePRReportsEnabled()) {
     if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
       core.warning(
-        'Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?'
+          'Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?'
       )
       return
     }
     const buildOutput: BuildOutput = JSON.parse(
-      fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
+        fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )
 
-    await saveReportJson(JSON.stringify(buildOutput))
+    saveReportJson(JSON.stringify(buildOutput))
 
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
@@ -185,10 +185,10 @@ function createReport(data: BuildOutput): string {
   }
   const debugInfoBytes = details.debug_info ? details.debug_info.bytes : 0
   const otherBytes =
-    details.total_bytes -
-    details.code_area.bytes -
-    details.image_heap.bytes -
-    debugInfoBytes
+      details.total_bytes -
+      details.code_area.bytes -
+      details.image_heap.bytes -
+      debugInfoBytes
   let debugInfoLine = ''
   if (details.debug_info) {
     debugInfoLine = `
@@ -221,7 +221,7 @@ function createReport(data: BuildOutput): string {
   if (info.graal_compiler) {
     let pgoSuffix = ''
     const isOracleGraalVM =
-      info.vendor_version && info.vendor_version.includes('Oracle GraalVM')
+        info.vendor_version && info.vendor_version.includes('Oracle GraalVM')
     if (isOracleGraalVM) {
       const pgo = info.graal_compiler.pgo
       const pgoText = pgo ? pgo.join('+') : 'off'
@@ -244,17 +244,17 @@ function createReport(data: BuildOutput): string {
   if (resources.total_secs) {
     totalTime = ` in ${secondsToHuman(resources.total_secs)}`
     gcTotalTimeRatio = ` (${toPercent(
-      resources.garbage_collection.total_secs,
-      resources.total_secs
+        resources.garbage_collection.total_secs,
+        resources.total_secs
     )} of total time)`
   }
 
   return `## GraalVM Native Image Build Report example
 
 \`${info.name}\` generated${totalTime} as part of the '${
-    context.job
+      context.job
   }' job in run <a href="${context.serverUrl}/${context.repo.owner}/${
-    context.repo.repo
+      context.repo.repo
   }/actions/runs/${context.runId}" target="_blank">#${context.runNumber}</a>.
 
 #### Environment
@@ -289,55 +289,55 @@ function createReport(data: BuildOutput): string {
       <td align="left"><a href="${DOCS_BASE}#glossary-reachability" target="_blank">Reachable</a></td>
       <td align="right">${analysisTypes.reachable.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysisTypes.reachable,
-        analysisTypes.total
-      )}</td>
+      analysisTypes.reachable,
+      analysisTypes.total
+  )}</td>
       <td align="right">${analysis.fields.reachable.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysis.fields.reachable,
-        analysis.fields.total
-      )}</td>
+      analysis.fields.reachable,
+      analysis.fields.total
+  )}</td>
       <td align="right">${analysis.methods.reachable.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysis.methods.reachable,
-        analysis.methods.total
-      )}</td>
+      analysis.methods.reachable,
+      analysis.methods.total
+  )}</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reflection-registrations" target="_blank">Reflection</a></td>
       <td align="right">${analysisTypes.reflection.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysisTypes.reflection,
-        analysisTypes.total
-      )}</td>
+      analysisTypes.reflection,
+      analysisTypes.total
+  )}</td>
       <td align="right">${analysis.fields.reflection.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysis.fields.reflection,
-        analysis.fields.total
-      )}</td>
+      analysis.fields.reflection,
+      analysis.fields.total
+  )}</td>
       <td align="right">${analysis.methods.reflection.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysis.methods.reflection,
-        analysis.methods.total
-      )}</td>
+      analysis.methods.reflection,
+      analysis.methods.total
+  )}</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-jni-access-registrations" target="_blank">JNI</a></td>
       <td align="right">${analysisTypes.jni.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysisTypes.jni,
-        analysisTypes.total
-      )}</td>
+      analysisTypes.jni,
+      analysisTypes.total
+  )}</td>
       <td align="right">${analysis.fields.jni.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysis.fields.jni,
-        analysis.fields.total
-      )}</td>
+      analysis.fields.jni,
+      analysis.fields.total
+  )}</td>
       <td align="right">${analysis.methods.jni.toLocaleString()}</td>
       <td align="right">${toPercent(
-        analysis.methods.jni,
-        analysis.methods.total
-      )}</td>
+      analysis.methods.jni,
+      analysis.methods.total
+  )}</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reachability" target="_blank">Loaded</a></td>
@@ -367,20 +367,20 @@ function createReport(data: BuildOutput): string {
       <td align="left"><a href="${DOCS_BASE}#glossary-code-area" target="_blank">Code area</a></td>
       <td align="right">${bytesToHuman(details.code_area.bytes)}</td>
       <td align="right">${toPercent(
-        details.code_area.bytes,
-        details.total_bytes
-      )}</td>
+      details.code_area.bytes,
+      details.total_bytes
+  )}</td>
       <td align="left">${details.code_area.compilation_units.toLocaleString()} compilation units</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-image-heap" target="_blank">Image heap</a></td>
       <td align="right">${bytesToHuman(details.image_heap.bytes)}</td>
       <td align="right">${toPercent(
-        details.image_heap.bytes,
-        details.total_bytes
-      )}</td>
+      details.image_heap.bytes,
+      details.total_bytes
+  )}</td>
       <td align="left">${objectCount}${bytesToHuman(
-    details.image_heap.resources.bytes
+      details.image_heap.resources.bytes
   )} for ${details.image_heap.resources.count.toLocaleString()} resources</td>
     </tr>${debugInfoLine}
     <tr>
@@ -392,8 +392,8 @@ function createReport(data: BuildOutput): string {
     <tr>
       <td align="left">Total</td>
       <td align="right"><strong>${bytesToHuman(
-        details.total_bytes
-      )}</strong></td>
+      details.total_bytes
+  )}</strong></td>
       <td align="right">100.000%</td>
       <td align="left"></td>
     </tr>
@@ -407,23 +407,23 @@ function createReport(data: BuildOutput): string {
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-garbage-collections" target="_blank">Garbage collection</a></td>
       <td align="left">${resources.garbage_collection.total_secs.toFixed(
-        2
-      )}s${gcTotalTimeRatio} in ${resources.garbage_collection.count} GCs</td>
+      2
+  )}s${gcTotalTimeRatio} in ${resources.garbage_collection.count} GCs</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-peak-rss" target="_blank">Peak RSS</a></td>
       <td align="left">${bytesToHuman(
-        resources.memory.peak_rss_bytes
-      )} (${toPercent(
-    resources.memory.peak_rss_bytes,
-    resources.memory.system_total
+      resources.memory.peak_rss_bytes
+  )} (${toPercent(
+      resources.memory.peak_rss_bytes,
+      resources.memory.system_total
   )} of ${bytesToHuman(resources.memory.system_total)} system memory)</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-cpu-load" target="_blank">CPU load</a></td>
       <td align="left">${resources.cpu.load.toFixed(3)} (${toPercent(
-    resources.cpu.load,
-    resources.cpu.total_cores
+      resources.cpu.load,
+      resources.cpu.total_cores
   )} of ${resources.cpu.total_cores} CPU cores)</td>
     </tr>
   </tbody>
