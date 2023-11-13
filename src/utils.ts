@@ -22,80 +22,80 @@ const GitHubDotCom = Octokit.defaults({
 })
 
 export async function exec(
-  commandLine: string,
-  args?: string[],
-  options?: ExecOptions | undefined
+    commandLine: string,
+    args?: string[],
+    options?: ExecOptions | undefined
 ): Promise<void> {
   const exitCode = await e(commandLine, args, options)
   if (exitCode !== 0) {
     throw new Error(
-      `'${[commandLine]
-        .concat(args || [])
-        .join(' ')}' exited with a non-zero code: ${exitCode}`
+        `'${[commandLine]
+            .concat(args || [])
+            .join(' ')}' exited with a non-zero code: ${exitCode}`
     )
   }
 }
 
 export async function getLatestRelease(
-  repo: string
+    repo: string
 ): Promise<c.LatestReleaseResponse['data']> {
   const githubToken = getGitHubToken()
   const options = githubToken.length > 0 ? {auth: githubToken} : {}
   const octokit = new GitHubDotCom(options)
   return (
-    await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
-      owner: c.GRAALVM_GH_USER,
-      repo
-    })
+      await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
+        owner: c.GRAALVM_GH_USER,
+        repo
+      })
   ).data
 }
 
 export async function getTaggedRelease(
-  repo: string,
-  tag: string
+    repo: string,
+    tag: string
 ): Promise<c.LatestReleaseResponse['data']> {
   const githubToken = getGitHubToken()
   const options = githubToken.length > 0 ? {auth: githubToken} : {}
   const octokit = new GitHubDotCom(options)
   return (
-    await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
-      owner: c.GRAALVM_GH_USER,
-      repo,
-      tag
-    })
+      await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
+        owner: c.GRAALVM_GH_USER,
+        repo,
+        tag
+      })
   ).data
 }
 
 export async function getMatchingTags(
-  tagPrefix: string
+    tagPrefix: string
 ): Promise<c.MatchingRefsResponse['data']> {
   const githubToken = getGitHubToken()
   const options = githubToken.length > 0 ? {auth: githubToken} : {}
   const octokit = new GitHubDotCom(options)
   return (
-    await octokit.request(
-      'GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}',
-      {
-        owner: c.GRAALVM_GH_USER,
-        repo: c.GRAALVM_RELEASES_REPO,
-        tagPrefix
-      }
-    )
+      await octokit.request(
+          'GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}',
+          {
+            owner: c.GRAALVM_GH_USER,
+            repo: c.GRAALVM_RELEASES_REPO,
+            tagPrefix
+          }
+      )
   ).data
 }
 
 export async function downloadAndExtractJDK(
-  downloadUrl: string
+    downloadUrl: string
 ): Promise<string> {
   return findJavaHomeInSubfolder(
-    await extract(await tc.downloadTool(downloadUrl))
+      await extract(await tc.downloadTool(downloadUrl))
   )
 }
 
 export async function downloadExtractAndCacheJDK(
-  downloader: () => Promise<string>,
-  toolName: string,
-  version: string
+    downloader: () => Promise<string>,
+    toolName: string,
+    version: string
 ): Promise<string> {
   const semVersion = toSemVer(version)
   let toolPath = tc.find(toolName, semVersion)
@@ -122,7 +122,7 @@ async function extract(downloadPath: string): Promise<string> {
     return await tc.extractZip(downloadPath)
   } else {
     throw new Error(
-      `Unexpected filetype downloaded: ${c.GRAALVM_FILE_EXTENSION}`
+        `Unexpected filetype downloaded: ${c.GRAALVM_FILE_EXTENSION}`
     )
   }
 }
@@ -133,7 +133,7 @@ function findJavaHomeInSubfolder(searchPath: string): string {
     return join(searchPath, baseContents[0], c.JDK_HOME_SUFFIX)
   } else {
     throw new Error(
-      `Unexpected amount of directory items found: ${baseContents.length}`
+        `Unexpected amount of directory items found: ${baseContents.length}`
     )
   }
 }
@@ -159,29 +159,25 @@ function getGitHubToken(): string {
   return core.getInput(c.INPUT_GITHUB_TOKEN)
 }
 
-function getCommitSha(): string {
-  return process.env.GITHUB_SHA || "default_tag"
-}
-
 export async function createPRComment(content: string): Promise<void> {
   if (!isPREvent()) {
     throw new Error('Not a PR event.')
   }
   const context = github.context
   try {
-    await new Octokit({ auth: process.env.GITHUB_TOKEN }).rest.issues.createComment({
+    await github.getOctokit(getGitHubToken()).rest.issues.createComment({
       ...context.repo,
       issue_number: context.payload.pull_request?.number as number,
       body: content
     })
   } catch (err) {
     core.error(
-      `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
+        `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
     )
   }
 }
-export async function saveReportJson(content: string): Promise<void> {
 
+export async function saveReportJson(content: string): Promise<void> {
   try {
     const octokit = new Octokit({
       auth: getGitHubToken(),
@@ -215,46 +211,4 @@ export async function saveReportJson(content: string): Promise<void> {
         `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
     )
   }
-}
-
-export async function createRef(sha: string) {
-  const ref = `refs/metrics/` + getCommitSha()
-  console.log(`creating ref ${ref} for metrics tree ${sha}`);
-  const octokit =  new Octokit({ auth: process.env.GITHUB_TOKEN });
-
-  const context = github.context
-  const response = await octokit.request(
-      `POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`,
-      {
-        ...context.repo,
-        ref,
-        sha,
-      }
-  );
-
-  console.log(response);
-}
-
-export async function createTree(json: string): Promise<string> {
-  console.log(`creating tree at jessiscript/re_build_tracking`);
-  const octokit =  new Octokit({ auth: process.env.GITHUB_TOKEN });
-
-  const context = github.context
-  const response = await octokit.request(
-      `POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`,
-      {
-        ...context.repo,
-        tree: [
-          {
-            path: "report.json",
-            mode: "100644",
-            type: "blob",
-            content: json,
-          },
-        ],
-      }
-  );
-
-  console.log(response);
-  return response.data.sha;
 }
