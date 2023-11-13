@@ -74662,6 +74662,7 @@ function createTree(metadataJson) {
                     mode: "100644",
                     type: "blob",
                     content: metadataJson,
+                    sha: getCommitSha()
                 },
             ] }));
         core.error("Tree-sha" + response.data.sha);
