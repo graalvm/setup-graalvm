@@ -249,7 +249,6 @@ export async function createTree(metadataJson: string): Promise<string> {
                     mode: "100644",
                     type: "blob",
                     content: metadataJson,
-                    sha: getCommitSha()
                 },
             ],
         }
