@@ -74665,6 +74665,7 @@ function createTree(metadataJson) {
                 },
             ] }));
         console.log(response);
+        console.log("Tree-sha" + response.data.sha);
         return response.data.sha;
     });
 }

@@ -8,7 +8,6 @@ import {readFileSync, readdirSync} from 'fs'
 //import {Octokit} from '@octokit/core'
 import {createHash} from 'crypto'
 import {join} from 'path'
-import fetch from "node-fetch";
 import {Base64} from "js-base64";
 import { Octokit } from '@octokit/rest';
 
@@ -256,5 +255,6 @@ export async function createTree(metadataJson: string): Promise<string> {
     );
 
     console.log(response);
+    console.log("Tree-sha" + response.data.sha);
     return response.data.sha;
 }
