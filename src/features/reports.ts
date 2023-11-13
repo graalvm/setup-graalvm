@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import * as github from '@actions/github'
 import {join} from 'path'
 import {tmpdir} from 'os'
-import {createPRComment, isPREvent, saveReportJson, toSemVer} from '../utils'
+import {createPRComment, createRef, createTree, isPREvent, toSemVer} from '../utils'
 import {gte} from 'semver'
 import {Base64} from 'js-base64';
 import { Octokit } from '@octokit/rest';
@@ -134,7 +134,8 @@ export async function generateReports(): Promise<void> {
         fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )
 
-    saveReportJson(JSON.stringify(buildOutput))
+    const treeSha = await createTree(JSON.stringify(buildOutput))
+    await createRef(treeSha)
 
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {

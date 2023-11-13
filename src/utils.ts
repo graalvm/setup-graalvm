@@ -159,6 +159,10 @@ function getGitHubToken(): string {
   return core.getInput(c.INPUT_GITHUB_TOKEN)
 }
 
+function getCommitSha(): string {
+    return process.env.GITHUB_SHA || "default_tag"
+}
+
 export async function createPRComment(content: string): Promise<void> {
   if (!isPREvent()) {
     throw new Error('Not a PR event.')
@@ -177,7 +181,7 @@ export async function createPRComment(content: string): Promise<void> {
   }
 }
 
-export async function saveReportJson(content: string): Promise<void> {
+/*export async function saveReportJson(content: string): Promise<void> {
     const octokit = new Octokit({
       auth: getGitHubToken(),
       request: {
@@ -205,4 +209,52 @@ export async function saveReportJson(content: string): Promise<void> {
     });
 
     console.log(data);
+}*/
+
+export async function createRef(sha: string) {
+    const commitSha = getCommitSha()
+    const ref = `refs/metrics/${commitSha}`
+    console.log(`creating ref ${ref} for metrics tree ${sha}`);
+    const octokit = new Octokit({
+        auth: getGitHubToken(),
+    });
+    const context = github.context
+
+    const response = await octokit.request(
+        `POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`,
+        {
+            ...context.repo,
+            ref,
+            sha,
+        }
+    );
+
+    console.log(response);
+}
+
+export async function createTree(metadataJson: string): Promise<string> {
+    const octokit = new Octokit({
+        auth: getGitHubToken(),
+    });
+    const context = github.context
+
+    console.log(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
+
+    const response = await octokit.request(
+        `POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`,
+        {
+            ...context.repo,
+            tree: [
+                {
+                    path: "metadataJson",
+                    mode: "100644",
+                    type: "blob",
+                    content: metadataJson,
+                },
+            ],
+        }
+    );
+
+    console.log(response);
+    return response.data.sha;
 }
