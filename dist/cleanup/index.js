@@ -74452,8 +74452,6 @@ function generateReports() {
             }
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
             yield (0, utils_1.saveReportJson)(JSON.stringify(buildOutput));
-            const treeSha = yield (0, utils_1.createTree)(JSON.stringify(buildOutput));
-            yield (0, utils_1.createRef)(treeSha);
             const report = createReport(buildOutput);
             if (areJobReportsEnabled()) {
                 core.summary.addRaw(report);
@@ -74759,7 +74757,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createTree = exports.createRef = exports.saveReportJson = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
+exports.saveReportJson = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(2764));
 const core = __importStar(__nccwpck_require__(2258));
 const github = __importStar(__nccwpck_require__(7168));
@@ -74900,9 +74898,6 @@ exports.isPREvent = isPREvent;
 function getGitHubToken() {
     return core.getInput(c.INPUT_GITHUB_TOKEN);
 }
-function getCommitSha() {
-    return process.env.GITHUB_SHA || "default_tag";
-}
 function createPRComment(content) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -74911,7 +74906,7 @@ function createPRComment(content) {
         }
         const context = github.context;
         try {
-            yield new rest_1.Octokit({ auth: process.env.GITHUB_TOKEN }).rest.issues.createComment(Object.assign(Object.assign({}, context.repo), { issue_number: (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number, body: content }));
+            yield github.getOctokit(getGitHubToken()).rest.issues.createComment(Object.assign(Object.assign({}, context.repo), { issue_number: (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number, body: content }));
         }
         catch (err) {
             core.error(`Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`);
@@ -74952,36 +74947,6 @@ function saveReportJson(content) {
     });
 }
 exports.saveReportJson = saveReportJson;
-function createRef(sha) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const ref = `refs/metrics/` + getCommitSha();
-        console.log(`creating ref ${ref} for metrics tree ${sha}`);
-        const octokit = new rest_1.Octokit({ auth: process.env.GITHUB_TOKEN });
-        const context = github.context;
-        const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`, Object.assign(Object.assign({}, context.repo), { ref,
-            sha }));
-        console.log(response);
-    });
-}
-exports.createRef = createRef;
-function createTree(json) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log(`creating tree at jessiscript/re_build_tracking`);
-        const octokit = new rest_1.Octokit({ auth: process.env.GITHUB_TOKEN });
-        const context = github.context;
-        const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`, Object.assign(Object.assign({}, context.repo), { tree: [
-                {
-                    path: "report.json",
-                    mode: "100644",
-                    type: "blob",
-                    content: json,
-                },
-            ] }));
-        console.log(response);
-        return response.data.sha;
-    });
-}
-exports.createTree = createTree;
 
 
 /***/ }),
