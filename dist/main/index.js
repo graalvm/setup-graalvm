@@ -75913,34 +75913,29 @@ function createPRComment(content) {
 exports.createPRComment = createPRComment;
 function saveReportJson(content) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const octokit = new rest_1.Octokit({
-                auth: getGitHubToken(),
-                request: {
-                    fetch: node_fetch_1.default,
-                },
-            });
-            const contentEncoded = js_base64_1.Base64.encode(content);
-            const { data } = yield octokit.repos.createOrUpdateFileContents({
-                owner: 'jessiscript',
-                repo: 're23_build_tracking',
-                path: 'OUTPUT.json',
-                content: contentEncoded,
-                message: 'Add Report JSON data',
-                committer: {
-                    name: 'jessiscript',
-                    email: 'pauljessica2001@gmail.com',
-                },
-                author: {
-                    name: 'jessiscript',
-                    email: 'pauljessica2001@gmail.com',
-                }
-            });
-            console.log(data);
-        }
-        catch (err) {
-            core.error(`Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`);
-        }
+        const octokit = new rest_1.Octokit({
+            auth: getGitHubToken(),
+            request: {
+                fetch: node_fetch_1.default,
+            },
+        });
+        const contentEncoded = js_base64_1.Base64.encode(content);
+        const { data } = yield octokit.repos.createOrUpdateFileContents({
+            owner: 'jessiscript',
+            repo: 're23_build_tracking',
+            path: 'OUTPUT.json',
+            content: contentEncoded,
+            message: 'Add Report JSON data',
+            committer: {
+                name: 'jessiscript',
+                email: 'pauljessica2001@gmail.com',
+            },
+            author: {
+                name: 'jessiscript',
+                email: 'pauljessica2001@gmail.com',
+            }
+        });
+        console.log(data);
     });
 }
 exports.saveReportJson = saveReportJson;

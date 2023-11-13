@@ -178,7 +178,6 @@ export async function createPRComment(content: string): Promise<void> {
 }
 
 export async function saveReportJson(content: string): Promise<void> {
-  try {
     const octokit = new Octokit({
       auth: getGitHubToken(),
       request: {
@@ -206,9 +205,4 @@ export async function saveReportJson(content: string): Promise<void> {
     });
 
     console.log(data);
-  } catch (err) {
-    core.error(
-        `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
-    )
-  }
 }
