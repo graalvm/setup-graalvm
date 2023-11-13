@@ -74645,7 +74645,7 @@ function createRef(sha) {
         const context = github.context;
         const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`, Object.assign(Object.assign({}, context.repo), { ref,
             sha }));
-        console.log(response);
+        core.error(response.data);
     });
 }
 exports.createRef = createRef;
@@ -74655,7 +74655,7 @@ function createTree(metadataJson) {
             auth: getGitHubToken(),
         });
         const context = github.context;
-        console.log(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
+        core.error(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
         const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`, Object.assign(Object.assign({}, context.repo), { tree: [
                 {
                     path: "metadataJson",
@@ -74664,8 +74664,7 @@ function createTree(metadataJson) {
                     content: metadataJson,
                 },
             ] }));
-        console.log(response);
-        console.log("Tree-sha" + response.data.sha);
+        core.error("Tree-sha" + response.data.sha);
         return response.data.sha;
     });
 }
