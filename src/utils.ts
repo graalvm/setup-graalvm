@@ -169,7 +169,7 @@ export async function createPRComment(content: string): Promise<void> {
   }
   const context = github.context
   try {
-    await github.getOctokit(getGitHubToken()).rest.issues.createComment({
+    await new Octokit({ auth: process.env.GITHUB_TOKEN }).rest.issues.createComment({
       ...context.repo,
       issue_number: context.payload.pull_request?.number as number,
       body: content
