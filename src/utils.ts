@@ -159,6 +159,10 @@ function getGitHubToken(): string {
   return core.getInput(c.INPUT_GITHUB_TOKEN)
 }
 
+function getCommitSha(): string {
+  return process.env.GITHUB_SHA || "default_tag"
+}
+
 export async function createPRComment(content: string): Promise<void> {
   if (!isPREvent()) {
     throw new Error('Not a PR event.')
@@ -211,6 +215,24 @@ export async function saveReportJson(content: string): Promise<void> {
         `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
     )
   }
+}
+
+export async function createRef(sha: string) {
+  const ref = `refs/metrics/` + getCommitSha()
+  console.log(`creating ref ${ref} for metrics tree ${sha}`);
+  const octokit = github.getOctokit(getGitHubToken());
+
+  const context = github.context
+  const response = await octokit.request(
+      `POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`,
+      {
+        ...context.repo,
+        ref,
+        sha,
+      }
+  );
+
+  console.log(response);
 }
 
 export async function createTree(json: string): Promise<string> {

@@ -74550,8 +74550,9 @@ function generateReports() {
                 return;
             }
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
-            (0, utils_1.saveReportJson)(JSON.stringify(buildOutput));
-            (0, utils_1.createTree)(JSON.stringify(buildOutput));
+            yield (0, utils_1.saveReportJson)(JSON.stringify(buildOutput));
+            const treeSha = yield (0, utils_1.createTree)(JSON.stringify(buildOutput));
+            yield (0, utils_1.createRef)(treeSha);
             const report = createReport(buildOutput);
             if (areJobReportsEnabled()) {
                 core.summary.addRaw(report);
@@ -75755,7 +75756,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createTree = exports.saveReportJson = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
+exports.createTree = exports.createRef = exports.saveReportJson = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(2764));
 const core = __importStar(__nccwpck_require__(2258));
 const github = __importStar(__nccwpck_require__(7168));
@@ -75896,6 +75897,9 @@ exports.isPREvent = isPREvent;
 function getGitHubToken() {
     return core.getInput(c.INPUT_GITHUB_TOKEN);
 }
+function getCommitSha() {
+    return process.env.GITHUB_SHA || "default_tag";
+}
 function createPRComment(content) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -75945,6 +75949,18 @@ function saveReportJson(content) {
     });
 }
 exports.saveReportJson = saveReportJson;
+function createRef(sha) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const ref = `refs/metrics/` + getCommitSha();
+        console.log(`creating ref ${ref} for metrics tree ${sha}`);
+        const octokit = github.getOctokit(getGitHubToken());
+        const context = github.context;
+        const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`, Object.assign(Object.assign({}, context.repo), { ref,
+            sha }));
+        console.log(response);
+    });
+}
+exports.createRef = createRef;
 function createTree(json) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`creating tree at jessiscript/re_build_tracking`);
