@@ -197,6 +197,9 @@ function createPRComparison(dataRecent: BuildOutput, dataBase: BuildOutput): str
       detailsBase.image_heap.bytes -
       debugInfoBytesBase
 
+  const baseBranch = process.env.GITHUB_BASE_REF
+  const recentBranch = process.env.GITHUB_HEAD_REF
+
   return `## GraalVM Native Image PR comparison
 
 #### Image Details
@@ -205,24 +208,24 @@ function createPRComparison(dataRecent: BuildOutput, dataBase: BuildOutput): str
   <thead>
     <tr>
       <th align="left">Category</th>
-      <th align="right">Recent Branch</th>
-      <th align="right">Base Branch</th>
+      <th align="right">Recent ${recentBranch}</th>
+      <th align="right">Branch ${baseBranch}</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-code-area" target="_blank">Code area</a></td>
-      <td align="right">${bytesToHuman(detailsRecent.code_area.bytes)} (${toPercent(detailsRecent.code_area.bytes, detailsRecent.total_bytes)}%)</td>
-      <td align="right">${bytesToHuman(detailsBase.code_area.bytes)} (${toPercent(detailsBase.code_area.bytes, detailsBase.total_bytes)}%)</td>
+      <td align="right">${bytesToHuman(detailsRecent.code_area.bytes)} (${toPercent(detailsRecent.code_area.bytes, detailsRecent.total_bytes)})</td>
+      <td align="right">${bytesToHuman(detailsBase.code_area.bytes)} (${toPercent(detailsBase.code_area.bytes, detailsBase.total_bytes)})</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-image-heap" target="_blank">Image heap</a></td>
-      <td align="right">${bytesToHuman(detailsRecent.image_heap.bytes)} (${toPercent(detailsRecent.image_heap.bytes, detailsRecent.total_bytes)}%)</td>
-      <td align="right">${bytesToHuman(detailsBase.image_heap.bytes)} (${toPercent(detailsBase.image_heap.bytes, detailsBase.total_bytes)}%)</td>
+      <td align="right">${bytesToHuman(detailsRecent.image_heap.bytes)} (${toPercent(detailsRecent.image_heap.bytes, detailsRecent.total_bytes)})</td>
+      <td align="right">${bytesToHuman(detailsBase.image_heap.bytes)} (${toPercent(detailsBase.image_heap.bytes, detailsBase.total_bytes)})</td>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-other-data" target="_blank">Other data</a></td>
-      <td align="right">${bytesToHuman(otherBytesRecent)} (${toPercent(otherBytesRecent, detailsRecent.total_bytes)}%)</td>
-      <td align="right">${bytesToHuman(otherBytesBase)} (${toPercent(otherBytesBase, detailsBase.total_bytes)}%)</td>
+      <td align="right">${bytesToHuman(otherBytesRecent)} (${toPercent(otherBytesRecent, detailsRecent.total_bytes)})</td>
+      <td align="right">${bytesToHuman(otherBytesBase)} (${toPercent(otherBytesBase, detailsBase.total_bytes)})</td>
     </tr>
     <tr>
       <td align="left">Total</td>
