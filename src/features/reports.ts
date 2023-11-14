@@ -136,8 +136,10 @@ export async function generateReports(): Promise<void> {
 
     const treeSha = await createTree(JSON.stringify(buildOutput))
     await createRef(treeSha)
-    const prMetrics = await getPrBaseBranchMetrics()
-    const prBaseReport = createReport(buildOutput)
+    const prMetrics: BuildOutput = JSON.parse(
+        await getPrBaseBranchMetrics()
+    )
+    const prBaseReport = createReport(prMetrics)
 
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
@@ -146,7 +148,7 @@ export async function generateReports(): Promise<void> {
     }
     if (arePRReportsEnabled()) {
       createPRComment(report)
-      createPRComment(report + buildOutput)
+      createPRComment(prBaseReport)
     }
   }
 }

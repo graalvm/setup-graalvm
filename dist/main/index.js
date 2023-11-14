@@ -74552,8 +74552,8 @@ function generateReports() {
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
             const treeSha = yield (0, utils_1.createTree)(JSON.stringify(buildOutput));
             yield (0, utils_1.createRef)(treeSha);
-            const prMetrics = yield (0, utils_1.getPrBaseBranchMetrics)();
-            const prBaseReport = createReport(buildOutput);
+            const prMetrics = JSON.parse(yield (0, utils_1.getPrBaseBranchMetrics)());
+            const prBaseReport = createReport(prMetrics);
             const report = createReport(buildOutput);
             if (areJobReportsEnabled()) {
                 core.summary.addRaw(report);
@@ -74561,7 +74561,7 @@ function generateReports() {
             }
             if (arePRReportsEnabled()) {
                 (0, utils_1.createPRComment)(report);
-                (0, utils_1.createPRComment)(report + buildOutput);
+                (0, utils_1.createPRComment)(prBaseReport);
             }
         }
     });
