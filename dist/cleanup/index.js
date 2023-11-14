@@ -74982,11 +74982,11 @@ function getPrBaseBranchMetrics() {
         });
         const baseCommitSha = yield getBaseBranchCommitSha(octokit, context);
         core.info(baseCommitSha);
-        const blobTreeUrl = yield getBlobTreeUrl(octokit, context, baseCommitSha);
-        core.info(blobTreeUrl);
-        const blobUrl = yield getBlobUrl(octokit, context, blobTreeUrl);
-        core.info(blobUrl);
-        const blobContent = yield getBlobContent(octokit, context, blobUrl);
+        const blobTreeSha = yield getBlobTreeSha(octokit, context, baseCommitSha);
+        core.info(blobTreeSha);
+        const blobSha = yield getBlobSha(octokit, context, blobTreeSha);
+        core.info(blobSha);
+        const blobContent = yield getBlobContent(octokit, context, blobSha);
         core.info(blobContent);
         return blobContent;
     });
@@ -74999,30 +74999,34 @@ function getBaseBranchCommitSha(octokit, context) {
         const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/heads/${prBaseSha}`, Object.assign(Object.assign({}, context.repo), { headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             } }));
+        core.info(data);
         return data.object.sha;
     });
 }
-function getBlobTreeUrl(octokit, context, baseCommitSha) {
+function getBlobTreeSha(octokit, context, baseCommitSha) {
     return __awaiter(this, void 0, void 0, function* () {
         const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/metrics/${baseCommitSha}`, Object.assign(Object.assign({}, context.repo), { headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             } }));
-        return data.object.url;
+        core.info(data);
+        return data.object.sha;
     });
 }
-function getBlobUrl(octokit, context, blobTreeUrl) {
+function getBlobSha(octokit, context, blobTreeSha) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield octokit.request(blobTreeUrl, Object.assign(Object.assign({}, context.repo), { headers: {
+        const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/git/trees/${blobTreeSha}`, Object.assign(Object.assign({}, context.repo), { tree_sha: blobTreeSha, headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             } }));
-        return data.tree[0].url;
+        core.info(data);
+        return data.tree[0].sha;
     });
 }
-function getBlobContent(octokit, context, blobUrl) {
+function getBlobContent(octokit, context, blobSha) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield octokit.request(blobUrl, Object.assign(Object.assign({}, context.repo), { headers: {
+        const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/git/blobs/${blobSha}`, Object.assign(Object.assign({}, context.repo), { file_sha: blobSha, headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             } }));
+        core.info(data);
         return js_base64_1.Base64.decode(data.content);
     });
 }

@@ -256,11 +256,11 @@ export async function getPrBaseBranchMetrics(): Promise<string> {
     })
     const baseCommitSha = await getBaseBranchCommitSha(octokit, context)
     core.info(baseCommitSha)
-    const blobTreeUrl = await getBlobTreeUrl(octokit, context, baseCommitSha)
-    core.info(blobTreeUrl)
-    const blobUrl = await getBlobUrl(octokit, context, blobTreeUrl)
-    core.info(blobUrl)
-    const blobContent = await getBlobContent(octokit, context, blobUrl)
+    const blobTreeSha = await getBlobTreeSha(octokit, context, baseCommitSha)
+    core.info(blobTreeSha)
+    const blobSha = await getBlobSha(octokit, context, blobTreeSha)
+    core.info(blobSha)
+    const blobContent = await getBlobContent(octokit, context, blobSha)
     core.info(blobContent)
     return blobContent
 }
@@ -274,35 +274,41 @@ async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promi
             'X-GitHub-Api-Version': '2022-11-28'
         }
     })
+    core.info(data)
     return data.object.sha
 }
 
-async function getBlobTreeUrl(octokit: Octokit, context: Context, baseCommitSha: string): Promise<string> {
+async function getBlobTreeSha(octokit: Octokit, context: Context, baseCommitSha: string): Promise<string> {
     const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/metrics/${baseCommitSha}`, {
         ...context.repo,
         headers: {
             'X-GitHub-Api-Version': '2022-11-28'
         }
     })
-    return data.object.url
+    core.info(data)
+    return data.object.sha
 }
 
-async function getBlobUrl(octokit: Octokit, context: Context, blobTreeUrl: string) {
-    const { data } = await octokit.request(blobTreeUrl, {
+async function getBlobSha(octokit: Octokit, context: Context, blobTreeSha: string) {
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/git/trees/${blobTreeSha}`,    {
         ...context.repo,
+        tree_sha: blobTreeSha,
         headers: {
             'X-GitHub-Api-Version': '2022-11-28'
         }
     })
-    return data.tree[0].url
+    core.info(data)
+    return data.tree[0].sha
 }
 
-async function getBlobContent(octokit: Octokit, context: Context, blobUrl: string) {
-    const { data } = await octokit.request(blobUrl, {
+async function getBlobContent(octokit: Octokit, context: Context, blobSha: string) {
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/git/blobs/${blobSha}`, {
         ...context.repo,
+        file_sha: blobSha,
         headers: {
             'X-GitHub-Api-Version': '2022-11-28'
         }
     })
+    core.info(data)
     return Base64.decode(data.content)
 }
