@@ -232,7 +232,7 @@ export async function createRef(sha: string) {
         }
     );
 
-    core.error(response.data);
+    core.info(response.data);
 }
 
 export async function createTree(metadataJson: string): Promise<string> {

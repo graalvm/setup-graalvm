@@ -75649,7 +75649,7 @@ function createRef(sha) {
         const context = github.context;
         const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`, Object.assign(Object.assign({}, context.repo), { ref,
             sha }));
-        core.error(response.data);
+        core.info(response.data);
     });
 }
 exports.createRef = createRef;
