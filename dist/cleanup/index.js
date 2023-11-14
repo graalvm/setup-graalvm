@@ -74996,7 +74996,7 @@ function getBaseBranchCommitSha(octokit, context) {
     return __awaiter(this, void 0, void 0, function* () {
         const prBaseSha = getPrBaseBranchSha();
         core.info(prBaseSha);
-        const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/heads/${prBaseSha}`, Object.assign(Object.assign({}, context.repo), { headers: {
+        const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/ref/heads/${prBaseSha}`, Object.assign(Object.assign({}, context.repo), { ref: 'heads/' + prBaseSha, headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             } }));
         core.info(data);
@@ -75005,7 +75005,7 @@ function getBaseBranchCommitSha(octokit, context) {
 }
 function getBlobTreeSha(octokit, context, baseCommitSha) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/metrics/${baseCommitSha}`, Object.assign(Object.assign({}, context.repo), { headers: {
+        const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/ref/metrics/${baseCommitSha}`, Object.assign(Object.assign({}, context.repo), { headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             } }));
         core.info(data);

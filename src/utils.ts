@@ -268,8 +268,9 @@ export async function getPrBaseBranchMetrics(): Promise<string> {
 async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promise<string> {
     const prBaseSha = getPrBaseBranchSha()
     core.info(prBaseSha)
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/heads/${prBaseSha}`, {
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/ref/heads/${prBaseSha}`, {
         ...context.repo,
+        ref: 'heads/' + prBaseSha,
         headers: {
             'X-GitHub-Api-Version': '2022-11-28'
         }
@@ -279,7 +280,7 @@ async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promi
 }
 
 async function getBlobTreeSha(octokit: Octokit, context: Context, baseCommitSha: string): Promise<string> {
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/metrics/${baseCommitSha}`, {
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/ref/metrics/${baseCommitSha}`, {
         ...context.repo,
         headers: {
             'X-GitHub-Api-Version': '2022-11-28'
