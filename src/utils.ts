@@ -11,6 +11,7 @@ import {join} from 'path'
 import {Base64} from "js-base64";
 import { Octokit } from '@octokit/rest';
 import fetch from "node-fetch";
+import {Context} from "@actions/github/lib/context";
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
@@ -163,6 +164,13 @@ function getCommitSha(): string {
     return process.env.GITHUB_SHA || "default_tag"
 }
 
+function getPrBaseBranchSha(): string {
+    if (!isPREvent()) {
+        return ""
+    }
+    return  process.env.GITHUB_BASE_REF || "default_branch"
+}
+
 export async function createPRComment(content: string): Promise<void> {
   if (!isPREvent()) {
     throw new Error('Not a PR event.')
@@ -180,36 +188,6 @@ export async function createPRComment(content: string): Promise<void> {
     )
   }
 }
-
-/*export async function saveReportJson(content: string): Promise<void> {
-    const octokit = new Octokit({
-      auth: getGitHubToken(),
-      request: {
-        fetch: fetch,
-      },
-    });
-
-    const contentEncoded = Base64.encode(content)
-
-
-    const { data } = await octokit.repos.createOrUpdateFileContents({
-      owner: 'jessiscript',
-      repo: 're23_build_tracking',
-      path: 'OUTPUT.json',
-      content: contentEncoded,
-      message: 'Add Report JSON data',
-      committer: {
-        name: 'jessiscript',
-        email: 'pauljessica2001@gmail.com',
-      },
-      author:{
-        name: 'jessiscript',
-        email: 'pauljessica2001@gmail.com',
-      }
-    });
-
-    console.log(data);
-}*/
 
 export async function createRef(sha: string) {
     const commitSha = getCommitSha()
@@ -263,4 +241,66 @@ export async function createTree(metadataJson: string): Promise<string> {
 
     core.info("Tree-sha" + response.data.sha);
     return response.data.sha;
+}
+
+export async function getPrBaseBranchMetrics(): Promise<string> {
+    if (!isPREvent()) {
+        throw new Error('Not a PR event.')
+    }
+    const context = github.context
+    const octokit = new Octokit({
+        auth: getGitHubToken(),
+        request: {
+            fetch: fetch,
+        },
+    })
+    const baseCommitSha = await getBaseBranchCommitSha(octokit, context)
+    core.info(baseCommitSha)
+    const blobTreeUrl = await getBlobTreeUrl(octokit, context, baseCommitSha)
+    core.info(blobTreeUrl)
+    const blobUrl = await getBlobUrl(octokit, context, blobTreeUrl)
+    core.info(blobUrl)
+    const blobContent = await getBlobContent(octokit, context, blobUrl)
+    core.info(blobContent)
+    return blobContent
+}
+
+async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promise<string> {
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/heads/${getPrBaseBranchSha()}`, {
+        ...context.repo,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+    return data.object.sha
+}
+
+async function getBlobTreeUrl(octokit: Octokit, context: Context, baseCommitSha: string): Promise<string> {
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/metrics/${baseCommitSha}`, {
+        ...context.repo,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+    return data.object.url
+}
+
+async function getBlobUrl(octokit: Octokit, context: Context, blobTreeUrl: string) {
+    const { data } = await octokit.request(blobTreeUrl, {
+        ...context.repo,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+    return data.tree[0].url
+}
+
+async function getBlobContent(octokit: Octokit, context: Context, blobUrl: string) {
+    const { data } = await octokit.request(blobUrl, {
+        ...context.repo,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+    return Base64.decode(data.content)
 }

@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import * as github from '@actions/github'
 import {join} from 'path'
 import {tmpdir} from 'os'
-import {createPRComment, createRef, createTree, isPREvent, toSemVer} from '../utils'
+import {createPRComment, createRef, createTree, getPrBaseBranchMetrics, isPREvent, toSemVer} from '../utils'
 import {gte} from 'semver'
 import {Base64} from 'js-base64';
 import { Octokit } from '@octokit/rest';
@@ -136,6 +136,8 @@ export async function generateReports(): Promise<void> {
 
     const treeSha = await createTree(JSON.stringify(buildOutput))
     await createRef(treeSha)
+    const prMetrics = await getPrBaseBranchMetrics()
+    const prBaseReport = createReport(buildOutput)
 
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
@@ -144,6 +146,7 @@ export async function generateReports(): Promise<void> {
     }
     if (arePRReportsEnabled()) {
       createPRComment(report)
+      createPRComment(report + buildOutput)
     }
   }
 }
