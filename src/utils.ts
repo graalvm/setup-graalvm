@@ -237,7 +237,7 @@ export async function createTree(metadataJson: string): Promise<string> {
     });
     const context = github.context
 
-    core.error(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
+    core.info(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
 
     const response = await octokit.request(
         `POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`,
@@ -254,6 +254,6 @@ export async function createTree(metadataJson: string): Promise<string> {
         }
     );
 
-    core.error("Tree-sha" + response.data.sha);
+    core.info("Tree-sha" + response.data.sha);
     return response.data.sha;
 }

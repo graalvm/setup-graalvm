@@ -75652,7 +75652,7 @@ function createTree(metadataJson) {
             auth: getGitHubToken(),
         });
         const context = github.context;
-        core.error(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
+        core.info(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
         const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`, Object.assign(Object.assign({}, context.repo), { tree: [
                 {
                     path: "metadataJson",
@@ -75661,7 +75661,7 @@ function createTree(metadataJson) {
                     content: metadataJson,
                 },
             ] }));
-        core.error("Tree-sha" + response.data.sha);
+        core.info("Tree-sha" + response.data.sha);
         return response.data.sha;
     });
 }
