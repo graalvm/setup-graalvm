@@ -75638,6 +75638,9 @@ function createRef(sha) {
         console.log(`creating ref ${ref} for metrics tree ${sha}`);
         const octokit = new rest_1.Octokit({
             auth: getGitHubToken(),
+            request: {
+                fetch: fetch,
+            },
         });
         const context = github.context;
         const response = yield octokit.request(`POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`, Object.assign(Object.assign({}, context.repo), { ref,
@@ -75650,6 +75653,9 @@ function createTree(metadataJson) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = new rest_1.Octokit({
             auth: getGitHubToken(),
+            request: {
+                fetch: fetch,
+            },
         });
         const context = github.context;
         core.info(`creating tree at ${context.repo.owner}/${context.repo.repo}`);

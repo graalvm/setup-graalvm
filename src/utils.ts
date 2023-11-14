@@ -216,6 +216,9 @@ export async function createRef(sha: string) {
     console.log(`creating ref ${ref} for metrics tree ${sha}`);
     const octokit = new Octokit({
         auth: getGitHubToken(),
+        request: {
+            fetch: fetch,
+        },
     });
     const context = github.context
 
@@ -234,6 +237,9 @@ export async function createRef(sha: string) {
 export async function createTree(metadataJson: string): Promise<string> {
     const octokit = new Octokit({
         auth: getGitHubToken(),
+        request: {
+            fetch: fetch,
+        },
     });
     const context = github.context
 
