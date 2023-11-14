@@ -74446,6 +74446,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createTree = exports.createRef = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(2764));
@@ -74459,6 +74462,7 @@ const fs_1 = __nccwpck_require__(7147);
 const crypto_1 = __nccwpck_require__(6113);
 const path_1 = __nccwpck_require__(1017);
 const rest_1 = __nccwpck_require__(6175);
+const node_fetch_1 = __importDefault(__nccwpck_require__(831));
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com';
 const GitHubDotCom = rest_1.Octokit.defaults({
@@ -74642,7 +74646,7 @@ function createRef(sha) {
         const octokit = new rest_1.Octokit({
             auth: getGitHubToken(),
             request: {
-                fetch: fetch,
+                fetch: node_fetch_1.default,
             },
         });
         const context = github.context;
@@ -74657,7 +74661,7 @@ function createTree(metadataJson) {
         const octokit = new rest_1.Octokit({
             auth: getGitHubToken(),
             request: {
-                fetch: fetch,
+                fetch: node_fetch_1.default,
             },
         });
         const context = github.context;

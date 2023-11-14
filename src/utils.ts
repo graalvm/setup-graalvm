@@ -10,6 +10,7 @@ import {createHash} from 'crypto'
 import {join} from 'path'
 import {Base64} from "js-base64";
 import { Octokit } from '@octokit/rest';
+import fetch from "node-fetch";
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
