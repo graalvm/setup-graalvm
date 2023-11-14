@@ -75991,7 +75991,9 @@ function getPrBaseBranchMetrics() {
 exports.getPrBaseBranchMetrics = getPrBaseBranchMetrics;
 function getBaseBranchCommitSha(octokit, context) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/heads/${getPrBaseBranchSha()}`, Object.assign(Object.assign({}, context.repo), { headers: {
+        const prBaseSha = getPrBaseBranchSha();
+        core.info(prBaseSha);
+        const { data } = yield octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/heads/${prBaseSha}`, Object.assign(Object.assign({}, context.repo), { headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             } }));
         return data.object.sha;

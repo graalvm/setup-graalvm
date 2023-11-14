@@ -266,7 +266,9 @@ export async function getPrBaseBranchMetrics(): Promise<string> {
 }
 
 async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promise<string> {
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/heads/${getPrBaseBranchSha()}`, {
+    const prBaseSha = getPrBaseBranchSha()
+    core.info(prBaseSha)
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/ref/heads/${prBaseSha}`, {
         ...context.repo,
         headers: {
             'X-GitHub-Api-Version': '2022-11-28'
