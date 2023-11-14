@@ -291,7 +291,7 @@ async function getBlobTreeSha(octokit: Octokit, context: Context, baseCommitSha:
 }
 
 async function getBlobSha(octokit: Octokit, context: Context, blobTreeSha: string) {
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/git/trees/${blobTreeSha}`,    {
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/trees/${blobTreeSha}`,    {
         ...context.repo,
         tree_sha: blobTreeSha,
         headers: {
@@ -303,7 +303,7 @@ async function getBlobSha(octokit: Octokit, context: Context, blobTreeSha: strin
 }
 
 async function getBlobContent(octokit: Octokit, context: Context, blobSha: string) {
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/git/blobs/${blobSha}`, {
+    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/blobs/${blobSha}`, {
         ...context.repo,
         file_sha: blobSha,
         headers: {
