@@ -44,19 +44,23 @@ export const EVENT_NAME_PULL_REQUEST = 'pull_request'
 export const ERROR_HINT =
   'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
 
-export const METRIC_REF_PATH = 'refs/graalvm-metrics'
+export const METRIC_PATH = 'graalvm-metrics'
+export const OCTOKIT_REF_BRANCHE_PREFIX = 'heads'
 
-export const OCTOKIT_ROUTE_REF_METRICS = `GET /repos/${context.repo.owner}/${context.repo.repo}/git/ref/metrics/${baseCommitSha}`
+export const OCTOKIT_ROUTE_CREATE_REF = 'POST /repos/{owner}/{repo}/git/refs'
+export const OCTOKIT_ROUTE_CREATE_TREE = 'POST /repos/{owner}/{repo}/git/trees'
+export const OCTOKIT_ROUTE_REF = 'GET /repos/{owner}/{repo}/git/ref/'
+export const OCTOKIT_ROUTE_REF_METRICS = `GET /repos/{owner}/{repo}/git/ref/${METRIC_PATH}/`
+export const OCTOKIT_ROUTE_TREE = 'GET /repos/{owner}/{repo}/git/trees/'
+export const OCTOKIT_ROUTE_BLOB = 'GET /repos/{owner}/{repo}/git/blobs/'
+export const OCTOKIT_BASIC_HEADER = {'X-GitHub-Api-Version': '2022-11-28'}
+
 
 export type LatestReleaseResponse =
   otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']
 
 export type MatchingRefsResponse =
   otypes.Endpoints['GET /repos/{owner}/{repo}/git/matching-refs/{ref}']['response']
-
-export type LatestReleaseResponse =
-    otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']
-
 
 function determineJDKArchitecture(): string {
   switch (process.arch) {

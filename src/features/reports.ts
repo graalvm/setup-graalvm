@@ -92,7 +92,6 @@ interface BuildOutput {
 export async function setUpNativeImageBuildReports(
     isGraalVMforJDK17OrLater: boolean,
     graalVMVersion: string,
-    reportToken: string
 ): Promise<void> {
   const isRequired = areJobReportsEnabled() || arePRReportsEnabled()
   if (!isRequired) {
@@ -136,13 +135,13 @@ export async function generateReports(): Promise<void> {
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
       core.summary.addRaw(report)
-      core.summary.write()
+      await core.summary.write()
     }
     if (arePRReportsEnabled()) {
-      createPRComment(report)
+      await createPRComment(report)
     }
     const prBaseReport = createPRComparison(buildOutput, prMetrics)
-    createPRComment(prBaseReport)
+    await createPRComment(prBaseReport)
   }
 }
 

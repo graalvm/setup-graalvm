@@ -150,7 +150,7 @@ async function run(): Promise<void> {
     if (cache && isCacheAvailable()) {
       await restore(cache)
     }
-    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion, reportToken)
+    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

@@ -3,13 +3,12 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as httpClient from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
-import {ExecOptions, exec as e} from '@actions/exec'
-import {readFileSync, readdirSync} from 'fs'
-//import {Octokit} from '@octokit/core'
+import {exec as e, ExecOptions} from '@actions/exec'
+import {readdirSync, readFileSync} from 'fs'
 import {createHash} from 'crypto'
 import {join} from 'path'
 import {Base64} from "js-base64";
-import { Octokit } from '@octokit/rest';
+import {Octokit} from '@octokit/rest';
 import fetch from "node-fetch";
 import {Context} from "@actions/github/lib/context";
 
@@ -189,19 +188,17 @@ export async function createPRComment(content: string): Promise<void> {
 export async function createRef(sha: string) {
     try {
         const commitSha = getCommitSha()
-        const ref = c.METRIC_REF_PATH + commitSha
-        core.info(`creating ref ${ref} for metrics tree ${sha}`);
+        const ref = c.METRIC_PATH + commitSha
+        core.info(`creating reference with ref '${ref}' for metrics tree ${sha}`);
         const octokit = new Octokit({
             auth: getGitHubToken(),
             request: {
                 fetch: fetch,
             },
         });
-        const context = github.context
-        await octokit.request(
-            `POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`,
+        await octokit.request(c.OCTOKIT_ROUTE_CREATE_REF,
             {
-                ...context.repo,
+                ...github.context.repo,
                 ref,
                 sha,
             }
@@ -224,8 +221,7 @@ export async function createTree(metadataJson: string): Promise<string> {
     });
     const context = github.context
     core.info(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
-    const response = await octokit.request(
-        `POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`,
+    const response = await octokit.request(c.OCTOKIT_ROUTE_CREATE_TREE,
         {
             ...context.repo,
             tree: [
@@ -239,12 +235,12 @@ export async function createTree(metadataJson: string): Promise<string> {
         }
     );
 
-    core.info("Tree-sha" + response.data.sha);
     return response.data.sha;
     } catch (err) {
         core.error(
             `Creating metrics tree failed.`
         )
+        return ''
     }
 }
 
@@ -252,69 +248,56 @@ export async function getPrBaseBranchMetrics(): Promise<string> {
     if (!isPREvent()) {
         throw new Error('Not a PR event.')
     }
-    const context = github.context
-    const octokit = new Octokit({
-        auth: getGitHubToken(),
-        request: {
-            fetch: fetch,
-        },
-    })
-    const baseCommitSha = await getBaseBranchCommitSha(octokit, context)
-    core.info(baseCommitSha)
-    const blobTreeSha = await getBlobTreeSha(octokit, context, baseCommitSha)
-    core.info(blobTreeSha)
-    const blobSha = await getBlobSha(octokit, context, blobTreeSha)
-    core.info(blobSha)
-    const blobContent = await getBlobContent(octokit, context, blobSha)
-    core.info(blobContent)
-    return blobContent
+    try {
+        const context = github.context
+        const octokit = new Octokit({
+            auth: getGitHubToken(),
+            request: {
+                fetch: fetch,
+            },
+        })
+        const baseCommitSha = await getBaseBranchCommitSha(octokit, context)
+        const blobTreeSha = await getBlobTreeSha(octokit, context, baseCommitSha)
+        const blobSha = await getBlobSha(octokit, context, blobTreeSha)
+        return await getBlobContent(octokit, context, blobSha)
+    } catch (err) {
+        core.error('Failed to get build metrics for PR base branch.')
+        return ''
+    }
 }
 
 async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promise<string> {
-    const prBaseSha = getPrBaseBranchSha()
-    core.info(prBaseSha)
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/ref/heads/${prBaseSha}`, {
+    const prBaseBranchName = getPrBaseBranchSha()
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_REF + c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName, {
         ...context.repo,
-        ref: 'heads/' + prBaseSha,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
+        ref: c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName,
+        headers: c.OCTOKIT_BASIC_HEADER
     })
-    core.info(data)
     return data.object.sha
 }
 
 async function getBlobTreeSha(octokit: Octokit, context: Context, baseCommitSha: string): Promise<string> {
-    const { data } = await octokit.request(, {
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_REF_METRICS + baseCommitSha, {
         ...context.repo,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
+        headers: c.OCTOKIT_BASIC_HEADER
     })
-    core.info(data)
     return data.object.sha
 }
 
 async function getBlobSha(octokit: Octokit, context: Context, blobTreeSha: string) {
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/trees/${blobTreeSha}`,    {
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_TREE + blobTreeSha,    {
         ...context.repo,
         tree_sha: blobTreeSha,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
+        headers: c.OCTOKIT_BASIC_HEADER
     })
-    core.info(data)
     return data.tree[0].sha
 }
 
 async function getBlobContent(octokit: Octokit, context: Context, blobSha: string) {
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/blobs/${blobSha}`, {
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_BLOB + blobSha, {
         ...context.repo,
         file_sha: blobSha,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
+        headers: c.OCTOKIT_BASIC_HEADER
     })
-    core.info(data)
     return Base64.decode(data.content)
 }
