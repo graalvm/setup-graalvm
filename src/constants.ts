@@ -1,4 +1,5 @@
 import * as otypes from '@octokit/types'
+import {context} from "@actions/github";
 
 export const INPUT_VERSION = 'version'
 export const INPUT_GDS_TOKEN = 'gds-token'
@@ -10,7 +11,6 @@ export const INPUT_SET_JAVA_HOME = 'set-java-home'
 export const INPUT_CACHE = 'cache'
 export const INPUT_CHECK_FOR_UPDATES = 'check-for-updates'
 export const INPUT_NI_MUSL = 'native-image-musl'
-export const INPUT_REPORT_TOKEN = 'report-token'
 
 export const IS_LINUX = process.platform === 'linux'
 export const IS_MACOS = process.platform === 'darwin'
@@ -44,11 +44,19 @@ export const EVENT_NAME_PULL_REQUEST = 'pull_request'
 export const ERROR_HINT =
   'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
 
+export const METRIC_REF_PATH = 'refs/graalvm-metrics'
+
+export const OCTOKIT_ROUTE_REF_METRICS = `GET /repos/${context.repo.owner}/${context.repo.repo}/git/ref/metrics/${baseCommitSha}`
+
 export type LatestReleaseResponse =
   otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']
 
 export type MatchingRefsResponse =
   otypes.Endpoints['GET /repos/{owner}/{repo}/git/matching-refs/{ref}']['response']
+
+export type LatestReleaseResponse =
+    otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']
+
 
 function determineJDKArchitecture(): string {
   switch (process.arch) {

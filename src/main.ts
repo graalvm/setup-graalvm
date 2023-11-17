@@ -19,7 +19,6 @@ async function run(): Promise<void> {
     const distribution = core.getInput(c.INPUT_DISTRIBUTION)
     const graalVMVersion = core.getInput(c.INPUT_VERSION)
     const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
-    const reportToken = core.getInput(c.INPUT_REPORT_TOKEN)
     const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
     const components: string[] =
       componentsString.length > 0

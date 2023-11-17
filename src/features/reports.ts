@@ -6,9 +6,6 @@ import {join} from 'path'
 import {tmpdir} from 'os'
 import {createPRComment, createRef, createTree, getPrBaseBranchMetrics, isPREvent, toSemVer} from '../utils'
 import {gte} from 'semver'
-import {Base64} from 'js-base64';
-import { Octokit } from '@octokit/rest';
-import fetch from "node-fetch";
 
 const BUILD_OUTPUT_JSON_PATH = join(tmpdir(), 'native-image-build-output.json')
 const BYTES_TO_KiB = 1024
@@ -23,9 +20,6 @@ const NATIVE_IMAGE_CONFIG_FILE = join(
     'native-image-options.properties'
 )
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
-//const { Octokit } = require("@octokit/rest");
-
-let REPORT_TOKEN = '';
 
 interface AnalysisResult {
   total: number
@@ -119,7 +113,6 @@ export async function setUpNativeImageBuildReports(
   setNativeImageOption(
       `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`
   )// Escape backslashes for Windows
-  REPORT_TOKEN = reportToken
 }
 
 export async function generateReports(): Promise<void> {
@@ -139,7 +132,6 @@ export async function generateReports(): Promise<void> {
     const prMetrics: BuildOutput = JSON.parse(
         await getPrBaseBranchMetrics()
     )
-    const prBaseReport = createReport(prMetrics)
 
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
@@ -148,9 +140,9 @@ export async function generateReports(): Promise<void> {
     }
     if (arePRReportsEnabled()) {
       createPRComment(report)
-      const prBaseReport = createPRComparison(buildOutput, prMetrics)
-      createPRComment(prBaseReport)
     }
+    const prBaseReport = createPRComparison(buildOutput, prMetrics)
+    createPRComment(prBaseReport)
   }
 }
 
@@ -314,7 +306,7 @@ function createReport(data: BuildOutput): string {
     )} of total time)`
   }
 
-  return `## GraalVM Native Image Build Report example
+  return `## GraalVM Native Image Build Report
 
 \`${info.name}\` generated${totalTime} as part of the '${
       context.job

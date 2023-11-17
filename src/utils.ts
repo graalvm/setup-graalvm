@@ -161,13 +161,10 @@ function getGitHubToken(): string {
 }
 
 function getCommitSha(): string {
-    return process.env.GITHUB_SHA || "default_tag"
+    return process.env.GITHUB_SHA || "default_sha"
 }
 
 function getPrBaseBranchSha(): string {
-    if (!isPREvent()) {
-        return ""
-    }
     return  process.env.GITHUB_BASE_REF || "default_branch"
 }
 
@@ -190,30 +187,35 @@ export async function createPRComment(content: string): Promise<void> {
 }
 
 export async function createRef(sha: string) {
-    const commitSha = getCommitSha()
-    const ref = `refs/metrics/${commitSha}`
-    console.log(`creating ref ${ref} for metrics tree ${sha}`);
-    const octokit = new Octokit({
-        auth: getGitHubToken(),
-        request: {
-            fetch: fetch,
-        },
-    });
-    const context = github.context
-
-    const response = await octokit.request(
-        `POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`,
-        {
-            ...context.repo,
-            ref,
-            sha,
-        }
-    );
-
-    core.info(response.data);
+    try {
+        const commitSha = getCommitSha()
+        const ref = c.METRIC_REF_PATH + commitSha
+        core.info(`creating ref ${ref} for metrics tree ${sha}`);
+        const octokit = new Octokit({
+            auth: getGitHubToken(),
+            request: {
+                fetch: fetch,
+            },
+        });
+        const context = github.context
+        await octokit.request(
+            `POST /repos/${context.repo.owner}/${context.repo.repo}/git/refs`,
+            {
+                ...context.repo,
+                ref,
+                sha,
+            }
+        );
+    } catch(err) {
+        core.error(
+            `Failed to create ref. Please make sure that the referred sha '${sha}' exist.`
+        )
+    }
 }
 
 export async function createTree(metadataJson: string): Promise<string> {
+    try {
+
     const octokit = new Octokit({
         auth: getGitHubToken(),
         request: {
@@ -221,9 +223,7 @@ export async function createTree(metadataJson: string): Promise<string> {
         },
     });
     const context = github.context
-
     core.info(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
-
     const response = await octokit.request(
         `POST /repos/${context.repo.owner}/${context.repo.repo}/git/trees`,
         {
@@ -241,6 +241,11 @@ export async function createTree(metadataJson: string): Promise<string> {
 
     core.info("Tree-sha" + response.data.sha);
     return response.data.sha;
+    } catch (err) {
+        core.error(
+            `Creating metrics tree failed.`
+        )
+    }
 }
 
 export async function getPrBaseBranchMetrics(): Promise<string> {
@@ -280,7 +285,7 @@ async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promi
 }
 
 async function getBlobTreeSha(octokit: Octokit, context: Context, baseCommitSha: string): Promise<string> {
-    const { data } = await octokit.request(`GET /repos/${context.repo.owner}/${context.repo.repo}/git/ref/metrics/${baseCommitSha}`, {
+    const { data } = await octokit.request(, {
         ...context.repo,
         headers: {
             'X-GitHub-Api-Version': '2022-11-28'
