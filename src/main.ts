@@ -58,13 +58,7 @@ async function run(): Promise<void> {
           graalVMHome = await graalvm.setUpGraalVMJDKCE(javaVersion)
           break
         case c.DISTRIBUTION_MANDREL:
-          if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
-            graalVMHome = await setUpMandrel(graalVMVersion, javaVersion)
-          } else {
-            throw new Error(
-              `Mandrel requires the 'version' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
-            )
-          }
+          graalVMHome = await setUpMandrel(graalVMVersion, javaVersion)
           break
         case '':
           if (javaVersion === c.VERSION_DEV) {
