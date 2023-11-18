@@ -74444,6 +74444,7 @@ function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion) 
             core.warning(`Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`);
             return;
         }
+        core.info(`DEBUGGING: -H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`);
         setNativeImageOption(`-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`); // Escape backslashes for Windows
     });
 }
@@ -74455,6 +74456,7 @@ function generateReports() {
                 core.warning('Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?');
                 return;
             }
+            core.info(`DEBUGGING: ${BUILD_OUTPUT_JSON_PATH}`);
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
             const treeSha = yield (0, utils_1.createTree)(JSON.stringify(buildOutput));
             yield (0, utils_1.createRef)(treeSha);

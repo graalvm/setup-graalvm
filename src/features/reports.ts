@@ -109,6 +109,7 @@ export async function setUpNativeImageBuildReports(
     )
     return
   }
+  core.info(`DEBUGGING: -H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`)
   setNativeImageOption(
       `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`
   )// Escape backslashes for Windows
@@ -122,6 +123,7 @@ export async function generateReports(): Promise<void> {
       )
       return
     }
+    core.info(`DEBUGGING: ${BUILD_OUTPUT_JSON_PATH}`)
     const buildOutput: BuildOutput = JSON.parse(
         fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )
