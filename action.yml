@@ -43,6 +43,10 @@ inputs:
     required: false
     description: 'Post a comment containing a Native Image build report on pull requests.'
     default: 'false'
+  native-image-pr-comparison:
+    required: false
+    description: 'Post a comment containing a comparison between the Native Image of the pr-branch and the pr-base-branch on pull.'
+    default: 'false'
   version:
     required: false
     description: 'GraalVM version (release, latest, dev).'
