@@ -211,16 +211,16 @@ gantt
     axisFormat %s
 
     section Code area
-    ${recentBranch} (${bytesToHuman(detailsRecent.code_area.bytes)}): active, 0, ${detailsRecent.code_area.bytes}
-    ${baseBranch} (${bytesToHuman(detailsBase.code_area.bytes)}): 0, ${detailsBase.code_area.bytes}
+    ${recentBranch} (${bytesToHuman(detailsRecent.code_area.bytes)}): active, 0, ${(detailsRecent.code_area.bytes/10000000)}
+    ${baseBranch} (${bytesToHuman(detailsBase.code_area.bytes)}): 0, ${(detailsBase.code_area.bytes/1000000)}
     
     section Image heap
-    ${recentBranch} (${bytesToHuman(detailsRecent.image_heap.bytes)}): active, 0, ${detailsRecent.image_heap.bytes}
-    ${baseBranch} (${bytesToHuman(detailsBase.image_heap.bytes)}): 0, ${detailsBase.image_heap.bytes}
+    ${recentBranch} (${bytesToHuman(detailsRecent.image_heap.bytes)}): active, 0, ${(detailsRecent.image_heap.bytes/1000000)}
+    ${baseBranch} (${bytesToHuman(detailsBase.image_heap.bytes)}): 0, ${(detailsBase.image_heap.bytes/1000000)}
     
     section Other data
-    ${recentBranch} (${bytesToHuman(otherBytesRecent)}): active, 0, ${otherBytesRecent}
-    ${baseBranch} (${bytesToHuman(otherBytesBase)}): 0, ${otherBytesBase}
+    ${recentBranch} (${bytesToHuman(otherBytesRecent)}): active, 0, ${(otherBytesRecent/1000000)}
+    ${baseBranch} (${bytesToHuman(otherBytesBase)}): 0, ${(otherBytesBase/1000000)}
 
     section Total
     ${recentBranch} (${bytesToHuman(detailsRecent.total_bytes)})   : active, 0, ${detailsRecent.total_bytes / 1000000}
