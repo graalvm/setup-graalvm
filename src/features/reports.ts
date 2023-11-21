@@ -117,13 +117,13 @@ export async function setUpNativeImageBuildReports(
 
 export async function generateReports(): Promise<void> {
   if (areJobReportsEnabled() || arePRReportsEnabled()) {
+    core.info(`DEBUGGING: ${BUILD_OUTPUT_JSON_PATH}`)
     if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
       core.warning(
           'Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?'
       )
       return
     }
-    core.info(`DEBUGGING: ${BUILD_OUTPUT_JSON_PATH}`)
     const buildOutput: BuildOutput = JSON.parse(
         fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
     )

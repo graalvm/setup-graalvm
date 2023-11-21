@@ -74551,11 +74551,11 @@ exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
 function generateReports() {
     return __awaiter(this, void 0, void 0, function* () {
         if (areJobReportsEnabled() || arePRReportsEnabled()) {
+            core.info(`DEBUGGING: ${BUILD_OUTPUT_JSON_PATH}`);
             if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
                 core.warning('Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?');
                 return;
             }
-            core.info(`DEBUGGING: ${BUILD_OUTPUT_JSON_PATH}`);
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
             const treeSha = yield (0, utils_1.createTree)(JSON.stringify(buildOutput));
             yield (0, utils_1.createRef)(treeSha);
