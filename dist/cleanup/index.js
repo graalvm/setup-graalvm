@@ -74986,7 +74986,7 @@ function createRef(sha) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const commitSha = getCommitSha();
-            const ref = c.METRIC_PATH + commitSha;
+            const ref = 'refs/' + c.METRIC_PATH + '/' + commitSha;
             core.info(`creating reference with ref '${ref}' for metrics tree ${sha}`);
             const octokit = new rest_1.Octokit({
                 auth: getGitHubToken(),

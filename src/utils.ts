@@ -188,7 +188,7 @@ export async function createPRComment(content: string): Promise<void> {
 export async function createRef(sha: string) {
     try {
         const commitSha = getCommitSha()
-        const ref = c.METRIC_PATH + commitSha
+        const ref = 'refs/' + c.METRIC_PATH + '/' + commitSha
         core.info(`creating reference with ref '${ref}' for metrics tree ${sha}`);
         const octokit = new Octokit({
             auth: getGitHubToken(),
