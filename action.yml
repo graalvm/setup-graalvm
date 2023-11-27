@@ -43,6 +43,14 @@ inputs:
     required: false
     description: 'Post a comment containing a Native Image build report on pull requests.'
     default: 'false'
+  native-image-metric-history:
+    required: false
+    description: 'Post a diagramm showing the image details history for last builds.'
+    default: 'false'
+  build-counts-for-metric-history:
+    required: false
+    description: 'Set how many builds are considered for metric history.'
+    default: '10'
   native-image-pr-comparison:
     required: false
     description: 'Post a comment containing a comparison between the Native Image of the pr-branch and the pr-base-branch on pull.'

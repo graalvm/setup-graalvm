@@ -14,6 +14,7 @@ import {Context} from "@actions/github/lib/context";
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
+const { DateTime } = require('luxon');
 const GitHubDotCom = Octokit.defaults({
   baseUrl,
   request: {
@@ -212,30 +213,29 @@ export async function createRef(sha: string) {
 
 export async function createTree(metadataJson: string): Promise<string> {
     try {
+        const octokit = new Octokit({
+            auth: getGitHubToken(),
+            request: {
+                fetch: fetch,
+            },
+        });
+        const context = github.context
+        core.info(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
+        const response = await octokit.request(c.OCTOKIT_ROUTE_CREATE_TREE,
+            {
+                ...context.repo,
+                tree: [
+                    {
+                        path: "metadataJson",
+                        mode: "100644",
+                        type: "blob",
+                        content: metadataJson,
+                    },
+                ],
+            }
+        );
 
-    const octokit = new Octokit({
-        auth: getGitHubToken(),
-        request: {
-            fetch: fetch,
-        },
-    });
-    const context = github.context
-    core.info(`creating tree at ${context.repo.owner}/${context.repo.repo}`);
-    const response = await octokit.request(c.OCTOKIT_ROUTE_CREATE_TREE,
-        {
-            ...context.repo,
-            tree: [
-                {
-                    path: "metadataJson",
-                    mode: "100644",
-                    type: "blob",
-                    content: metadataJson,
-                },
-            ],
-        }
-    );
-
-    return response.data.sha;
+        return response.data.sha;
     } catch (err) {
         core.error(
             `Creating metrics tree failed.`
@@ -268,7 +268,7 @@ export async function getPrBaseBranchMetrics(): Promise<string> {
 
 async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promise<string> {
     const prBaseBranchName = getPrBaseBranchSha()
-    const { data } = await octokit.request(c.OCTOKIT_ROUTE_REF + c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName, {
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_GET_REF + c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName, {
         ...context.repo,
         ref: c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName,
         headers: c.OCTOKIT_BASIC_HEADER
@@ -277,7 +277,7 @@ async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promi
 }
 
 async function getBlobTreeSha(octokit: Octokit, context: Context, baseCommitSha: string): Promise<string> {
-    const { data } = await octokit.request(c.OCTOKIT_ROUTE_REF_METRICS + baseCommitSha, {
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_GET_REF_METRICS + baseCommitSha, {
         ...context.repo,
         headers: c.OCTOKIT_BASIC_HEADER
     })
@@ -285,7 +285,7 @@ async function getBlobTreeSha(octokit: Octokit, context: Context, baseCommitSha:
 }
 
 async function getBlobSha(octokit: Octokit, context: Context, blobTreeSha: string) {
-    const { data } = await octokit.request(c.OCTOKIT_ROUTE_TREE + blobTreeSha,    {
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_GET_TREE + blobTreeSha,    {
         ...context.repo,
         tree_sha: blobTreeSha,
         headers: c.OCTOKIT_BASIC_HEADER
@@ -294,10 +294,126 @@ async function getBlobSha(octokit: Octokit, context: Context, blobTreeSha: strin
 }
 
 async function getBlobContent(octokit: Octokit, context: Context, blobSha: string) {
-    const { data } = await octokit.request(c.OCTOKIT_ROUTE_BLOB + blobSha, {
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_GET_BLOB + blobSha, {
         ...context.repo,
         file_sha: blobSha,
         headers: c.OCTOKIT_BASIC_HEADER
     })
     return Base64.decode(data.content)
+}
+
+export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
+    try {
+        const octokit = new Octokit({
+            auth: getGitHubToken(),
+            request: {
+                fetch: fetch,
+            },
+        });
+        const context = github.context
+        const eventResponse = await octokit.request(c.OCTOKIT_ROUTE_GET_EVENTS, {
+            ...context.repo,
+            headers: c.OCTOKIT_BASIC_HEADER
+        })
+        let linkHeader = eventResponse.headers.link
+        const eventData: any = eventResponse.data
+        const pushEvents = []
+
+  /*      for (const gitEvent in eventData ) {
+            if (numberOfBuilds <= 0) {
+                break
+            }
+            if (gitEvent["type"] === 'pushEvent' && gitEvent["payload"].ref === process.env.GITHUB_REF) {
+                pushEvents.push(gitEvent)
+                numberOfBuilds = numberOfBuilds - 1
+            }
+            const linkHeader = eventResponse.headers.link
+            const regex = /<([^>]+)>;\s*rel/;
+            const nextPageMatch = linkHeader?.search(/<([^>]+)>;\s*rel="next"/)
+
+        }*/
+        for (let event of eventData) {
+            if (numberOfBuilds <= 0) {
+                break;
+            }
+            if (
+                event.type === "PushEvent" &&
+                event.payload!.ref! === process.env.GITHUB_REF
+            ) {
+                pushEvents.push(event);
+                numberOfBuilds--;
+            }
+        }
+
+        let nextPageMatch = /<([^>]+)>;\s*rel="next"/;
+        while (
+            linkHeader &&
+            linkHeader.includes('rel="next"') &&
+            numberOfBuilds > 0
+            ) {
+            let nextPageUrl = nextPageMatch?.exec(linkHeader)![1];
+
+            // Make the request for the next page
+            // Assuming you use fetch API or similar for making HTTP requests
+            fetch(nextPageUrl, {
+                headers: {
+                    Authorization: "Bearer " + getGitHubToken(),
+                },
+            })
+                .then((response) => response.json())
+                .then((nextPageResponse) => {
+                    for (let event of nextPageResponse) {
+                        if (numberOfBuilds <= 0) {
+                            break;
+                        }
+                        if (
+                            event.type === "PushEvent" &&
+                            event.payload.ref === process.env.GITHUB_REF
+                        ) {
+                            pushEvents.push(event);
+                            numberOfBuilds--;
+                        }
+                    }
+
+                    // Update the link_header for the next iteration
+                    linkHeader = eventResponse.headers.link;
+                })
+                .catch((error) => {
+                    console.error("Error fetching next page:", error);
+                });
+        }
+        return pushEvents
+    } catch (err) {
+        return []
+        console.info("An error occurred during getting metrics data.")
+    }
+}
+
+export function formatTimestamps(timestamps: string[]) {
+    const formattedTimestamps = []
+    for (const date in timestamps) {
+        let commitTime = DateTime.fromISO(date);
+        let commitTimeUtc = commitTime.setZone('UTC');
+        let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
+        let formatter = 'dd.MM.\'HH:mm';
+        formattedTimestamps.push(commitTimeLocal.toFormat(formatter));
+    }
+    return(formattedTimestamps)
+}
+
+export async function getImageData(shas: string[]) {
+    const context = github.context
+    const octokit = new Octokit({
+        auth: getGitHubToken(),
+        request: {
+            fetch: fetch,
+        },
+    });
+    const imageData = []
+    for (const sha in shas) {
+        const blobTreeSha = await getBlobTreeSha(octokit, context, sha)
+        const blobSha = await getBlobSha(octokit, context, blobTreeSha)
+        imageData.push(await getBlobContent(octokit, context, blobSha))
+    }
+    return imageData
 }

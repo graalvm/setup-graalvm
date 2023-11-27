@@ -1,5 +1,6 @@
 import * as otypes from '@octokit/types'
 import {context} from "@actions/github";
+import exp from "constants";
 
 export const INPUT_VERSION = 'version'
 export const INPUT_GDS_TOKEN = 'gds-token'
@@ -49,10 +50,11 @@ export const OCTOKIT_REF_BRANCHE_PREFIX = 'heads'
 
 export const OCTOKIT_ROUTE_CREATE_REF = 'POST /repos/{owner}/{repo}/git/refs'
 export const OCTOKIT_ROUTE_CREATE_TREE = 'POST /repos/{owner}/{repo}/git/trees'
-export const OCTOKIT_ROUTE_REF = 'GET /repos/{owner}/{repo}/git/ref/'
-export const OCTOKIT_ROUTE_REF_METRICS = `GET /repos/{owner}/{repo}/git/ref/${METRIC_PATH}/`
-export const OCTOKIT_ROUTE_TREE = 'GET /repos/{owner}/{repo}/git/trees/'
-export const OCTOKIT_ROUTE_BLOB = 'GET /repos/{owner}/{repo}/git/blobs/'
+export const OCTOKIT_ROUTE_GET_REF = 'GET /repos/{owner}/{repo}/git/ref/'
+export const OCTOKIT_ROUTE_GET_REF_METRICS = `GET /repos/{owner}/{repo}/git/ref/${METRIC_PATH}/`
+export const OCTOKIT_ROUTE_GET_TREE = 'GET /repos/{owner}/{repo}/git/trees/'
+export const OCTOKIT_ROUTE_GET_BLOB = 'GET /repos/{owner}/{repo}/git/blobs/'
+export const OCTOKIT_ROUTE_GET_EVENTS = 'GET /networks/{owner}/{repo}/events'
 export const OCTOKIT_BASIC_HEADER = {'X-GitHub-Api-Version': '2022-11-28'}
 
 

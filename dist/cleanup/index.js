@@ -74057,7 +74057,7 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.OCTOKIT_BASIC_HEADER = exports.OCTOKIT_ROUTE_BLOB = exports.OCTOKIT_ROUTE_TREE = exports.OCTOKIT_ROUTE_REF_METRICS = exports.OCTOKIT_ROUTE_REF = exports.OCTOKIT_ROUTE_CREATE_TREE = exports.OCTOKIT_ROUTE_CREATE_REF = exports.OCTOKIT_REF_BRANCHE_PREFIX = exports.METRIC_PATH = exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.OCTOKIT_BASIC_HEADER = exports.OCTOKIT_ROUTE_GET_EVENTS = exports.OCTOKIT_ROUTE_GET_BLOB = exports.OCTOKIT_ROUTE_GET_TREE = exports.OCTOKIT_ROUTE_GET_REF_METRICS = exports.OCTOKIT_ROUTE_GET_REF = exports.OCTOKIT_ROUTE_CREATE_TREE = exports.OCTOKIT_ROUTE_CREATE_REF = exports.OCTOKIT_REF_BRANCHE_PREFIX = exports.METRIC_PATH = exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -74094,10 +74094,11 @@ exports.METRIC_PATH = 'graalvm-metrics';
 exports.OCTOKIT_REF_BRANCHE_PREFIX = 'heads';
 exports.OCTOKIT_ROUTE_CREATE_REF = 'POST /repos/{owner}/{repo}/git/refs';
 exports.OCTOKIT_ROUTE_CREATE_TREE = 'POST /repos/{owner}/{repo}/git/trees';
-exports.OCTOKIT_ROUTE_REF = 'GET /repos/{owner}/{repo}/git/ref/';
-exports.OCTOKIT_ROUTE_REF_METRICS = `GET /repos/{owner}/{repo}/git/ref/${exports.METRIC_PATH}/`;
-exports.OCTOKIT_ROUTE_TREE = 'GET /repos/{owner}/{repo}/git/trees/';
-exports.OCTOKIT_ROUTE_BLOB = 'GET /repos/{owner}/{repo}/git/blobs/';
+exports.OCTOKIT_ROUTE_GET_REF = 'GET /repos/{owner}/{repo}/git/ref/';
+exports.OCTOKIT_ROUTE_GET_REF_METRICS = `GET /repos/{owner}/{repo}/git/ref/${exports.METRIC_PATH}/`;
+exports.OCTOKIT_ROUTE_GET_TREE = 'GET /repos/{owner}/{repo}/git/trees/';
+exports.OCTOKIT_ROUTE_GET_BLOB = 'GET /repos/{owner}/{repo}/git/blobs/';
+exports.OCTOKIT_ROUTE_GET_EVENTS = 'GET /networks/{owner}/{repo}/events';
 exports.OCTOKIT_BASIC_HEADER = { 'X-GitHub-Api-Version': '2022-11-28' };
 function determineJDKArchitecture() {
     switch (process.arch) {
@@ -74427,6 +74428,8 @@ const BYTES_TO_GiB = 1024 * 1024 * 1024;
 const DOCS_BASE = 'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md';
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
+const INPUT_NI_JOB_METRIC_HISTORY = 'native-image-metric-history';
+const INPUT_NI_HISTORY_BUILD_COUNT = 'build-counts-for-metric-history';
 const INPUT_NI_PR_COMPARISON = 'native-image-pr-comparison';
 const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
@@ -74469,10 +74472,25 @@ function generateReports() {
             }
             const treeSha = yield (0, utils_1.createTree)(JSON.stringify(buildOutput));
             yield (0, utils_1.createRef)(treeSha);
+            if (areMetricHistoriesEnabled()) {
+                const pushEvents = yield (0, utils_1.getPushEvents)(getBuildCountsForMetricHistory());
+                // Prepare data
+                const timestamps = [];
+                const shas = [];
+                for (const pushEvent in pushEvents) {
+                    timestamps.push(JSON.parse(pushEvent).created_at);
+                    shas.push(JSON.parse(pushEvent).payload.commits[0].sha);
+                }
+                // Extract data for plotting
+                const commitDates = (0, utils_1.formatTimestamps)(timestamps);
+                const imageData = (0, utils_1.getImageData)(shas);
+                core.info(String(commitDates));
+                core.info(String(shas));
+                core.info(String(imageData));
+            }
             if (arePRBaseComparisonEnabled()) {
                 const prMetrics = JSON.parse(yield (0, utils_1.getPrBaseBranchMetrics)());
                 yield (0, utils_1.createPRComment)(createPRComparison(buildOutput, prMetrics));
-                core.info(createPRComparison(buildOutput, prMetrics));
             }
         }
     });
@@ -74484,8 +74502,14 @@ function areJobReportsEnabled() {
 function arePRReportsEnabled() {
     return (0, utils_1.isPREvent)() && core.getInput(INPUT_NI_PR_REPORTS) === 'true';
 }
+function areMetricHistoriesEnabled() {
+    return core.getInput(INPUT_NI_JOB_METRIC_HISTORY) === 'true';
+}
 function arePRBaseComparisonEnabled() {
     return (0, utils_1.isPREvent)() && core.getInput(INPUT_NI_PR_COMPARISON) === 'true';
+}
+function getBuildCountsForMetricHistory() {
+    return Number(core.getInput(INPUT_NI_HISTORY_BUILD_COUNT));
 }
 function getNativeImageOptionsFile() {
     let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV];
@@ -74528,7 +74552,7 @@ gantt
     title Native Image Size Details 
     todayMarker off
     dateFormat  X
-    axisFormat %s
+    axisFormat %
 
     section Code area
     ${recentBranch} (${bytesToHuman(detailsRecent.code_area.bytes)}): active, 0, ${detailsRecent.code_area.bytes}
@@ -74819,7 +74843,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getPrBaseBranchMetrics = exports.createTree = exports.createRef = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
+exports.getImageData = exports.formatTimestamps = exports.getPushEvents = exports.getPrBaseBranchMetrics = exports.createTree = exports.createRef = exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(2764));
 const core = __importStar(__nccwpck_require__(2258));
 const github = __importStar(__nccwpck_require__(7168));
@@ -74834,6 +74858,7 @@ const rest_1 = __nccwpck_require__(6175);
 const node_fetch_1 = __importDefault(__nccwpck_require__(831));
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com';
+const { DateTime } = __nccwpck_require__(1278);
 const GitHubDotCom = rest_1.Octokit.defaults({
     baseUrl,
     request: {
@@ -75058,28 +75083,136 @@ exports.getPrBaseBranchMetrics = getPrBaseBranchMetrics;
 function getBaseBranchCommitSha(octokit, context) {
     return __awaiter(this, void 0, void 0, function* () {
         const prBaseBranchName = getPrBaseBranchSha();
-        const { data } = yield octokit.request(c.OCTOKIT_ROUTE_REF + c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName, Object.assign(Object.assign({}, context.repo), { ref: c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName, headers: c.OCTOKIT_BASIC_HEADER }));
+        const { data } = yield octokit.request(c.OCTOKIT_ROUTE_GET_REF + c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName, Object.assign(Object.assign({}, context.repo), { ref: c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName, headers: c.OCTOKIT_BASIC_HEADER }));
         return data.object.sha;
     });
 }
 function getBlobTreeSha(octokit, context, baseCommitSha) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield octokit.request(c.OCTOKIT_ROUTE_REF_METRICS + baseCommitSha, Object.assign(Object.assign({}, context.repo), { headers: c.OCTOKIT_BASIC_HEADER }));
+        const { data } = yield octokit.request(c.OCTOKIT_ROUTE_GET_REF_METRICS + baseCommitSha, Object.assign(Object.assign({}, context.repo), { headers: c.OCTOKIT_BASIC_HEADER }));
         return data.object.sha;
     });
 }
 function getBlobSha(octokit, context, blobTreeSha) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield octokit.request(c.OCTOKIT_ROUTE_TREE + blobTreeSha, Object.assign(Object.assign({}, context.repo), { tree_sha: blobTreeSha, headers: c.OCTOKIT_BASIC_HEADER }));
+        const { data } = yield octokit.request(c.OCTOKIT_ROUTE_GET_TREE + blobTreeSha, Object.assign(Object.assign({}, context.repo), { tree_sha: blobTreeSha, headers: c.OCTOKIT_BASIC_HEADER }));
         return data.tree[0].sha;
     });
 }
 function getBlobContent(octokit, context, blobSha) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield octokit.request(c.OCTOKIT_ROUTE_BLOB + blobSha, Object.assign(Object.assign({}, context.repo), { file_sha: blobSha, headers: c.OCTOKIT_BASIC_HEADER }));
+        const { data } = yield octokit.request(c.OCTOKIT_ROUTE_GET_BLOB + blobSha, Object.assign(Object.assign({}, context.repo), { file_sha: blobSha, headers: c.OCTOKIT_BASIC_HEADER }));
         return js_base64_1.Base64.decode(data.content);
     });
 }
+function getPushEvents(numberOfBuilds) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const octokit = new rest_1.Octokit({
+                auth: getGitHubToken(),
+                request: {
+                    fetch: node_fetch_1.default,
+                },
+            });
+            const context = github.context;
+            const eventResponse = yield octokit.request(c.OCTOKIT_ROUTE_GET_EVENTS, Object.assign(Object.assign({}, context.repo), { headers: c.OCTOKIT_BASIC_HEADER }));
+            let linkHeader = eventResponse.headers.link;
+            const eventData = eventResponse.data;
+            const pushEvents = [];
+            /*      for (const gitEvent in eventData ) {
+                      if (numberOfBuilds <= 0) {
+                          break
+                      }
+                      if (gitEvent["type"] === 'pushEvent' && gitEvent["payload"].ref === process.env.GITHUB_REF) {
+                          pushEvents.push(gitEvent)
+                          numberOfBuilds = numberOfBuilds - 1
+                      }
+                      const linkHeader = eventResponse.headers.link
+                      const regex = /<([^>]+)>;\s*rel/;
+                      const nextPageMatch = linkHeader?.search(/<([^>]+)>;\s*rel="next"/)
+          
+                  }*/
+            for (let event of eventData) {
+                if (numberOfBuilds <= 0) {
+                    break;
+                }
+                if (event.type === "PushEvent" &&
+                    event.payload.ref === process.env.GITHUB_REF) {
+                    pushEvents.push(event);
+                    numberOfBuilds--;
+                }
+            }
+            let nextPageMatch = /<([^>]+)>;\s*rel="next"/;
+            while (linkHeader &&
+                linkHeader.includes('rel="next"') &&
+                numberOfBuilds > 0) {
+                let nextPageUrl = nextPageMatch === null || nextPageMatch === void 0 ? void 0 : nextPageMatch.exec(linkHeader)[1];
+                // Make the request for the next page
+                // Assuming you use fetch API or similar for making HTTP requests
+                (0, node_fetch_1.default)(nextPageUrl, {
+                    headers: {
+                        Authorization: "Bearer " + getGitHubToken(),
+                    },
+                })
+                    .then((response) => response.json())
+                    .then((nextPageResponse) => {
+                    for (let event of nextPageResponse) {
+                        if (numberOfBuilds <= 0) {
+                            break;
+                        }
+                        if (event.type === "PushEvent" &&
+                            event.payload.ref === process.env.GITHUB_REF) {
+                            pushEvents.push(event);
+                            numberOfBuilds--;
+                        }
+                    }
+                    // Update the link_header for the next iteration
+                    linkHeader = eventResponse.headers.link;
+                })
+                    .catch((error) => {
+                    console.error("Error fetching next page:", error);
+                });
+            }
+            return pushEvents;
+        }
+        catch (err) {
+            return [];
+            console.info("An error occurred during getting metrics data.");
+        }
+    });
+}
+exports.getPushEvents = getPushEvents;
+function formatTimestamps(timestamps) {
+    const formattedTimestamps = [];
+    for (const date in timestamps) {
+        let commitTime = DateTime.fromISO(date);
+        let commitTimeUtc = commitTime.setZone('UTC');
+        let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
+        let formatter = 'dd.MM.\'HH:mm';
+        formattedTimestamps.push(commitTimeLocal.toFormat(formatter));
+    }
+    return (formattedTimestamps);
+}
+exports.formatTimestamps = formatTimestamps;
+function getImageData(shas) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const context = github.context;
+        const octokit = new rest_1.Octokit({
+            auth: getGitHubToken(),
+            request: {
+                fetch: node_fetch_1.default,
+            },
+        });
+        const imageData = [];
+        for (const sha in shas) {
+            const blobTreeSha = yield getBlobTreeSha(octokit, context, sha);
+            const blobSha = yield getBlobSha(octokit, context, blobTreeSha);
+            imageData.push(yield getBlobContent(octokit, context, blobSha));
+        }
+        return imageData;
+    });
+}
+exports.getImageData = getImageData;
 
 
 /***/ }),
@@ -75088,6 +75221,14 @@ function getBlobContent(octokit, context, blobSha) {
 /***/ ((module) => {
 
 module.exports = eval("require")("encoding");
+
+
+/***/ }),
+
+/***/ 1278:
+/***/ ((module) => {
+
+module.exports = eval("require")("luxon");
 
 
 /***/ }),

@@ -4,7 +4,14 @@ import * as fs from 'fs'
 import * as github from '@actions/github'
 import {join} from 'path'
 import {tmpdir} from 'os'
-import {createPRComment, createRef, createTree, getPrBaseBranchMetrics, isPREvent, toSemVer} from '../utils'
+import {
+  createPRComment,
+  createRef,
+  createTree, formatTimestamps, getImageData,
+  getPrBaseBranchMetrics, getPushEvents,
+  isPREvent,
+  toSemVer
+} from '../utils'
 import {gte} from 'semver'
 
 const BUILD_OUTPUT_JSON_PATH = join(tmpdir(), 'native-image-build-output.json')
@@ -15,6 +22,8 @@ const DOCS_BASE =
     'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md'
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports'
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports'
+const INPUT_NI_JOB_METRIC_HISTORY = 'native-image-metric-history'
+const INPUT_NI_HISTORY_BUILD_COUNT = 'build-counts-for-metric-history'
 const INPUT_NI_PR_COMPARISON = 'native-image-pr-comparison'
 const NATIVE_IMAGE_CONFIG_FILE = join(
     tmpdir(),
@@ -137,14 +146,33 @@ export async function generateReports(): Promise<void> {
     if (arePRReportsEnabled()) {
       await createPRComment(report)
     }
+
     const treeSha = await createTree(JSON.stringify(buildOutput))
     await createRef(treeSha)
+    if (areMetricHistoriesEnabled()) {
+      const pushEvents = await getPushEvents(getBuildCountsForMetricHistory())
+      // Prepare data
+      const timestamps = []
+      const shas = []
+      for (const pushEvent in pushEvents) {
+        timestamps.push(JSON.parse(pushEvent).created_at)
+        shas.push(JSON.parse(pushEvent).payload.commits[0].sha)
+      }
+
+      // Extract data for plotting
+      const commitDates = formatTimestamps(timestamps)
+      const imageData = getImageData(shas)
+      core.info(String(commitDates))
+      core.info(String(shas))
+      core.info(String(imageData))
+
+    }
+
     if (arePRBaseComparisonEnabled()) {
       const prMetrics: BuildOutput = JSON.parse(
           await getPrBaseBranchMetrics()
       )
       await createPRComment(createPRComparison(buildOutput, prMetrics))
-      core.info(createPRComparison(buildOutput, prMetrics))
     }
   }
 }
@@ -157,8 +185,16 @@ function arePRReportsEnabled(): boolean {
   return isPREvent() && core.getInput(INPUT_NI_PR_REPORTS) === 'true'
 }
 
+function areMetricHistoriesEnabled(): boolean {
+  return core.getInput(INPUT_NI_JOB_METRIC_HISTORY) === 'true'
+}
+
 function arePRBaseComparisonEnabled(): boolean {
   return isPREvent() && core.getInput(INPUT_NI_PR_COMPARISON) === 'true'
+}
+
+function getBuildCountsForMetricHistory(): number {
+  return Number(core.getInput(INPUT_NI_HISTORY_BUILD_COUNT))
 }
 
 function getNativeImageOptionsFile(): string {
@@ -208,7 +244,7 @@ gantt
     title Native Image Size Details 
     todayMarker off
     dateFormat  X
-    axisFormat %s
+    axisFormat %
 
     section Code area
     ${recentBranch} (${bytesToHuman(detailsRecent.code_area.bytes)}): active, 0, ${detailsRecent.code_area.bytes}
