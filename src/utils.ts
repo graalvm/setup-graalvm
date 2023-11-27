@@ -11,10 +11,10 @@ import {Base64} from "js-base64";
 import {Octokit} from '@octokit/rest';
 import fetch from "node-fetch";
 import {Context} from "@actions/github/lib/context";
+import { DateTime } from 'luxon'
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
-const { DateTime } = require('luxon');
 const GitHubDotCom = Octokit.defaults({
   baseUrl,
   request: {
