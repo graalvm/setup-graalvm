@@ -156,6 +156,7 @@ export async function generateReports(): Promise<void> {
       const shas = []
       for (const pushEvent in pushEvents) {
         timestamps.push(JSON.parse(pushEvent).created_at)
+        core.info(JSON.parse(pushEvent))
         shas.push(JSON.parse(pushEvent).payload.commits[0].sha)
       }
 
