@@ -159,7 +159,7 @@ export async function generateReports(): Promise<void> {
     //    timestamps.push(pushEvents[i].created_at)
         core.info("------------------------------------")
         core.info(pushEvents[i].created_at)
-        shas.push(pushEvents[i].payload.commits[0].sha)
+        shas.push(pushEvents[i].payload.commits[pushEvents[i].payload.commits.length - 1].sha)
       }
 
       // Extract data for plotting
