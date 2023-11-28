@@ -390,8 +390,8 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
 
 export function formatTimestamps(timestamps: string[]) {
     const formattedTimestamps = []
-    for (const date in timestamps) {
-        let commitTime = DateTime.fromISO(date);
+    for (let i=0; i<timestamps.length; i++) {
+        let commitTime = DateTime.fromISO(timestamps[i]);
         let commitTimeUtc = commitTime.setZone('UTC');
         let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
         let formatter = 'dd.MM.\'HH:mm';

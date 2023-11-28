@@ -152,11 +152,11 @@ export async function generateReports(): Promise<void> {
     if (areMetricHistoriesEnabled()) {
       const pushEvents = await getPushEvents(getBuildCountsForMetricHistory())
       // Prepare data
-  //    const timestamps = []
+      const timestamps = []
       const shas = []
   //    core.info("pushEvents: " + pushEvents[0].created_at)
       for (let i=0; i < pushEvents.length; i++) {
-    //    timestamps.push(pushEvents[i].created_at)
+        timestamps.push(pushEvents[i].created_at)
         shas.push(pushEvents[i].payload.commits[pushEvents[i].payload.commits.length - 1].sha)
 
       }
@@ -167,8 +167,8 @@ export async function generateReports(): Promise<void> {
       await core.summary.write()
 
       // Extract data for plotting
- //     const commitDates = formatTimestamps(timestamps)
-   //   core.info(String(commitDates))
+      const commitDates = formatTimestamps(timestamps)
+      core.info(JSON.stringify(commitDates))
 
 
     }
@@ -272,13 +272,6 @@ gantt
 }
 
 function createHistoryDiagramm(shas: String[], metricDataList: any[]): string {
-
-  core.info(JSON.stringify(metricDataList[0]))
-  core.info(typeof(metricDataList[0]))
-  core.info(metricDataList[0])
-  core.info(JSON.stringify(metricDataList[0].image_details))
-  core.info(JSON.parse(metricDataList[0]).image_details.total_bytes)
-
   let mermaidDiagramm = `## GraalVM Native Image PR comparison
 
 #### Image Details
@@ -293,8 +286,8 @@ gantt
 `
   for (let i=0; i<metricDataList.length; i++) {
     mermaidDiagramm = mermaidDiagramm + `
-    section ${shas[i]}
-    Total ${bytesToHuman(JSON.parse(metricDataList[i]).image_details.total_bytes)}: ${shas[i] === process.env.GITHUB_SHA? 'active': ''} 0, ${JSON.parse(metricDataList[i]).image_details.total_bytes}
+    section ${shas[i].slice(0, 8)}...
+    ${bytesToHuman(JSON.parse(metricDataList[i]).image_details.total_bytes)}: ${shas[i] === process.env.GITHUB_SHA? 'active, ': ''} 0, ${JSON.parse(metricDataList[i]).image_details.total_bytes}
     
     `
   }
