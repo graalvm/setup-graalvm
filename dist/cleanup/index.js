@@ -81869,11 +81869,12 @@ function generateReports() {
                 // Prepare data
                 const timestamps = [];
                 const shas = [];
-                core.info("pushEvents: " + pushEvents);
-                for (const pushEvent in pushEvents) {
-                    timestamps.push(JSON.parse(pushEvent).created_at);
-                    core.info(JSON.parse(pushEvent));
-                    shas.push(JSON.parse(pushEvent).payload.commits[0].sha);
+                core.info("pushEvents: " + pushEvents[0].created_at);
+                for (let i = 0; i < pushEvents.length; i++) {
+                    timestamps.push(pushEvents[i].created_at);
+                    core.info("------------------------------------");
+                    core.info(pushEvents[i].created_at);
+                    shas.push(pushEvents[i].payload.commits[0].sha);
                 }
                 // Extract data for plotting
                 const commitDates = (0, utils_1.formatTimestamps)(timestamps);
