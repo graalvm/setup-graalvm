@@ -81968,6 +81968,7 @@ function generateReports() {
                 // Prepare data
                 const timestamps = [];
                 const shas = [];
+                core.info("pushEvents: " + pushEvents);
                 for (const pushEvent in pushEvents) {
                     timestamps.push(JSON.parse(pushEvent).created_at);
                     core.info(JSON.parse(pushEvent));
@@ -83588,6 +83589,7 @@ function getPushEvents(numberOfBuilds) {
             let linkHeader = eventResponse.headers.link;
             const eventData = eventResponse.data;
             const pushEvents = [];
+            core.info("1: " + linkHeader + eventData + eventResponse);
             /*      for (const gitEvent in eventData ) {
                       if (numberOfBuilds <= 0) {
                           break
@@ -83609,6 +83611,7 @@ function getPushEvents(numberOfBuilds) {
                     event.payload.ref === process.env.GITHUB_REF) {
                     pushEvents.push(event);
                     numberOfBuilds--;
+                    core.info("2");
                 }
             }
             let nextPageMatch = /<([^>]+)>;\s*rel="next"/;
@@ -83616,6 +83619,7 @@ function getPushEvents(numberOfBuilds) {
                 linkHeader.includes('rel="next"') &&
                 numberOfBuilds > 0) {
                 let nextPageUrl = nextPageMatch === null || nextPageMatch === void 0 ? void 0 : nextPageMatch.exec(linkHeader)[1];
+                core.info("3");
                 // Make the request for the next page
                 // Assuming you use fetch API or similar for making HTTP requests
                 (0, node_fetch_1.default)(nextPageUrl, {
@@ -83633,6 +83637,7 @@ function getPushEvents(numberOfBuilds) {
                             event.payload.ref === process.env.GITHUB_REF) {
                             pushEvents.push(event);
                             numberOfBuilds--;
+                            core.info("4");
                         }
                     }
                     // Update the link_header for the next iteration
@@ -83640,12 +83645,15 @@ function getPushEvents(numberOfBuilds) {
                 })
                     .catch((error) => {
                     console.error("Error fetching next page:", error);
+                    core.info("5");
                 });
             }
+            core.info("7: " + pushEvents);
             return pushEvents;
         }
         catch (err) {
             return [];
+            core.info("6");
             console.info("An error occurred during getting metrics data.");
         }
     });

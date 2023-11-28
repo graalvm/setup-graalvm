@@ -318,6 +318,7 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
         let linkHeader = eventResponse.headers.link
         const eventData: any = eventResponse.data
         const pushEvents = []
+        core.info("1: " + linkHeader + eventData + eventResponse)
 
   /*      for (const gitEvent in eventData ) {
             if (numberOfBuilds <= 0) {
@@ -342,6 +343,7 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
             ) {
                 pushEvents.push(event);
                 numberOfBuilds--;
+                core.info("2")
             }
         }
 
@@ -352,7 +354,7 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
             numberOfBuilds > 0
             ) {
             let nextPageUrl = nextPageMatch?.exec(linkHeader)![1];
-
+            core.info("3")
             // Make the request for the next page
             // Assuming you use fetch API or similar for making HTTP requests
             fetch(nextPageUrl, {
@@ -372,6 +374,7 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
                         ) {
                             pushEvents.push(event);
                             numberOfBuilds--;
+                            core.info("4")
                         }
                     }
 
@@ -380,11 +383,14 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
                 })
                 .catch((error) => {
                     console.error("Error fetching next page:", error);
+                    core.info("5")
                 });
         }
+        core.info("7: " + pushEvents)
         return pushEvents
     } catch (err) {
         return []
+        core.info("6")
         console.info("An error occurred during getting metrics data.")
     }
 }
