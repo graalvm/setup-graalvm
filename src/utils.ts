@@ -410,9 +410,9 @@ export async function getImageData(shas: string[]) {
     });
     const imageData = []
     core.info(String(shas))
-    for (const sha in shas) {
-        core.info(sha)
-        const blobTreeSha = await getBlobTreeSha(octokit, context, sha)
+    for (let i=0; i< shas.length; i++) {
+        core.info("reent sha: " + shas[i])
+        const blobTreeSha = await getBlobTreeSha(octokit, context, shas[i])
         const blobSha = await getBlobSha(octokit, context, blobTreeSha)
         imageData.push(await getBlobContent(octokit, context, blobSha))
     }

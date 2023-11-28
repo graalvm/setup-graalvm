@@ -82600,9 +82600,9 @@ function getImageData(shas) {
         });
         const imageData = [];
         core.info(String(shas));
-        for (const sha in shas) {
-            core.info(sha);
-            const blobTreeSha = yield getBlobTreeSha(octokit, context, sha);
+        for (let i = 0; i < shas.length; i++) {
+            core.info("reent sha: " + shas[i]);
+            const blobTreeSha = yield getBlobTreeSha(octokit, context, shas[i]);
             const blobSha = yield getBlobSha(octokit, context, blobTreeSha);
             imageData.push(yield getBlobContent(octokit, context, blobSha));
         }
