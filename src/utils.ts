@@ -394,7 +394,7 @@ export function formatTimestamps(timestamps: string[]) {
         let commitTime = DateTime.fromISO(timestamps[i]);
         let commitTimeUtc = commitTime.setZone('UTC');
         let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
-        let formatter = 'dd.MM.\'HH:mm';
+        let formatter = 'dd.MM';
         formattedTimestamps.push(commitTimeLocal.toFormat(formatter));
     }
     return(formattedTimestamps)
