@@ -152,20 +152,20 @@ export async function generateReports(): Promise<void> {
     if (areMetricHistoriesEnabled()) {
       const pushEvents = await getPushEvents(getBuildCountsForMetricHistory())
       // Prepare data
-      const timestamps = []
+  //    const timestamps = []
       const shas = []
-      core.info("pushEvents: " + pushEvents[0].created_at)
+  //    core.info("pushEvents: " + pushEvents[0].created_at)
       for (let i=0; i < pushEvents.length; i++) {
-        timestamps.push(pushEvents[i].created_at)
+    //    timestamps.push(pushEvents[i].created_at)
         core.info("------------------------------------")
         core.info(pushEvents[i].created_at)
         shas.push(pushEvents[i].payload.commits[0].sha)
       }
 
       // Extract data for plotting
-      const commitDates = formatTimestamps(timestamps)
+ //     const commitDates = formatTimestamps(timestamps)
       const imageData = getImageData(shas)
-      core.info(String(commitDates))
+   //   core.info(String(commitDates))
       core.info(String(shas))
       core.info(String(imageData))
 
