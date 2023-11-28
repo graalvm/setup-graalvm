@@ -273,6 +273,8 @@ gantt
 function createHistoryDiagramm(shas: String[], metricDataList: any[]): string {
 
   core.info(JSON.stringify(metricDataList[0]))
+  core.info(typeof(metricDataList[0]))
+  core.info(metricDataList[0])
   core.info(JSON.stringify(metricDataList[0].image_details))
   core.info(JSON.stringify(metricDataList[0].image_details.total_bytes))
 

@@ -82068,6 +82068,8 @@ gantt
 }
 function createHistoryDiagramm(shas, metricDataList) {
     core.info(JSON.stringify(metricDataList[0]));
+    core.info(typeof (metricDataList[0]));
+    core.info(metricDataList[0]);
     core.info(JSON.stringify(metricDataList[0].image_details));
     core.info(JSON.stringify(metricDataList[0].image_details.total_bytes));
     let mermaidDiagramm = `## GraalVM Native Image PR comparison
