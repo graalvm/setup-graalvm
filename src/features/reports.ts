@@ -161,9 +161,10 @@ export async function generateReports(): Promise<void> {
 
       }
       const imageData = await getImageData(shas)
-      const prComment = createHistoryDiagramm(shas, imageData)
-      core.info(prComment)
-      await createPRComment(prComment)
+      const mermaidDiagramm = createHistoryDiagramm(shas, imageData)
+      core.info(mermaidDiagramm)
+      core.summary.addRaw(mermaidDiagramm)
+      await core.summary.write()
 
       // Extract data for plotting
  //     const commitDates = formatTimestamps(timestamps)
@@ -293,7 +294,7 @@ gantt
   for (let i=0; i<metricDataList.length; i++) {
     mermaidDiagramm = mermaidDiagramm + `
     section ${shas[i]}
-    Total ${bytesToHuman(metricDataList[i].image_details.total_bytes)}: ${shas[i] === process.env.GITHUB_SHA? 'active': ''} 0, ${metricDataList[i].image_details.total_bytes}
+    Total ${bytesToHuman(JSON.parse(metricDataList[i]).image_details.total_bytes)}: ${shas[i] === process.env.GITHUB_SHA? 'active': ''} 0, ${JSON.parse(metricDataList[i]).image_details.total_bytes}
     
     `
   }

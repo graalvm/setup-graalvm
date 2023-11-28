@@ -81875,9 +81875,10 @@ function generateReports() {
                     shas.push(pushEvents[i].payload.commits[pushEvents[i].payload.commits.length - 1].sha);
                 }
                 const imageData = yield (0, utils_1.getImageData)(shas);
-                const prComment = createHistoryDiagramm(shas, imageData);
-                core.info(prComment);
-                yield (0, utils_1.createPRComment)(prComment);
+                const mermaidDiagramm = createHistoryDiagramm(shas, imageData);
+                core.info(mermaidDiagramm);
+                core.summary.addRaw(mermaidDiagramm);
+                yield core.summary.write();
                 // Extract data for plotting
                 //     const commitDates = formatTimestamps(timestamps)
                 //   core.info(String(commitDates))
@@ -81988,7 +81989,7 @@ gantt
     for (let i = 0; i < metricDataList.length; i++) {
         mermaidDiagramm = mermaidDiagramm + `
     section ${shas[i]}
-    Total ${bytesToHuman(metricDataList[i].image_details.total_bytes)}: ${shas[i] === process.env.GITHUB_SHA ? 'active' : ''} 0, ${metricDataList[i].image_details.total_bytes}
+    Total ${bytesToHuman(JSON.parse(metricDataList[i]).image_details.total_bytes)}: ${shas[i] === process.env.GITHUB_SHA ? 'active' : ''} 0, ${JSON.parse(metricDataList[i]).image_details.total_bytes}
     
     `;
     }
