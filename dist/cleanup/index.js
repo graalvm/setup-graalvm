@@ -81878,10 +81878,10 @@ function generateReports() {
                 }
                 // Extract data for plotting
                 //     const commitDates = formatTimestamps(timestamps)
-                const imageData = (0, utils_1.getImageData)(shas);
+                const imageData = yield (0, utils_1.getImageData)(shas);
                 //   core.info(String(commitDates))
                 core.info(String(shas));
-                core.info(String(imageData));
+                core.info(JSON.stringify(imageData));
             }
             if (arePRBaseComparisonEnabled()) {
                 const prMetrics = JSON.parse(yield (0, utils_1.getPrBaseBranchMetrics)());

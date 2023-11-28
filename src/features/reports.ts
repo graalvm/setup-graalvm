@@ -164,10 +164,10 @@ export async function generateReports(): Promise<void> {
 
       // Extract data for plotting
  //     const commitDates = formatTimestamps(timestamps)
-      const imageData = getImageData(shas)
+      const imageData = await getImageData(shas)
    //   core.info(String(commitDates))
       core.info(String(shas))
-      core.info(String(imageData))
+      core.info(JSON.stringify(imageData))
 
     }
 
