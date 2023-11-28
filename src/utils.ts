@@ -318,22 +318,10 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
         let linkHeader = eventResponse.headers.link
         const eventData: any = eventResponse.data
         const pushEvents = []
+        let eventsLeft = numberOfBuilds
 
-  /*      for (const gitEvent in eventData ) {
-            if (numberOfBuilds <= 0) {
-                break
-            }
-            if (gitEvent["type"] === 'pushEvent' && gitEvent["payload"].ref === process.env.GITHUB_REF) {
-                pushEvents.push(gitEvent)
-                numberOfBuilds = numberOfBuilds - 1
-            }
-            const linkHeader = eventResponse.headers.link
-            const regex = /<([^>]+)>;\s*rel/;
-            const nextPageMatch = linkHeader?.search(/<([^>]+)>;\s*rel="next"/)
-
-        }*/
         for (let event of eventData) {
-            if (numberOfBuilds <= 0) {
+            if (eventsLeft <= 0) {
                 break;
             }
             if (
@@ -341,7 +329,7 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
                 event.payload!.ref! === process.env.GITHUB_REF
             ) {
                 pushEvents.push(event);
-                numberOfBuilds--;
+                eventsLeft = eventsLeft-1;
             }
         }
 
@@ -349,7 +337,7 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
         while (
             linkHeader &&
             linkHeader.includes('rel="next"') &&
-            numberOfBuilds > 0
+            eventsLeft > 0
             ) {
             let nextPageUrl = nextPageMatch?.exec(linkHeader)![1];
             // Make the request for the next page
@@ -362,7 +350,7 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
                 .then((response) => response.json())
                 .then((nextPageResponse) => {
                     for (let event of nextPageResponse) {
-                        if (numberOfBuilds <= 0) {
+                        if (eventsLeft <= 0) {
                             break;
                         }
                         if (
@@ -370,7 +358,7 @@ export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
                             event.payload.ref === process.env.GITHUB_REF
                         ) {
                             pushEvents.push(event);
-                            numberOfBuilds--;
+                            eventsLeft = eventsLeft-1;
                         }
                     }
 
@@ -392,10 +380,7 @@ export function formatTimestamps(timestamps: string[]) {
     const formattedTimestamps = []
     for (let i=0; i<timestamps.length; i++) {
         let commitTime = DateTime.fromISO(timestamps[i]);
-        let commitTimeUtc = commitTime.setZone('UTC');
-        let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
-        let formatter = 'dd.MM';
-        formattedTimestamps.push(commitTimeLocal.toFormat(formatter));
+        formattedTimestamps.push(commitTime.toISODate())
     }
     return(formattedTimestamps)
 }

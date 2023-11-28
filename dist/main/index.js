@@ -83617,33 +83617,21 @@ function getPushEvents(numberOfBuilds) {
             let linkHeader = eventResponse.headers.link;
             const eventData = eventResponse.data;
             const pushEvents = [];
-            /*      for (const gitEvent in eventData ) {
-                      if (numberOfBuilds <= 0) {
-                          break
-                      }
-                      if (gitEvent["type"] === 'pushEvent' && gitEvent["payload"].ref === process.env.GITHUB_REF) {
-                          pushEvents.push(gitEvent)
-                          numberOfBuilds = numberOfBuilds - 1
-                      }
-                      const linkHeader = eventResponse.headers.link
-                      const regex = /<([^>]+)>;\s*rel/;
-                      const nextPageMatch = linkHeader?.search(/<([^>]+)>;\s*rel="next"/)
-          
-                  }*/
+            let eventsLeft = numberOfBuilds;
             for (let event of eventData) {
-                if (numberOfBuilds <= 0) {
+                if (eventsLeft <= 0) {
                     break;
                 }
                 if (event.type === "PushEvent" &&
                     event.payload.ref === process.env.GITHUB_REF) {
                     pushEvents.push(event);
-                    numberOfBuilds--;
+                    eventsLeft = eventsLeft - 1;
                 }
             }
             let nextPageMatch = /<([^>]+)>;\s*rel="next"/;
             while (linkHeader &&
                 linkHeader.includes('rel="next"') &&
-                numberOfBuilds > 0) {
+                eventsLeft > 0) {
                 let nextPageUrl = nextPageMatch === null || nextPageMatch === void 0 ? void 0 : nextPageMatch.exec(linkHeader)[1];
                 // Make the request for the next page
                 // Assuming you use fetch API or similar for making HTTP requests
@@ -83655,13 +83643,13 @@ function getPushEvents(numberOfBuilds) {
                     .then((response) => response.json())
                     .then((nextPageResponse) => {
                     for (let event of nextPageResponse) {
-                        if (numberOfBuilds <= 0) {
+                        if (eventsLeft <= 0) {
                             break;
                         }
                         if (event.type === "PushEvent" &&
                             event.payload.ref === process.env.GITHUB_REF) {
                             pushEvents.push(event);
-                            numberOfBuilds--;
+                            eventsLeft = eventsLeft - 1;
                         }
                     }
                     // Update the link_header for the next iteration
@@ -83684,10 +83672,7 @@ function formatTimestamps(timestamps) {
     const formattedTimestamps = [];
     for (let i = 0; i < timestamps.length; i++) {
         let commitTime = luxon_1.DateTime.fromISO(timestamps[i]);
-        let commitTimeUtc = commitTime.setZone('UTC');
-        let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
-        let formatter = 'dd.MM';
-        formattedTimestamps.push(commitTimeLocal.toFormat(formatter));
+        formattedTimestamps.push(commitTime.toISODate());
     }
     return (formattedTimestamps);
 }
