@@ -380,7 +380,10 @@ export function formatTimestamps(timestamps: string[]) {
     const formattedTimestamps = []
     for (let i=0; i<timestamps.length; i++) {
         let commitTime = DateTime.fromISO(timestamps[i]);
-        formattedTimestamps.push(commitTime.toISODate())
+        let commitTimeUtc = commitTime.setZone('UTC');
+        let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
+        let formatter = 'dd/MM/YYYY';
+        formattedTimestamps.push(commitTimeLocal.toFormat(formatter));
     }
     return(formattedTimestamps)
 }

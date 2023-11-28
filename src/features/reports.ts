@@ -154,7 +154,6 @@ export async function generateReports(): Promise<void> {
       // Prepare data
       const timestamps = []
       const shas = []
-  //    core.info("pushEvents: " + pushEvents[0].created_at)
       for (let i=0; i < pushEvents.length; i++) {
         timestamps.push(pushEvents[i].created_at)
         shas.push(pushEvents[i].payload.commits[pushEvents[i].payload.commits.length - 1].sha)
@@ -163,14 +162,8 @@ export async function generateReports(): Promise<void> {
       const imageData = await getImageData(shas)
       const commitDates = formatTimestamps(timestamps)
       const mermaidDiagramm = createHistoryDiagramm(shas, imageData, commitDates)
-      core.info(mermaidDiagramm)
       core.summary.addRaw(mermaidDiagramm)
       await core.summary.write()
-
-      // Extract data for plotting
-      core.info(JSON.stringify(commitDates))
-
-
     }
 
     if (arePRBaseComparisonEnabled()) {

@@ -81869,7 +81869,6 @@ function generateReports() {
                 // Prepare data
                 const timestamps = [];
                 const shas = [];
-                //    core.info("pushEvents: " + pushEvents[0].created_at)
                 for (let i = 0; i < pushEvents.length; i++) {
                     timestamps.push(pushEvents[i].created_at);
                     shas.push(pushEvents[i].payload.commits[pushEvents[i].payload.commits.length - 1].sha);
@@ -81877,11 +81876,8 @@ function generateReports() {
                 const imageData = yield (0, utils_1.getImageData)(shas);
                 const commitDates = (0, utils_1.formatTimestamps)(timestamps);
                 const mermaidDiagramm = createHistoryDiagramm(shas, imageData, commitDates);
-                core.info(mermaidDiagramm);
                 core.summary.addRaw(mermaidDiagramm);
                 yield core.summary.write();
-                // Extract data for plotting
-                core.info(JSON.stringify(commitDates));
             }
             if (arePRBaseComparisonEnabled()) {
                 const prMetrics = JSON.parse(yield (0, utils_1.getPrBaseBranchMetrics)());
@@ -82596,7 +82592,10 @@ function formatTimestamps(timestamps) {
     const formattedTimestamps = [];
     for (let i = 0; i < timestamps.length; i++) {
         let commitTime = luxon_1.DateTime.fromISO(timestamps[i]);
-        formattedTimestamps.push(commitTime.toISODate());
+        let commitTimeUtc = commitTime.setZone('UTC');
+        let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
+        let formatter = 'dd/MM/YYYY';
+        formattedTimestamps.push(commitTimeLocal.toFormat(formatter));
     }
     return (formattedTimestamps);
 }
