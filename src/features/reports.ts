@@ -272,6 +272,10 @@ gantt
 
 function createHistoryDiagramm(shas: String[], metricDataList: any[]): string {
 
+  core.info(JSON.stringify(metricDataList[0]))
+  core.info(JSON.stringify(metricDataList[0].image_details))
+  core.info(JSON.stringify(metricDataList[0].image_details.total_bytes))
+
   let mermaidDiagramm = `## GraalVM Native Image PR comparison
 
 #### Image Details
