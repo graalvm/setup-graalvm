@@ -83589,7 +83589,7 @@ function getPushEvents(numberOfBuilds) {
             let linkHeader = eventResponse.headers.link;
             const eventData = eventResponse.data;
             const pushEvents = [];
-            core.info("1: " + linkHeader + eventData + eventResponse);
+            core.info("1: " + linkHeader + eventData + JSON.stringify(eventResponse));
             /*      for (const gitEvent in eventData ) {
                       if (numberOfBuilds <= 0) {
                           break
@@ -83648,7 +83648,7 @@ function getPushEvents(numberOfBuilds) {
                     core.info("5");
                 });
             }
-            core.info("7: " + pushEvents);
+            core.info("7: " + JSON.stringify(pushEvents));
             return pushEvents;
         }
         catch (err) {
