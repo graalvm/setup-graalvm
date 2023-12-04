@@ -4,6 +4,7 @@ import * as github from '@actions/github'
 import * as httpClient from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
 import {exec as e, ExecOptions} from '@actions/exec'
+import * as fs from 'fs'
 import {readdirSync, readFileSync} from 'fs'
 import {createHash} from 'crypto'
 import {join} from 'path'
@@ -11,7 +12,10 @@ import {Base64} from "js-base64";
 import {Octokit} from '@octokit/rest';
 import fetch from "node-fetch";
 import {Context} from "@actions/github/lib/context";
-import { DateTime } from 'luxon'
+import {DateTime} from 'luxon'
+import { Chart, registerables } from 'chart.js';
+import { createCanvas } from 'canvas';
+
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
@@ -301,7 +305,7 @@ async function getBlobContent(octokit: Octokit, context: Context, blobSha: strin
     })
     return Base64.decode(data.content)
 }
-
+/*
 export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
     try {
         const octokit = new Octokit({
@@ -405,4 +409,215 @@ export async function getImageData(shas: string[]) {
         imageData.push(await getBlobContent(octokit, context, blobSha))
     }
     return imageData
+}*/
+
+
+function formatDate(date: string, n: number) {
+    // Parse the timestamp and convert it to the desired timezone
+    const commitTime = DateTime.fromISO(date, { zone: 'utc' });
+    const commitTimeLocal = commitTime.setZone('Europe/Berlin');
+
+    if (n >= 30) {
+        return commitTimeLocal.toFormat('dd.MM.\HH:mm');
+    } else {
+        return commitTimeLocal.toFormat('dd.MM.yyyy \n HH:mm');
+    }
 }
+
+async function getImageData(commitSha: string) {
+    const octokit = new Octokit({
+        auth: getGitHubToken(),
+    });
+
+    const context = github.context
+    try {
+        // Get the reference SHA
+        const refResponse = await octokit.git.getRef({
+            ...context.repo,
+            ref: `graalvm-metrics/${commitSha}`,
+        });
+        const refSha = refResponse.data.object.sha;
+
+        console.log(refSha)
+
+        // Get the tree SHA
+        const treeResponse = await octokit.git.getTree({
+            ...context.repo,
+            tree_sha: refSha,
+        });
+        const blobSha = treeResponse.data.tree[0].sha;
+
+        // Get the blob content
+        const blobResponse = await octokit.git.getBlob({
+            ...context.repo,
+            file_sha: String(blobSha),
+        });
+
+        const content = Buffer.from(blobResponse.data.content, 'base64').toString('utf-8');
+        const data = JSON.parse(content);
+
+        console.log(data.image_details.total_bytes / 1e6)
+
+        return [
+            data.image_details.total_bytes / 1e6,
+            data.image_details.code_area.bytes / 1e6,
+            data.image_details.image_heap.bytes / 1e6,
+        ];
+    } catch (err) {
+        console.error('Error fetching image data');
+        return [0, 0, 0];
+    }
+}
+
+// Function to fetch data
+async function fetchData() {
+    const octokit = new Octokit({
+        auth: getGitHubToken(),
+    });
+    return new Promise(async (resolve) => {
+
+        const response = await octokit.request(c.OCTOKIT_ROUTE_GET_EVENTS, {
+            ...github.context.repo,
+            headers: c.OCTOKIT_BASIC_HEADER
+        })
+
+        // get push events
+        const pushEvents = await getPushEvents(response);
+
+        // Prepare data
+        const timestamps = [];
+        const shas = [];
+
+        for (const pushEvent of pushEvents) {
+            timestamps.push(pushEvent.created_at);
+            shas.push(pushEvent.payload.commits[pushEvent.payload.commits.length - 1].sha);
+        }
+
+        // Extract data for plotting
+        const commitDates = timestamps.map(timestamp => formatDate(timestamp, Number(core.getInput('build-counts-for-metric-history'))));
+        const imageDataPromises = shas.map(async sha => await getImageData(sha));
+        const imageData = await Promise.all(imageDataPromises);
+        const imageSizes = imageData.filter(entry => entry).map(entry => entry[0]);
+        const codeAreaSizes = imageData.filter(entry => entry).map(entry => entry[1]);
+        const imageHeapSizes = imageData.filter(entry => entry).map(entry => entry[2]);
+
+        const data= {
+            commitDates: commitDates,
+            imageData: imageData,
+            imageSizes: imageSizes,
+            codeAreaSizes: codeAreaSizes,
+            imageHeapSizes: imageHeapSizes
+        }
+
+        resolve(data);
+    });
+}
+
+async function getPushEvents(response:any) {
+    const eventsArray = response.data;
+    let linkHeader = response.headers.link;
+    let commitsLeft = Number(core.getInput('build-counts-for-metric-history'));
+    const pushEvents = [];
+
+    for (const event of eventsArray) {
+        if (commitsLeft <= 0) {
+            break;
+        }
+        if (event.type === "PushEvent" && event.payload.ref === process.env.GITHUB_REF) {
+            pushEvents.push(event);
+            commitsLeft -= 1;
+        }
+    }
+
+    while (linkHeader && linkHeader.includes('rel="next"') && commitsLeft > 0) {
+        // Extract the URL for the next page
+        const nextPageMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+        const nextPageUrl = nextPageMatch ? nextPageMatch[1] : null;
+
+        // Make the request for the next page
+        const response = await fetch(nextPageUrl, {
+            headers: {
+                Authorization: getGitHubToken(),
+            },
+        });
+
+        const responseJson = await response.json();
+
+        for (const event of responseJson) {
+            if (commitsLeft <= 0) {
+                break;
+            }
+            if (event.type === "PushEvent" && event.payload.ref === process.env.GITHUB_REF) {
+                pushEvents.push(event);
+                commitsLeft -= 1;
+            }
+        }
+
+        // Update linkHeader for the next iteration
+        linkHeader = response.headers.get("link");
+    }
+    return pushEvents;
+}
+
+function createDatasets(data: any) {
+    const labels = data.commitDates.reverse();
+
+    const datasets = [
+        {
+            label: 'Image Sizes',
+            data: data.imageSizes.reverse(),
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            yAxisID: 'y-axis-1',
+        },
+        {
+            label: 'Code Area Sizes',
+            data: data.codeAreaSizes.reverse(),
+            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            yAxisID: 'y-axis-1',
+        },
+        {
+            label: 'Image Heap Sizes',
+            data: data.imageHeapSizes.reverse(),
+            borderColor: 'rgba(255, 205, 86, 1)',
+            backgroundColor: 'rgba(255, 205, 86, 0.2)',
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            yAxisID: 'y-axis-1',
+        },
+    ];
+
+    return {
+        labels: labels,
+        datasets: datasets,
+    };
+}
+
+export async function createChart() {
+    try {
+        const data = await fetchData();
+
+        console.log(data)
+
+        // Set up canvas
+        const canvas = createCanvas(800, 400);
+
+        await Chart.register(...registerables); // Register Chart.js plugins
+
+        // Save the canvas as a PNG file
+        const out = fs.createWriteStream('output_chart.png');
+        const stream = canvas.createPNGStream();
+        stream.pipe(out);
+        out.on('finish', () => console.log('The PNG file was created.'));
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+// Call the createChart function
+//createChart();

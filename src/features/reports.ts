@@ -5,10 +5,11 @@ import * as github from '@actions/github'
 import {join} from 'path'
 import {tmpdir} from 'os'
 import {
+  createChart,
   createPRComment,
   createRef,
-  createTree, formatTimestamps, getImageData,
-  getPrBaseBranchMetrics, getPushEvents,
+  createTree,
+  getPrBaseBranchMetrics,
   isPREvent,
   toSemVer
 } from '../utils'
@@ -150,7 +151,7 @@ export async function generateReports(): Promise<void> {
     const treeSha = await createTree(JSON.stringify(buildOutput))
     await createRef(treeSha)
     if (areMetricHistoriesEnabled()) {
-      const pushEvents = await getPushEvents(getBuildCountsForMetricHistory())
+      /*const pushEvents = await getPushEvents(getBuildCountsForMetricHistory())
       // Prepare data
       const timestamps = []
       const shas = []
@@ -163,7 +164,8 @@ export async function generateReports(): Promise<void> {
       const commitDates = formatTimestamps(timestamps)
       const mermaidDiagramm = createHistoryDiagramm(shas, imageData, commitDates)
       core.summary.addRaw(mermaidDiagramm)
-      await core.summary.write()
+      await core.summary.write()*/
+      await createChart()
     }
 
     if (arePRBaseComparisonEnabled()) {
