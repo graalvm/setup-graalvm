@@ -605,7 +605,7 @@ export async function createChart() {
         console.log(data)
 
         // Set up canvas
-        const canvas = createCanvas(800, 400);
+        const canvas = createCanvas(900, 450);
 
         await Chart.register(...registerables); // Register Chart.js plugins
 
