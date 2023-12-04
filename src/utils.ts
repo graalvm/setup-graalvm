@@ -14,7 +14,8 @@ import fetch from "node-fetch";
 import {Context} from "@actions/github/lib/context";
 import {DateTime} from 'luxon'
 import { Chart, registerables } from 'chart.js';
-import { createCanvas } from 'canvas';
+
+const { createCanvas, loadImage } = require('canvas')
 
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)

@@ -83782,7 +83782,7 @@ const rest_1 = __nccwpck_require__(6175);
 const node_fetch_1 = __importDefault(__nccwpck_require__(831));
 const luxon_1 = __nccwpck_require__(955);
 const chart_js_1 = __nccwpck_require__(6435);
-const canvas_1 = __nccwpck_require__(3893);
+const { createCanvas, loadImage } = __nccwpck_require__(3893);
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com';
 const GitHubDotCom = rest_1.Octokit.defaults({
@@ -84296,7 +84296,7 @@ function createChart() {
             const data = yield fetchData();
             console.log(data);
             // Set up canvas
-            const canvas = (0, canvas_1.createCanvas)(800, 400);
+            const canvas = createCanvas(800, 400);
             yield chart_js_1.Chart.register(...chart_js_1.registerables); // Register Chart.js plugins
             // Save the canvas as a PNG file
             const out = fs.createWriteStream('output_chart.png');
