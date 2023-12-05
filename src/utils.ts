@@ -14,8 +14,7 @@ import fetch from "node-fetch";
 import {Context} from "@actions/github/lib/context";
 import {DateTime} from 'luxon'
 import {NumberValue} from "d3";
-import {Domain} from "domain";
-const { JSDOM } = require('jsdom');
+import {JSDOM} from 'jsdom';
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
@@ -693,6 +692,3 @@ function convertToNumberValueIterable(arr: (number | string | undefined)[]): Ite
 
     return numberValueIterable;
 }
-
-
-// Call the createChart function
