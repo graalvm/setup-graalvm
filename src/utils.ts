@@ -425,6 +425,9 @@ function formatDate(date: string, n: number) {
 async function getImageData(commitSha: string) {
     const octokit = new Octokit({
         auth: getGitHubToken(),
+        request: {
+            fetch: fetch,
+        },
     });
 
     try {
@@ -470,6 +473,9 @@ async function getImageData(commitSha: string) {
 async function fetchData(): Promise<any> {
     const octokit = new Octokit({
         auth: getGitHubToken(),
+        request: {
+            fetch: fetch,
+        },
     });
     return new Promise(async (resolve, reject) => {
 
