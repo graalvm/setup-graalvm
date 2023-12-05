@@ -13,9 +13,9 @@ import {Octokit} from '@octokit/rest';
 import fetch from "node-fetch";
 import {Context} from "@actions/github/lib/context";
 import {DateTime} from 'luxon'
-import {Chart, registerables} from 'chart.js';
-import { createCanvas } from 'canvas';
-
+import {NumberValue} from "d3";
+import {Domain} from "domain";
+const { JSDOM } = require('jsdom');
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
@@ -411,7 +411,6 @@ export async function getImageData(shas: string[]) {
     return imageData
 }*/
 
-
 function formatDate(date: string, n: number) {
     // Parse the timestamp and convert it to the desired timezone
     const commitTime = DateTime.fromISO(date, { zone: 'utc' });
@@ -429,11 +428,10 @@ async function getImageData(commitSha: string) {
         auth: getGitHubToken(),
     });
 
-    const context = github.context
     try {
         // Get the reference SHA
         const refResponse = await octokit.git.getRef({
-            ...context.repo,
+            ...github.context.repo,
             ref: `graalvm-metrics/${commitSha}`,
         });
         const refSha = refResponse.data.object.sha;
@@ -442,14 +440,14 @@ async function getImageData(commitSha: string) {
 
         // Get the tree SHA
         const treeResponse = await octokit.git.getTree({
-            ...context.repo,
+            ...github.context.repo,
             tree_sha: refSha,
         });
         const blobSha = treeResponse.data.tree[0].sha;
 
         // Get the blob content
         const blobResponse = await octokit.git.getBlob({
-            ...context.repo,
+            ...github.context.repo,
             file_sha: String(blobSha),
         });
 
@@ -463,18 +461,18 @@ async function getImageData(commitSha: string) {
             data.image_details.code_area.bytes / 1e6,
             data.image_details.image_heap.bytes / 1e6,
         ];
-    } catch (err) {
-        console.error('Error fetching image data');
+    } catch (error) {
+        console.error('Error fetching image data:');
         return [0, 0, 0];
     }
 }
 
 // Function to fetch data
-async function fetchData() {
+async function fetchData(): Promise<any> {
     const octokit = new Octokit({
         auth: getGitHubToken(),
     });
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
 
         const response = await octokit.request(c.OCTOKIT_ROUTE_GET_EVENTS, {
             ...github.context.repo,
@@ -513,11 +511,12 @@ async function fetchData() {
     });
 }
 
-async function getPushEvents(response:any) {
+async function getPushEvents(response: any) {
     const eventsArray = response.data;
-    let linkHeader = response.headers.link;
-    let commitsLeft = Number(core.getInput('build-counts-for-metric-history'));
-    const pushEvents = [];
+    var linkHeader = response.headers.link;
+    const nextPageMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+    var commitsLeft = Number(core.getInput('build-counts-for-metric-history'));
+    var pushEvents = [];
 
     for (const event of eventsArray) {
         if (commitsLeft <= 0) {
@@ -537,7 +536,7 @@ async function getPushEvents(response:any) {
         // Make the request for the next page
         const response = await fetch(nextPageUrl, {
             headers: {
-                Authorization: getGitHubToken(),
+                Authorization: `Bearer ${getGitHubToken()}`,
             },
         });
 
@@ -559,65 +558,141 @@ async function getPushEvents(response:any) {
     return pushEvents;
 }
 
-function createDatasets(data: any) {
-    const labels = data.commitDates.reverse();
-
-    const datasets = [
-        {
-            label: 'Image Sizes',
-            data: data.imageSizes.reverse(),
-            borderColor: 'rgba(75, 192, 192, 1)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            pointRadius: 5,
-            pointHoverRadius: 8,
-            yAxisID: 'y-axis-1',
-        },
-        {
-            label: 'Code Area Sizes',
-            data: data.codeAreaSizes.reverse(),
-            borderColor: 'rgba(255, 99, 132, 1)',
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            pointRadius: 5,
-            pointHoverRadius: 8,
-            yAxisID: 'y-axis-1',
-        },
-        {
-            label: 'Image Heap Sizes',
-            data: data.imageHeapSizes.reverse(),
-            borderColor: 'rgba(255, 205, 86, 1)',
-            backgroundColor: 'rgba(255, 205, 86, 0.2)',
-            pointRadius: 5,
-            pointHoverRadius: 8,
-            yAxisID: 'y-axis-1',
-        },
-    ];
-
-    return {
-        labels: labels,
-        datasets: datasets,
-    };
-}
-
 export async function createChart() {
     try {
+        // Use dynamic import for d3
+        const d3 = await import('d3');
         const data = await fetchData();
+        const labels = data.commitDates.reverse();
+        const datasets = [
+            {
+                label: 'Image Sizes',
+                data: data.imageSizes.reverse(),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            },
+            {
+                label: 'Code Area Sizes',
+                data: data.codeAreaSizes.reverse(),
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            },
+            {
+                label: 'Image Heap Sizes',
+                data: data.imageHeapSizes.reverse(),
+                borderColor: 'rgba(255, 205, 86, 1)',
+                backgroundColor: 'rgba(255, 205, 86, 0.2)',
+            },
+        ];
 
-        console.log(data)
+        // Use JSDOM to create a virtual DOM
+        const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+        global.document = dom.window.document;
 
-        // Set up canvas
-        const canvas = createCanvas(900, 450);
+        const svgWidth = 800;
+        const svgHeight = 400;
 
-        await Chart.register(...registerables); // Register Chart.js plugins
+        const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+        const width = svgWidth - margin.left - margin.right;
+        const height = svgHeight - margin.top - margin.bottom;
 
-        // Save the canvas as a PNG file
-        const out = fs.createWriteStream('output_chart.png');
-        const stream = canvas.createPNGStream();
-        stream.pipe(out);
-        out.on('finish', () => console.log('The PNG file was created.'));
+        const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes)) as NumberValue
+
+        const xScale = d3.scaleBand().domain(labels).range([0, width]).padding(0.1);
+        const yScale = d3.scaleLinear().domain([0, maxImageSizes]).range([height, 0]);
+
+        const svg = d3.select('body')
+            .append('svg')
+            .attr('width', svgWidth)
+            .attr('height', svgHeight);
+
+        const chart = svg.append('g')
+            .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+        // Add dashed grid lines for the x-axis
+        chart.append('g')
+            .attr('class', 'grid')
+            .attr('transform', `translate(0, ${height})`)
+            .call(
+                d3.axisBottom(xScale)
+                    .tickSize(-height)
+                    .tickFormat(null)
+                    .tickSizeOuter(0)
+            )
+            .selectAll('.tick line')
+            .attr('stroke', 'lightgrey') // Adjust color as needed
+            .attr('stroke-dasharray', '2,2') // Adjust dash pattern as needed
+            .attr('stroke-width', 1); // Adjust line thickness as needed
+
+        // Add dashed grid lines for the y-axis
+        chart.append('g')
+            .attr('class', 'grid')
+            .call(
+                d3.axisLeft(yScale)
+                    .tickSize(-width)
+                    .tickFormat(null)
+                    .tickSizeOuter(0)
+            )
+            .selectAll('.tick line')
+            .attr('stroke', 'lightgrey') // Adjust color as needed
+            .attr('stroke-dasharray', '2,2') // Adjust dash pattern as needed
+            .attr('stroke-width', 1); // Adjust line thickness as needed
+
+        chart.append('g')
+            .attr('transform', `translate(0, ${height})`)
+            .call(d3.axisBottom(xScale))
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('transform', 'rotate(-45)');
+
+        chart.append('g')
+            .call(d3.axisLeft(yScale));
+
+        datasets.forEach(dataset => {
+            // Connect data points with lines
+            chart.append('path')
+                .datum(dataset.data)
+                .attr('fill', 'none')
+                .attr('stroke', dataset.borderColor)
+                .attr('stroke-width', 2)
+                .attr('d', d3!.line<[number, number]>()!
+                    .x((d, i) => xScale(labels[i])! + xScale.bandwidth() / 2)
+                    .y(d => yScale(d[1])) // Assuming `d` is an array [x, y]
+                );
+            // Add circles at data points for each dataset
+            chart.selectAll(`circle.${dataset.label}`)
+                .data(dataset.data)
+                .enter().append('circle')
+                .attr('class', dataset.label) // Ensure unique class for each dataset
+                .attr('cx', (d, i) => xScale(labels[i])! + xScale.bandwidth() / 2)
+                .attr('cy', d => yScale(<number | { valueOf(): number }>d))
+                .attr('r', 5)
+                .attr('fill', dataset.borderColor);
+        });
+
+        // Save the SVG as a file
+        fs.writeFileSync('output_point_plot.svg', d3.select('body').html());
+        console.log('The point plot SVG file was created.');
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 }
 
+function convertToNumberValueIterable(arr: (number | string | undefined)[]): Iterable<NumberValue> {
+    // Filter out undefined values and convert strings to numbers
+    const filteredArr: (number | string)[] = arr.filter(el => typeof el === 'number' || (typeof el === 'string' && !isNaN(Number(el)))) as (number | string)[];
+
+    // Map the filtered array elements to NumberValue objects
+    const numberValueIterable: Iterable<NumberValue> = {
+        [Symbol.iterator]: function* () {
+            for (const num of filteredArr) {
+                yield { value: typeof num === 'string' ? parseInt(num, 10) : num } as unknown as NumberValue;
+            }
+        },
+    };
+
+    return numberValueIterable;
+}
+
+
 // Call the createChart function
-//createChart();
