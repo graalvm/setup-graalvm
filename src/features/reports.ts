@@ -591,7 +591,7 @@ function creatPRReport(recentData: BuildOutput, baseBranchData: BuildOutput): st
   const analysis = recentData.analysis_results
   const analysisTypes = analysis.types ? analysis.types : analysis.classes
   const recentDetails = recentData.image_details
-  const baseBranchDetails = recentData.image_details
+  const baseBranchDetails = baseBranchData.image_details
   let objectCount = ''
   if (recentDetails.image_heap.objects) {
     objectCount = `${recentDetails.image_heap.objects.count.toLocaleString()} objects, `
