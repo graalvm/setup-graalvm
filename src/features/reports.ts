@@ -147,6 +147,7 @@ export async function generateReports(): Promise<void> {
     if (arePRReportsEnabled()) {
       const baseBranchBuildOutput: BuildOutput = JSON.parse(await getPrBaseBranchMetrics())
       const prReport = creatPRReport(buildOutput, baseBranchBuildOutput)
+      core.info(prReport)
       await createPRComment(prReport)
     }
 
