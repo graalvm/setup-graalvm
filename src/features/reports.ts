@@ -792,7 +792,6 @@ function creatPRReport(recentData: BuildOutput, baseBranchData: BuildOutput): st
   )}</td>
       <td align="left" ${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) < 0 ? 'style="background-color: green;"': ''}${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) > 0 ? 'style="background-color: red;"': ''}>${bytesToHuman(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes)} (${toPercent(baseBranchDetails.code_area.bytes, recentDetails.code_area.bytes)})</td>
       <td align="left">${recentDetails.code_area.compilation_units.toLocaleString()} compilation units</td>
-      <td></td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-image-heap" target="_blank">Image heap</a></td>
@@ -817,6 +816,59 @@ function creatPRReport(recentData: BuildOutput, baseBranchData: BuildOutput): st
       <td align="left">Total</td>
       <td align="right"><strong>${bytesToHuman(
       recentDetails.total_bytes
+  )}</strong></td>
+      <td align="right">100.000%</td>
+      <td align="left" ${(recentDetails.total_bytes - baseBranchDetails.total_bytes) < 0 ? 'style="background-color: green;"': ''}${(recentDetails.total_bytes - baseBranchDetails.total_bytes) > 0 ? 'style="background-color: red;"': ''}>${bytesToHuman(recentDetails.total_bytes - baseBranchDetails.total_bytes)} (${toPercent(baseBranchDetails.total_bytes, recentDetails.total_bytes)})</td>
+      <td align="left"></td>
+    </tr>
+  </tbody>
+</table>
+
+
+<table>
+  <thead>
+    <tr>
+      <th align="left">Category</th>
+      <th align="right">Size</th>
+      <th align="right">in %</th>
+      <th align="left">Details</th>
+      <th align="left">Compared to <i>${baseBranch}</i> (+/- x Bytes)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-code-area" target="_blank">Code area</a></td>
+      <td align="right">${bytesToHuman(baseBranchDetails.code_area.bytes)}</td>
+      <td align="right">${toPercent(
+      baseBranchDetails.code_area.bytes,
+      baseBranchDetails.total_bytes
+  )}</td>
+      <td align="left" ${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) < 0 ? 'style="background-color: green;"': ''}${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) > 0 ? 'style="background-color: red;"': ''}>${bytesToHuman(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes)} (${toPercent(baseBranchDetails.code_area.bytes, recentDetails.code_area.bytes)})</td>
+      <td align="left">${recentDetails.code_area.compilation_units.toLocaleString()} compilation units</td>
+    </tr>
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-image-heap" target="_blank">Image heap</a></td>
+      <td align="right">${bytesToHuman(baseBranchDetails.image_heap.bytes)}</td>
+      <td align="right">${toPercent(
+      baseBranchDetails.image_heap.bytes,
+      baseBranchDetails.total_bytes
+  )}</td>
+      <td align="left" ${1 < 0 ? 'style="background-color: green;"': ''}${(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes) > 0 ? 'style="background-color: red;"': ''}>${bytesToHuman(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes)} (${toPercent(baseBranchDetails.image_heap.bytes, recentDetails.image_heap.bytes)})</td>
+      <td align="left">${objectCount}${bytesToHuman(
+      recentDetails.image_heap.resources.bytes
+  )} for ${recentDetails.image_heap.resources.count.toLocaleString()} resources</td>
+    </tr>${debugInfoLine}
+    <tr>
+      <td align="left"><a href="${DOCS_BASE}#glossary-other-data" target="_blank">Other data</a></td>
+      <td align="right">${bytesToHuman(baseBranchOtherBytes)}</td>
+      <td align="right">${toPercent(baseBranchOtherBytes, baseBranchDetails.total_bytes)}</td>
+      <td align="left" ${(recentOtherBytes - baseBranchOtherBytes) < 0 ? 'style="background-color: green;"': ''}${-1 > 0 ? 'style="background-color: red;"': ''}>${bytesToHuman(recentOtherBytes - baseBranchOtherBytes)} (${toPercent(baseBranchOtherBytes, recentOtherBytes)})</td>
+      <td align="left"></td>
+    </tr>
+    <tr>
+      <td align="left">Total</td>
+      <td align="right"><strong>${bytesToHuman(
+      baseBranchDetails.total_bytes
   )}</strong></td>
       <td align="right">100.000%</td>
       <td align="left" ${(recentDetails.total_bytes - baseBranchDetails.total_bytes) < 0 ? 'style="background-color: green;"': ''}${(recentDetails.total_bytes - baseBranchDetails.total_bytes) > 0 ? 'style="background-color: red;"': ''}>${bytesToHuman(recentDetails.total_bytes - baseBranchDetails.total_bytes)} (${toPercent(baseBranchDetails.total_bytes, recentDetails.total_bytes)})</td>
