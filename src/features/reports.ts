@@ -799,8 +799,9 @@ function creatPRReport(recentData: BuildOutput, baseBranchData: BuildOutput): st
       recentDetails.total_bytes
   )}</td>
       <td align="left">
-${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) < 0 ? `\n\n![#f03c15](https://placehold.co/15x15/008000/008000.png)__${bytesToHuman(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes)} (${getDiffPercent(baseBranchDetails.code_area.bytes, recentDetails.code_area.bytes)})__![#f03c15](https://placehold.co/15x15/008000/008000.png)`: ''}
-${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) > 0 ? `\n\n![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)__${bytesToHuman(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes)} (${getDiffPercent(baseBranchDetails.code_area.bytes, recentDetails.code_area.bytes)})__![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)`: ''}
+${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) < 0 ? `\n\n![#f03c15](https://placehold.co/15x15/008000/008000.png)      ${bytesToHuman(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes)} (${getDiffPercent(baseBranchDetails.code_area.bytes, recentDetails.code_area.bytes)})      ![#f03c15](https://placehold.co/15x15/008000/008000.png)`: ''}
+${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) === 0 ? `${bytesToHuman(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes)} (${getDiffPercent(baseBranchDetails.code_area.bytes, recentDetails.code_area.bytes)}`: ''}
+${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) > 0 ? `\n\n![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)      ${bytesToHuman(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes)} (${getDiffPercent(baseBranchDetails.code_area.bytes, recentDetails.code_area.bytes)})      ![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)`: ''}
 </td>
       <td align="left">${recentDetails.code_area.compilation_units.toLocaleString()} compilation units</td>
     </tr>
@@ -812,8 +813,9 @@ ${(recentDetails.code_area.bytes - baseBranchDetails.code_area.bytes) > 0 ? `\n\
       recentDetails.total_bytes
   )}</td>
       <td align="left">
-${(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes) < 0 ? `\n\n![#f03c15](https://placehold.co/15x15/008000/008000.png)__${bytesToHuman(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes)} (${getDiffPercent(baseBranchDetails.image_heap.bytes, recentDetails.image_heap.bytes)})__![#f03c15](https://placehold.co/15x15/008000/008000.png)`: ''}
-${(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes) > 0 ? `\n\n![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)__${bytesToHuman(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes)} (${getDiffPercent(baseBranchDetails.image_heap.bytes, recentDetails.image_heap.bytes)})__![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)`: ''}
+${(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes) < 0 ? `\n\n![#f03c15](https://placehold.co/15x15/008000/008000.png)      ${bytesToHuman(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes)} (${getDiffPercent(baseBranchDetails.image_heap.bytes, recentDetails.image_heap.bytes)})      ![#f03c15](https://placehold.co/15x15/008000/008000.png)`: ''}
+${(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes) === 0 ? `${bytesToHuman(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes)} (${getDiffPercent(baseBranchDetails.image_heap.bytes, recentDetails.image_heap.bytes)})` : ''}
+${(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes) > 0 ? `\n\n![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)      ${bytesToHuman(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes)} (${getDiffPercent(baseBranchDetails.image_heap.bytes, recentDetails.image_heap.bytes)})      ![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)`: ''}
 </td>
       <td align="left">${objectCount}${bytesToHuman(
       recentDetails.image_heap.resources.bytes
@@ -824,8 +826,9 @@ ${(recentDetails.image_heap.bytes - baseBranchDetails.image_heap.bytes) > 0 ? `\
       <td align="right">${bytesToHuman(recentOtherBytes)}</td>
       <td align="right">${toPercent(recentOtherBytes, recentDetails.total_bytes)}</td>
       <td align="left">
-${(recentOtherBytes - baseBranchOtherBytes) < 0 ? `\n\n![#f03c15](https://placehold.co/15x15/008000/008000.png)__${bytesToHuman(recentOtherBytes - baseBranchOtherBytes)} (${getDiffPercent(baseBranchOtherBytes, baseBranchOtherBytes)})__![#f03c15](https://placehold.co/15x15/008000/008000.png)`: ''}
-${(recentOtherBytes - baseBranchOtherBytes) > 0 ? `\n\n![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)__${bytesToHuman(recentOtherBytes - baseBranchOtherBytes)} (${getDiffPercent(baseBranchOtherBytes, recentOtherBytes)})__![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)`: ''}
+${(recentOtherBytes - baseBranchOtherBytes) < 0 ? `\n\n![#f03c15](https://placehold.co/15x15/008000/008000.png)      ${bytesToHuman(recentOtherBytes - baseBranchOtherBytes)} (${getDiffPercent(baseBranchOtherBytes, recentOtherBytes)})      ![#f03c15](https://placehold.co/15x15/008000/008000.png)`: ''}
+${(recentOtherBytes - baseBranchOtherBytes) === 0 ? `${bytesToHuman(recentOtherBytes - baseBranchOtherBytes)} (${getDiffPercent(baseBranchOtherBytes, recentOtherBytes)})`: ''}
+${(recentOtherBytes - baseBranchOtherBytes) > 0 ? `\n\n![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)      ${bytesToHuman(recentOtherBytes - baseBranchOtherBytes)} (${getDiffPercent(baseBranchOtherBytes, recentOtherBytes)})      ![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)`: ''}
 </td>
       <td align="left"></td>
     </tr>
@@ -836,8 +839,10 @@ ${(recentOtherBytes - baseBranchOtherBytes) > 0 ? `\n\n![#f03c15](https://placeh
   )}</strong></td>
       <td align="right">100.000%</td>
       <td align="left">
-${(recentDetails.total_bytes - baseBranchDetails.total_bytes) < 0 ? `\n\n![#f03c15](https://placehold.co/15x15/008000/008000.png)__${bytesToHuman(recentDetails.total_bytes - baseBranchDetails.total_bytes)} (${getDiffPercent(baseBranchDetails.total_bytes, recentDetails.total_bytes)})__![#f03c15](https://placehold.co/15x15/008000/008000.png)`: ''}
-${(recentDetails.total_bytes - baseBranchDetails.total_bytes) > 0 ? `\n\n![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)__${bytesToHuman(recentDetails.total_bytes - baseBranchDetails.total_bytes)} (${getDiffPercent(baseBranchDetails.total_bytes, recentDetails.total_bytes)})__![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)`: ''}
+${(recentDetails.total_bytes - baseBranchDetails.total_bytes) < 0 ? `\n\n![#f03c15](https://placehold.co/15x15/008000/008000.png)      ${bytesToHuman(recentDetails.total_bytes - baseBranchDetails.total_bytes)} (${getDiffPercent(baseBranchDetails.total_bytes, recentDetails.total_bytes)})      ![#f03c15](https://placehold.co/15x15/008000/008000.png)`: ''}
+${(recentDetails.total_bytes - baseBranchDetails.total_bytes) === 0 ? `${bytesToHuman(recentDetails.total_bytes - baseBranchDetails.total_bytes)} (${getDiffPercent(baseBranchDetails.total_bytes, recentDetails.total_bytes)}`: ''}
+${(recentDetails.total_bytes - baseBranchDetails.total_bytes) > 0 ? `\n\n![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)      ${bytesToHuman(recentDetails.total_bytes - baseBranchDetails.total_bytes)} (${getDiffPercent(baseBranchDetails.total_bytes, recentDetails.total_bytes)})      ![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)`: ''}
+</td>
       <td align="left"></td>
     </tr>
   </tbody>
