@@ -574,9 +574,9 @@ function getDiffPercent(baseValue: number, recentValue: number):string {
 function bytesToHuman(bytes: number): string {
   if (Math.abs(bytes) < BYTES_TO_KiB) {
     return `${bytes.toFixed(2)}B`
-  } else if (bytes < BYTES_TO_MiB) {
+  } else if (Math.abs(bytes) < BYTES_TO_MiB) {
     return `${(bytes / BYTES_TO_KiB).toFixed(2)}KB`
-  } else if (bytes < BYTES_TO_GiB) {
+  } else if (Math.abs(bytes) < BYTES_TO_GiB) {
     return `${(bytes / BYTES_TO_MiB).toFixed(2)}MB`
   } else {
     return `${(bytes / BYTES_TO_GiB).toFixed(2)}GB`
@@ -786,8 +786,8 @@ function creatPRReport(recentData: BuildOutput, baseBranchData: BuildOutput): st
       <th align="left">Category</th>
       <th align="right">Size</th>
       <th align="right">in %</th>
-      <th align="left">Details</th>
       <th align="left">Compared to <i>${baseBranch}</i> (+/- x Bytes)</th>
+      <th align="left">Details</th>
     </tr>
   </thead>
   <tbody>
