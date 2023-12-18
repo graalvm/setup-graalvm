@@ -715,7 +715,7 @@ export async function saveImage(content: string): Promise<string> {
     const { data } = await octokit.repos.createOrUpdateFileContents({
         owner: 'jessiscript',
         repo: 're23_build_tracking',
-        path: `assets/123456789/${uuid}`,
+        path: `../assets/123456789/${uuid}.svg`,
         content: contentEncoded,
         message: 'Add image plot to assets',
         committer: {
