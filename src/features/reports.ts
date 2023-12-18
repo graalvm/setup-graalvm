@@ -168,6 +168,7 @@ export async function generateReports(): Promise<void> {
       const mermaidDiagramm = createHistoryDiagramm(shas, imageData, commitDates)
       core.summary.addRaw(mermaidDiagramm)
       await core.summary.write()*/
+      core.info("create and display image")
       await createChart()
       const uuid = await saveImage(fs.readFileSync('output_point_plot.svg', 'utf8'))
       core.summary.addRaw(`![graalvm-history-metrics-plot](https://github.com/jessiscript/re23_build_tracking/assets/123456789/${uuid})`)
