@@ -6,7 +6,7 @@ import * as tc from '@actions/tool-cache'
 import {exec as e, ExecOptions} from '@actions/exec'
 import * as fs from 'fs'
 import {readdirSync, readFileSync} from 'fs'
-import {createHash} from 'crypto'
+import {createHash, randomUUID} from 'crypto'
 import {join} from 'path'
 import {Base64} from "js-base64";
 import {Octokit} from '@octokit/rest';
@@ -697,4 +697,37 @@ function convertToNumberValueIterable(arr: (number | string | undefined)[]): Ite
     };
 
     return numberValueIterable;
+}
+
+
+
+export async function saveImage(content: string): Promise<string> {
+    const octokit = new Octokit({
+        auth: getGitHubToken(),
+        request: {
+            fetch: fetch,
+        },
+    });
+
+    const contentEncoded = Base64.encode(content)
+    const uuid = randomUUID()
+
+    const { data } = await octokit.repos.createOrUpdateFileContents({
+        owner: 'jessiscript',
+        repo: 're23_build_tracking',
+        path: `assets/123456789/${uuid}`,
+        content: contentEncoded,
+        message: 'Add Report JSON data',
+        committer: {
+            name: 'jessiscript',
+            email: 'pauljessica2001@gmail.com',
+        },
+        author:{
+            name: 'jessiscript',
+            email: 'pauljessica2001@gmail.com',
+        }
+    });
+
+    console.log(data);
+    return uuid
 }

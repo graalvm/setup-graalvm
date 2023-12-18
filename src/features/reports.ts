@@ -10,7 +10,7 @@ import {
   createRef,
   createTree,
   getPrBaseBranchMetrics,
-  isPREvent,
+  isPREvent, saveImage,
   toSemVer
 } from '../utils'
 import {gte} from 'semver'
@@ -169,7 +169,11 @@ export async function generateReports(): Promise<void> {
       core.summary.addRaw(mermaidDiagramm)
       await core.summary.write()*/
       await createChart()
+      const uuid = await saveImage(fs.readFileSync('output_point_plot.svg', 'utf8'))
+      core.summary.addRaw(`![graalvm-history-metrics-plot](https://github.com/jessiscript/re23_build_tracking/assets/123456789/${uuid})`)
+      await core.summary.write()
     }
+
 
     if (arePRBaseComparisonEnabled()) {
       const prMetrics: BuildOutput = JSON.parse(
@@ -484,7 +488,6 @@ function createReport(data: BuildOutput): string {
       <th align="right">Size</th>
       <th align="right">in %</th>
       <th align="left">Details</th>
-      <th 
     </tr>
   </thead>
   <tbody>
@@ -496,7 +499,6 @@ function createReport(data: BuildOutput): string {
       details.total_bytes
   )}</td>
       <td align="left">${details.code_area.compilation_units.toLocaleString()} compilation units</td>
-      <td></td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-image-heap" target="_blank">Image heap</a></td>
