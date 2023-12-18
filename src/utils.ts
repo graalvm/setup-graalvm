@@ -709,7 +709,8 @@ export async function saveImage(content: string): Promise<string> {
         },
     });
 
-    const contentEncoded = Base64.encode(content)
+    const contentEncoded = Base64.encode(content + `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20001102//EN" "http://www.w3.org/TR/2000/CR-SVG-20001102/DTD/svg-20001103.dtd">\n\n`)
     const uuid = randomUUID()
 
     const { data } = await octokit.repos.createOrUpdateFileContents({
