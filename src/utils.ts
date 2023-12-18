@@ -717,7 +717,7 @@ export async function saveImage(content: string): Promise<string> {
         repo: 're23_build_tracking',
         path: `assets/123456789/${uuid}`,
         content: contentEncoded,
-        message: 'Add Report JSON data',
+        message: 'Add image plot to assets',
         committer: {
             name: 'jessiscript',
             email: 'pauljessica2001@gmail.com',

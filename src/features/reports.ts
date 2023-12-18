@@ -171,8 +171,10 @@ export async function generateReports(): Promise<void> {
       core.info("create and display image")
       await createChart()
       const uuid = await saveImage(fs.readFileSync('output_point_plot.svg', 'utf8'))
+      core.summary.addRaw(`\n## Metric history plot`)
       core.summary.addRaw(`![graalvm-history-metrics-plot](https://github.com/jessiscript/re23_build_tracking/assets/123456789/${uuid})`)
       await core.summary.write()
+      core.info(`![graalvm-history-metrics-plot](https://github.com/jessiscript/re23_build_tracking/assets/123456789/${uuid})`)
     }
 
 
