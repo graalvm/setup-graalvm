@@ -362,7 +362,7 @@ async function getImageData(commitSha: string) {
             data.image_details.image_heap.bytes / 1e6,
         ];
     } catch (error) {
-        console.error('Error fetching image data:');
+        console.error('Error fetching image data: ', error);
         return [0, 0, 0];
     }
 }
@@ -398,9 +398,10 @@ async function fetchData(): Promise<any> {
 
         // Extract data for plotting
         const commitDates = timestamps.map(timestamp => formatDate(timestamp, Number(core.getInput('build-counts-for-metric-history'))));
-        const imageDataPromises = await shas.map(async sha => await getImageData(sha));
-        await core.info(JSON.stringify(imageDataPromises))
+        const imageDataPromises = shas.map(async sha => await getImageData(sha));
         const imageData = await Promise.all(imageDataPromises);
+        await core.info(JSON.stringify(imageDataPromises))
+        await core.info(JSON.stringify(imageData))
         const imageSizes = imageData.filter(entry => entry).map(entry => entry[0]);
         const codeAreaSizes = imageData.filter(entry => entry).map(entry => entry[1]);
         const imageHeapSizes = imageData.filter(entry => entry).map(entry => entry[2]);
