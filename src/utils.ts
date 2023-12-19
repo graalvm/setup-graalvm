@@ -416,7 +416,7 @@ function formatDate(date: string, n: number) {
     const commitTimeLocal = commitTime.setZone('Europe/Berlin');
 
     if (n >= 30) {
-        return commitTimeLocal.toFormat('dd.MM.\HH:mm');
+        return commitTimeLocal.toFormat('dd.MM.\nHH:mm');
     } else {
         return commitTimeLocal.toFormat('dd.MM.yyyy \n HH:mm');
     }
@@ -490,10 +490,12 @@ async function fetchData(): Promise<any> {
         // Prepare data
         const timestamps = [];
         const shas = [];
+        const commitMessages = []
 
         for (const pushEvent of pushEvents) {
             timestamps.push(pushEvent.created_at);
             shas.push(pushEvent.payload.commits[pushEvent.payload.commits.length - 1].sha);
+            commitMessages.push(pushEvent.payload.commits[pushEvent.payload.commits.length - 1].message)
         }
 
         // Extract data for plotting
@@ -506,6 +508,8 @@ async function fetchData(): Promise<any> {
 
         const data= {
             commitDates: commitDates,
+            commitShas: shas,
+            commitMessages: commitMessages,
             imageData: imageData,
             imageSizes: imageSizes,
             codeAreaSizes: codeAreaSizes,
@@ -568,10 +572,10 @@ export async function createChart() {
         // Use dynamic import for d3
         const d3 = await import('d3');
         const data = await fetchData();
-        const labels = data.commitDates.reverse();
-        const datasets = [
+        const commitDates = data.commitDates.reverse();
+        const chartData = [
             {
-                label: 'Image Sizes',
+                label: 'Total Image Sizes',
                 data: data.imageSizes.reverse(),
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -590,20 +594,42 @@ export async function createChart() {
             },
         ];
 
+        const tableData = [
+            {
+                label: 'Commit Date',
+                data: commitDates,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            },
+            {
+                label: 'Commit Sha',
+                data: data.commitShas.reverse(),
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            },
+            {
+                label: 'Commit Message',
+                data: data.commitMessages.reverse(),
+                borderColor: 'rgba(255, 205, 86, 1)',
+                backgroundColor: 'rgba(255, 205, 86, 0.2)',
+            }
+        ]
+
+
         // Use JSDOM to create a virtual DOM
         const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
         global.document = dom.window.document;
 
-        const svgWidth = 800;
+        const svgWidth = 1000;
         const svgHeight = 400;
 
-        const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+        const margin = {top: 20, right: 20, bottom: 60, left: 50};
         const width = svgWidth - margin.left - margin.right;
         const height = svgHeight - margin.top - margin.bottom;
 
-        const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes)) as NumberValue
+        const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes + 3)) as NumberValue
 
-        const xScale = d3.scaleBand().domain(labels).range([0, width]).padding(0.1);
+        const xScale = d3.scaleBand().domain(commitDates).range([0, width - 200]).padding(0.1);
         const yScale = d3.scaleLinear().domain([0, maxImageSizes]).range([height, 0]);
 
         const svg = d3.select('body')
@@ -614,35 +640,41 @@ export async function createChart() {
         const chart = svg.append('g')
             .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
+        // Create a legend
+        const legend = chart.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(${width - 190}, 0)`);
+
         // Add dashed grid lines for the x-axis
         chart.append('g')
             .attr('class', 'grid')
             .attr('transform', `translate(0, ${height})`)
             .call(
                 d3.axisBottom(xScale)
-                    .tickSize(-height)
-                    .tickFormat(null)
+                    .tickSizeInner(-height)
+                    .tickFormat(() => '')
                     .tickSizeOuter(0)
             )
             .selectAll('.tick line')
-            .attr('stroke', 'lightgrey') // Adjust color as needed
-            .attr('stroke-dasharray', '2,2') // Adjust dash pattern as needed
-            .attr('stroke-width', 1); // Adjust line thickness as needed
+            .attr('stroke', 'lightgrey')
+            .attr('stroke-dasharray', '2,2')
+            .attr('stroke-width', 1);
 
         // Add dashed grid lines for the y-axis
         chart.append('g')
             .attr('class', 'grid')
             .call(
                 d3.axisLeft(yScale)
-                    .tickSize(-width)
-                    .tickFormat(null)
+                    .tickSizeInner(-width)
+                    .tickFormat(() => '')
                     .tickSizeOuter(0)
             )
             .selectAll('.tick line')
-            .attr('stroke', 'lightgrey') // Adjust color as needed
-            .attr('stroke-dasharray', '2,2') // Adjust dash pattern as needed
-            .attr('stroke-width', 1); // Adjust line thickness as needed
+            .attr('stroke', 'lightgrey')
+            .attr('stroke-dasharray', '2,2')
+            .attr('stroke-width', 1);
 
+        // X-axis
         chart.append('g')
             .attr('transform', `translate(0, ${height})`)
             .call(d3.axisBottom(xScale))
@@ -650,31 +682,87 @@ export async function createChart() {
             .style('text-anchor', 'end')
             .attr('transform', 'rotate(-45)');
 
+        // Y-axis
         chart.append('g')
-            .call(d3.axisLeft(yScale));
+            .call(d3.axisLeft(yScale))
 
-        datasets.forEach(dataset => {
+        chart.append('text')
+            .attr("text-anchor", "end")
+            .attr('transform', 'rotate(-90)')
+            .attr('y', -margin.left + 20)
+            .attr('x', -margin.top - 100)
+            //.attr('dy', '1em')
+            .text('Size in MB');
+
+        chartData.forEach((dataset, index) => {
             // Connect data points with lines
             chart.append('path')
                 .datum(dataset.data)
                 .attr('fill', 'none')
                 .attr('stroke', dataset.borderColor)
                 .attr('stroke-width', 2)
-                .attr('d', d3.line()
-                    .x((d, i) => xScale(labels[i])! + xScale.bandwidth() / 2)
-                    .y(d => yScale(<number | { valueOf(): number }><number | { valueOf(): number }><unknown | { valueOf(): number }>d))
+                .attr('d', d3.line<number>()
+                    .x((d, i) => xScale(commitDates[i])! + xScale.bandwidth() / 2)
+                    .y(d => yScale(d)!)
                 );
 
             // Add circles at data points for each dataset
-            chart.selectAll(`circle.${dataset.label}`)
+            const circles = chart.selectAll(`circle.${dataset.label}`)
                 .data(dataset.data)
                 .enter().append('circle')
-                .attr('class', dataset.label) // Ensure unique class for each dataset
-                .attr('cx', (d, i) => xScale(labels[i])! + xScale.bandwidth() / 2)
-                .attr('cy', d => yScale(<number | { valueOf(): number }><unknown | { valueOf(): number }>d))
+                .attr('class', dataset.label)
+                .attr('cx', (d, i) => xScale(commitDates[i])! + xScale.bandwidth() / 2)
+                .attr('cy', d => yScale(<number | { valueOf(): number }>d))
                 .attr('r', 5)
                 .attr('fill', dataset.borderColor);
+
+            const legendItem = legend.append('g')
+                .attr('transform', `translate(0, ${index * 20})`);
+
+            legendItem.append('rect')
+                .attr('width', 18)
+                .attr('height', 18)
+                .attr('fill', dataset.borderColor);
+
+            legendItem.append('text')
+                .attr('x', 24)
+                .attr('y', 9)
+                .attr('dy', '.35em')
+                .style('text-anchor', 'start')
+                .text(dataset.label);
         });
+
+        // Create a table
+        const table = d3.select('body')
+            .append('table')
+            .style('margin-top', '20px')
+            .style('margin-left', '50px');
+
+        // Extract dataset labels
+        const datasetLabels = tableData.map(d => d.label);
+
+        // Create table headers
+        const thead = table.append('thead');
+        thead.append('tr')
+            .selectAll('th')
+            .data(datasetLabels) // Use your dataset labels here
+            .enter()
+            .append('th')
+            .text(d => d);
+
+        // Create table rows
+        const tbody = table.append('tbody');
+        const rows = tbody.selectAll('tr')
+            .data(commitDates) // Assuming commitDates is used as the base data for rows
+            .enter()
+            .append('tr');
+
+        // Populate table cells
+        rows.selectAll('td')
+            .data((d, i) => [commitDates[i], data.commitShas[i], data.commitMessages[i]]) // Adjust based on your data structure
+            .enter()
+            .append('td')
+            .text(d => d);
 
         // Save the SVG as a file
         fs.writeFileSync('output_point_plot.svg', d3.select('body').html());
