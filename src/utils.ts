@@ -333,7 +333,7 @@ async function getImageData(commitSha: string) {
         });
         const refSha = await refResponse.data.object.sha;
 
-        await console.log(refSha)
+        await console.log("refsha:" + refSha)
 
         // Get the tree SHA
         const treeResponse = await octokit.git.getTree({
@@ -341,6 +341,8 @@ async function getImageData(commitSha: string) {
             tree_sha: refSha,
         });
         const blobSha = await treeResponse.data.tree[0].sha;
+        await console.log("blobsha:" + blobSha)
+
 
         // Get the blob content
         const blobResponse = await octokit.git.getBlob({
@@ -348,10 +350,11 @@ async function getImageData(commitSha: string) {
             file_sha: String(blobSha),
         });
 
+        //await console.log("blobsha:" + blobSha)
         const content = Buffer.from(blobResponse.data.content, 'base64').toString('utf-8');
         const data = await JSON.parse(content);
 
-        await console.log(data.image_details.total_bytes / 1e6)
+        await console.log("data" + data.image_details.total_bytes / 1e6)
 
         return [
             data.image_details.total_bytes / 1e6,
