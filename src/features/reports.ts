@@ -154,21 +154,6 @@ export async function generateReports(): Promise<void> {
     const treeSha = await createTree(JSON.stringify(buildOutput))
     await createRef(treeSha)
     if (areMetricHistoriesEnabled()) {
-      /*const pushEvents = await getPushEvents(getBuildCountsForMetricHistory())
-      // Prepare data
-      const timestamps = []
-      const shas = []
-      for (let i=0; i < pushEvents.length; i++) {
-        timestamps.push(pushEvents[i].created_at)
-        shas.push(pushEvents[i].payload.commits[pushEvents[i].payload.commits.length - 1].sha)
-
-      }
-      const imageData = await getImageData(shas)
-      const commitDates = formatTimestamps(timestamps)
-      const mermaidDiagramm = createHistoryDiagramm(shas, imageData, commitDates)
-      core.summary.addRaw(mermaidDiagramm)
-      await core.summary.write()*/
-      core.info("create and display image")
       await createChart()
       const tableContent = fs.readFileSync('output_point_plot.svg', 'utf8').match('/<table>.*</table>/')
       const uuid = await saveImage(fs.readFileSync('output_point_plot.svg', 'utf8'))

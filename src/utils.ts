@@ -304,111 +304,6 @@ async function getBlobContent(octokit: Octokit, context: Context, blobSha: strin
     })
     return Base64.decode(data.content)
 }
-/*
-export async function getPushEvents(numberOfBuilds: number): Promise<any[]> {
-    try {
-        const octokit = new Octokit({
-            auth: getGitHubToken(),
-            request: {
-                fetch: fetch,
-            },
-        });
-        const context = github.context
-        const eventResponse = await octokit.request(c.OCTOKIT_ROUTE_GET_EVENTS, {
-            ...context.repo,
-            headers: c.OCTOKIT_BASIC_HEADER
-        })
-        let linkHeader = eventResponse.headers.link
-        const eventData: any = eventResponse.data
-        const pushEvents = []
-        let eventsLeft = numberOfBuilds
-
-        for (let event of eventData) {
-            if (eventsLeft <= 0) {
-                break;
-            }
-            if (
-                event.type === "PushEvent" &&
-                event.payload!.ref! === process.env.GITHUB_REF
-            ) {
-                pushEvents.push(event);
-                eventsLeft = eventsLeft-1;
-            }
-        }
-
-        let nextPageMatch = /<([^>]+)>;\s*rel="next"/;
-        while (
-            linkHeader &&
-            linkHeader.includes('rel="next"') &&
-            eventsLeft > 0
-            ) {
-            let nextPageUrl = nextPageMatch?.exec(linkHeader)![1];
-            // Make the request for the next page
-            // Assuming you use fetch API or similar for making HTTP requests
-            fetch(nextPageUrl, {
-                headers: {
-                    Authorization: "Bearer " + getGitHubToken(),
-                },
-            })
-                .then((response) => response.json())
-                .then((nextPageResponse) => {
-                    for (let event of nextPageResponse) {
-                        if (eventsLeft <= 0) {
-                            break;
-                        }
-                        if (
-                            event.type === "PushEvent" &&
-                            event.payload.ref === process.env.GITHUB_REF
-                        ) {
-                            pushEvents.push(event);
-                            eventsLeft = eventsLeft-1;
-                        }
-                    }
-
-                    // Update the link_header for the next iteration
-                    linkHeader = eventResponse.headers.link;
-                })
-                .catch((error) => {
-                    console.error("Error fetching next page:", error);
-                });
-        }
-        return pushEvents
-    } catch (err) {
-        console.info("An error occurred during getting metrics data.")
-        return []
-    }
-}
-
-export function formatTimestamps(timestamps: string[]) {
-    const formattedTimestamps = []
-    for (let i=0; i<timestamps.length; i++) {
-        let commitTime = DateTime.fromISO(timestamps[i]);
-        let commitTimeUtc = commitTime.setZone('UTC');
-        let commitTimeLocal = commitTimeUtc.setZone('Europe/Berlin');
-        let formatter = 'dd/MM/YYYY';
-        formattedTimestamps.push(commitTimeLocal.toFormat(formatter));
-    }
-    return(formattedTimestamps)
-}
-
-export async function getImageData(shas: string[]) {
-    const context = github.context
-    const octokit = new Octokit({
-        auth: getGitHubToken(),
-        request: {
-            fetch: fetch,
-        },
-    });
-    const imageData = []
-    core.info(String(shas))
-    for (let i=0; i< shas.length; i++) {
-        core.info("reent sha: " + shas[i])
-        const blobTreeSha = await getBlobTreeSha(octokit, context, shas[i])
-        const blobSha = await getBlobSha(octokit, context, blobTreeSha)
-        imageData.push(await getBlobContent(octokit, context, blobSha))
-    }
-    return imageData
-}*/
 
 function formatDate(date: string, n: number) {
     // Parse the timestamp and convert it to the desired timezone
@@ -815,7 +710,7 @@ export async function saveImage(content: string): Promise<string> {
 <body>
 
   <!-- Include the SVG content here -->
-${console}
+${content}
 </body>
 </html>`)
     const uuid = randomUUID()
