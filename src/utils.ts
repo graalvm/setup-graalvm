@@ -331,16 +331,16 @@ async function getImageData(commitSha: string) {
             ...github.context.repo,
             ref: `graalvm-metrics/${commitSha}`,
         });
-        const refSha = refResponse.data.object.sha;
+        const refSha = await refResponse.data.object.sha;
 
-        console.log(refSha)
+        await console.log(refSha)
 
         // Get the tree SHA
         const treeResponse = await octokit.git.getTree({
             ...github.context.repo,
             tree_sha: refSha,
         });
-        const blobSha = treeResponse.data.tree[0].sha;
+        const blobSha = await treeResponse.data.tree[0].sha;
 
         // Get the blob content
         const blobResponse = await octokit.git.getBlob({
@@ -349,9 +349,9 @@ async function getImageData(commitSha: string) {
         });
 
         const content = Buffer.from(blobResponse.data.content, 'base64').toString('utf-8');
-        const data = JSON.parse(content);
+        const data = await JSON.parse(content);
 
-        console.log(data.image_details.total_bytes / 1e6)
+        await console.log(data.image_details.total_bytes / 1e6)
 
         return [
             data.image_details.total_bytes / 1e6,
@@ -396,6 +396,7 @@ async function fetchData(): Promise<any> {
         // Extract data for plotting
         const commitDates = timestamps.map(timestamp => formatDate(timestamp, Number(core.getInput('build-counts-for-metric-history'))));
         const imageDataPromises = shas.map(async sha => await getImageData(sha));
+        core.info(String(imageDataPromises))
         const imageData = await Promise.all(imageDataPromises);
         const imageSizes = imageData.filter(entry => entry).map(entry => entry[0]);
         const codeAreaSizes = imageData.filter(entry => entry).map(entry => entry[1]);
