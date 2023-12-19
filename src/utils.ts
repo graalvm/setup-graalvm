@@ -660,6 +660,127 @@ export async function createChart() {
                 .attr('fill', 'none')
                 .attr('stroke', dataset.borderColor)
                 .attr('stroke-width', 2)
+                .attr('d', d3.line()
+                    .x((d, i) => xScale(labels[i])! + xScale.bandwidth() / 2)
+                    .y(d => yScale(<number | { valueOf(): number }><number | { valueOf(): number }><unknown | { valueOf(): number }>d))
+                );
+
+            // Add circles at data points for each dataset
+            chart.selectAll(`circle.${dataset.label}`)
+                .data(dataset.data)
+                .enter().append('circle')
+                .attr('class', dataset.label) // Ensure unique class for each dataset
+                .attr('cx', (d, i) => xScale(labels[i])! + xScale.bandwidth() / 2)
+                .attr('cy', d => yScale(<number | { valueOf(): number }><unknown | { valueOf(): number }>d))
+                .attr('r', 5)
+                .attr('fill', dataset.borderColor);
+        });
+
+        // Save the SVG as a file
+        fs.writeFileSync('output_point_plot.svg', d3.select('body').html());
+        console.log('The point plot SVG file was created.');
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+export async function createChart2() {
+    try {
+        // Use dynamic import for d3
+        const d3 = await import('d3');
+        const data = await fetchData();
+        const labels = data.commitDates.reverse();
+        const datasets = [
+            {
+                label: 'Image Sizes',
+                data: data.imageSizes.reverse(),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            },
+            {
+                label: 'Code Area Sizes',
+                data: data.codeAreaSizes.reverse(),
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            },
+            {
+                label: 'Image Heap Sizes',
+                data: data.imageHeapSizes.reverse(),
+                borderColor: 'rgba(255, 205, 86, 1)',
+                backgroundColor: 'rgba(255, 205, 86, 0.2)',
+            },
+        ];
+
+        // Use JSDOM to create a virtual DOM
+        const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+        global.document = dom.window.document;
+
+        const svgWidth = 800;
+        const svgHeight = 400;
+
+        const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+        const width = svgWidth - margin.left - margin.right;
+        const height = svgHeight - margin.top - margin.bottom;
+
+        const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes)) as NumberValue
+
+        const xScale = d3.scaleBand().domain(labels).range([0, width]).padding(0.1);
+        const yScale = d3.scaleLinear().domain([0, maxImageSizes]).range([height, 0]);
+
+        const svg = d3.select('body')
+            .append('svg')
+            .attr('width', svgWidth)
+            .attr('height', svgHeight);
+
+        const chart = svg.append('g')
+            .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+        // Add dashed grid lines for the x-axis
+        chart.append('g')
+            .attr('class', 'grid')
+            .attr('transform', `translate(0, ${height})`)
+            .call(
+                d3.axisBottom(xScale)
+                    .tickSize(-height)
+                    .tickFormat(null)
+                    .tickSizeOuter(0)
+            )
+            .selectAll('.tick line')
+            .attr('stroke', 'lightgrey') // Adjust color as needed
+            .attr('stroke-dasharray', '2,2') // Adjust dash pattern as needed
+            .attr('stroke-width', 1); // Adjust line thickness as needed
+
+        // Add dashed grid lines for the y-axis
+        chart.append('g')
+            .attr('class', 'grid')
+            .call(
+                d3.axisLeft(yScale)
+                    .tickSize(-width)
+                    .tickFormat(null)
+                    .tickSizeOuter(0)
+            )
+            .selectAll('.tick line')
+            .attr('stroke', 'lightgrey') // Adjust color as needed
+            .attr('stroke-dasharray', '2,2') // Adjust dash pattern as needed
+            .attr('stroke-width', 1); // Adjust line thickness as needed
+
+        chart.append('g')
+            .attr('transform', `translate(0, ${height})`)
+            .call(d3.axisBottom(xScale))
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('transform', 'rotate(-45)');
+
+        chart.append('g')
+            .call(d3.axisLeft(yScale));
+
+        datasets.forEach(dataset => {
+            // Connect data points with lines
+            chart.append('path')
+                .datum(dataset.data)
+                .attr('fill', 'none')
+                .attr('stroke', dataset.borderColor)
+                .attr('stroke-width', 2)
                 .attr('d', d3!.line<[number, number]>()!
                     .x((d, i) => xScale(labels[i])! + xScale.bandwidth() / 2)
                     .y(d => yScale(d[1])) // Assuming `d` is an array [x, y]
