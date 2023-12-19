@@ -711,8 +711,7 @@ export async function saveImage(content: string): Promise<string> {
     });
 
     const reg = /(?<=<svg width=".*" height=".*".*)>/
-    const str = "Java3foobar4Script"
-    content = str.replace(reg, " xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
+    content = content.replace(reg, " xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
 
     const contentEncoded = Base64.encode(`<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20001102//EN" "http://www.w3.org/TR/2000/CR-SVG-20001102/DTD/svg-20001103.dtd">\n\n    ` + content)
