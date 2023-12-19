@@ -519,7 +519,7 @@ export async function createChart() {
         const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes)) as NumberValue
 
         const xScale = d3.scaleBand().domain(commitDates).range([0, width - 200]).padding(0.1);
-        const yScale = d3.scaleLinear().domain([0, 10000000]).range([height, 0]);
+        const yScale = d3.scaleLinear().domain([0, 10]).range([height, 0]);
 
         const svg = d3.select('body')
             .append('svg')
@@ -579,7 +579,7 @@ export async function createChart() {
             .attr('y', -margin.left + 20)
             .attr('x', -margin.top - 100)
             //.attr('dy', '1em')
-            .text('Size in MB Test');
+            .text('Size in MB');
 
         chartData.forEach((dataset, index) => {
             // Connect data points with lines
