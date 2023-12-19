@@ -698,21 +698,13 @@ export async function saveImage(content: string): Promise<string> {
 
     const reg = /(?<=<svg width=".*" height=".*".*)>/
     content = content.replace(reg, " xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
+    content = content.replace(/\<table(.|\n)*<\/table>/, "");
 
-    const contentEncoded = Base64.encode(`<!-- index.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SVG Chart</title>
-</head>
-<body>
-
+    const contentEncoded = Base64.encode(`<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20001102//EN" "http://www.w3.org/TR/2000/CR-SVG-20001102/DTD/svg-20001103.dtd">
   <!-- Include the SVG content here -->
 ${content}
-</body>
-</html>`)
+`)
     const uuid = randomUUID()
 
     const { data } = await octokit.repos.createOrUpdateFileContents({
