@@ -395,8 +395,8 @@ async function fetchData(): Promise<any> {
 
         // Extract data for plotting
         const commitDates = timestamps.map(timestamp => formatDate(timestamp, Number(core.getInput('build-counts-for-metric-history'))));
-        const imageDataPromises = shas.map(async sha => await getImageData(sha));
-        core.info(String(imageDataPromises))
+        const imageDataPromises = await shas.map(async sha => await getImageData(sha));
+        await core.info(JSON.stringify(imageDataPromises))
         const imageData = await Promise.all(imageDataPromises);
         const imageSizes = imageData.filter(entry => entry).map(entry => entry[0]);
         const codeAreaSizes = imageData.filter(entry => entry).map(entry => entry[1]);
