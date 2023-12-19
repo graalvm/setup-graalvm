@@ -519,7 +519,7 @@ export async function createChart() {
         const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes)) as NumberValue
 
         const xScale = d3.scaleBand().domain(commitDates).range([0, width - 200]).padding(0.1);
-        const yScale = d3.scaleLinear().domain([0, maxImageSizes]).range([height, 0]);
+        const yScale = d3.scaleLinear().domain([0, 10000000]).range([height, 0]);
 
         const svg = d3.select('body')
             .append('svg')
@@ -541,7 +541,6 @@ export async function createChart() {
             .call(
                 d3.axisBottom(xScale)
                     .tickSizeInner(-height)
-                    .tickFormat(() => '')
                     .tickSizeOuter(0)
             )
             .selectAll('.tick line')
@@ -555,7 +554,6 @@ export async function createChart() {
             .call(
                 d3.axisLeft(yScale)
                     .tickSizeInner(-width)
-                    .tickFormat(() => '')
                     .tickSizeOuter(0)
             )
             .selectAll('.tick line')
