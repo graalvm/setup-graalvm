@@ -627,7 +627,7 @@ export async function createChart() {
         const width = svgWidth - margin.left - margin.right;
         const height = svgHeight - margin.top - margin.bottom;
 
-        const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes + 3)) as NumberValue
+        const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes)) as NumberValue
 
         const xScale = d3.scaleBand().domain(commitDates).range([0, width - 200]).padding(0.1);
         const yScale = d3.scaleLinear().domain([0, maxImageSizes]).range([height, 0]);
@@ -779,7 +779,10 @@ function convertToNumberValueIterable(arr: (number | string | undefined)[]): Ite
     // Map the filtered array elements to NumberValue objects
     const numberValueIterable: Iterable<NumberValue> = {
         [Symbol.iterator]: function* () {
-            for (const num of filteredArr) {
+            for (let num of filteredArr) {
+                if (typeof num === 'number' ) {
+                    num = num +3
+                }
                 yield { value: typeof num === 'string' ? parseInt(num, 10) : num } as unknown as NumberValue;
             }
         },
