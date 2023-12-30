@@ -709,6 +709,7 @@ ${content}
     });
 
     core.info(JSON.stringify(response.data.id))
+    core.info(JSON.stringify(response))
     const gistsResponse = (await octokit.request(`GET /gists/${response.data.id}`, {
         gist_id: 'GIST_ID',
         headers: {
@@ -716,6 +717,8 @@ ${content}
         }
     })).data
 
+    core.info(JSON.stringify(gistsResponse))
+    core.info(JSON.stringify(gistsResponse.files))
     core.info(JSON.stringify(gistsResponse.files[imageName].raw_url))
     return gistsResponse.files[imageName].raw_url
 }
