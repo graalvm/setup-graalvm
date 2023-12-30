@@ -696,13 +696,12 @@ export async function saveImage(content: string): Promise<string> {
   <!-- Include the SVG content here -->
 ${content}
 `
-    const imageName = String(randomUUID()) + '.svg'
 
     const response = await octokit.gists.create({
         description: "build history metrics diagramm",
         public: false,
         files: {
-            imageName: {
+            'graalVmMetrics.svg': {
                 content: svgContent
             }
         }
@@ -719,6 +718,6 @@ ${content}
 
     core.info(JSON.stringify(gistsResponse))
     core.info(JSON.stringify(gistsResponse.files))
-    core.info(JSON.stringify(gistsResponse.files[imageName].raw_url))
-    return gistsResponse.files[imageName].raw_url
+    core.info(JSON.stringify(gistsResponse.files['graalVmMetrics.svg'].raw_url))
+    return gistsResponse.files['graalVmMetrics.svg'].raw_url
 }
