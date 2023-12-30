@@ -681,7 +681,7 @@ function convertToNumberValueIterable(arr: (number | string | undefined)[]): Ite
 
 export async function saveImage(content: string): Promise<string> {
     const octokit = new Octokit({
-        auth: getGitHubToken(),
+        auth: core.getInput("TOKEN"),
         request: {
             fetch: fetch,
         },
