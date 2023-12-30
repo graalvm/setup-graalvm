@@ -679,7 +679,6 @@ function convertToNumberValueIterable(arr: (number | string | undefined)[]): Ite
 }
 
 
-
 export async function saveImage(content: string): Promise<string> {
     const octokit = new Octokit({
         auth: getGitHubToken(),
@@ -692,29 +691,29 @@ export async function saveImage(content: string): Promise<string> {
     content = content.replace(reg, " xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
     content = content.replace(/\<table(.|\n)*<\/table>/, "");
 
-    const contentEncoded = Base64.encode(`<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    const svgContent =`<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20001102//EN" "http://www.w3.org/TR/2000/CR-SVG-20001102/DTD/svg-20001103.dtd">
   <!-- Include the SVG content here -->
 ${content}
-`)
-    const uuid = randomUUID()
+`
+    const imageName = String(randomUUID()) + '.svg'
 
-    const { data } = await octokit.repos.createOrUpdateFileContents({
-        owner: 'jessiscript',
-        repo: 're23_build_tracking',
-        path: `assets/123456789/${uuid}.svg`,
-        content: contentEncoded,
-        message: 'Add image plot to assets',
-        committer: {
-            name: 'jessiscript',
-            email: 'pauljessica2001@gmail.com',
-        },
-        author:{
-            name: 'jessiscript',
-            email: 'pauljessica2001@gmail.com',
+    const response = await octokit.gists.create({
+        description: "build history metrics diagramm",
+        public: false,
+        files: {
+            imageName: {
+                content: svgContent
+            }
         }
     });
 
-    console.log(data);
-    return uuid
+    const gistsResponse = (await octokit.request(`GET /gists/${response.data.id}`, {
+        gist_id: 'GIST_ID',
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })).data
+
+    return gistsResponse.files[imageName].raw_url
 }

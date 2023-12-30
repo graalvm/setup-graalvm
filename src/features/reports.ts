@@ -156,14 +156,14 @@ export async function generateReports(): Promise<void> {
     if (areMetricHistoriesEnabled()) {
       await createChart()
       const tableContent = fs.readFileSync('output_point_plot.svg', 'utf8').match(/\<table(.|\n)*<\/table>/)
-      const uuid = await saveImage(fs.readFileSync('output_point_plot.svg', 'utf8'))
+      const imageUrl = await saveImage(fs.readFileSync('output_point_plot.svg', 'utf8'))
       core.summary.addRaw(`\n## Metric history plot\n`)
-      core.summary.addRaw(`![graalvm-history-metrics-plot](https://github.com/jessiscript/re23_build_tracking/raw/main/assets/123456789/${uuid}.svg)`)
+      core.summary.addRaw(`![graalvm-history-metrics-plot](${imageUrl})`)
       if (tableContent !== null && tableContent.length > 0) {
         core.summary.addRaw(tableContent[0])
       }
       await core.summary.write()
-      core.info(`![graalvm-history-metrics-plot](https://github.com/jessiscript/re23_build_tracking/raw/main/assets/123456789/${uuid}.svg)`)
+      core.info(`![graalvm-history-metrics-plot](${imageUrl})`)
     }
 
 
