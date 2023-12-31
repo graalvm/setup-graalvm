@@ -304,8 +304,8 @@ function createReport(data: BuildOutput, compareData: BuildOutput | null = null)
         compareDetails.image_heap.bytes -
         compareDebugInfoBytes
     compareResources = compareData.resource_usage
-    compareAnalysis = data.analysis_results
-    compareAnalysisTypes = analysis.types ? analysis.types : analysis.classes
+    compareAnalysis = compareData.analysis_results
+    compareAnalysisTypes = compareAnalysis.types ? compareAnalysis.types : compareAnalysis.classes
   }
 
   return `${getReportHeader(info, totalTime, context)}
@@ -607,15 +607,15 @@ function getCompareColumnTime(value: number, compareValue: number | null, lowerP
   if (compareValue === null) {return ''}
   if (smallIsPositive) {
     return `<td align="left">
-${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :green_circle`: ''}
+${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle: ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 ${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue)}s (${getDiffPercent(compareValue, value)}`: ''}
-${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :red_circle`: ''}
+${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle: ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 </td>`
   }
   return `<td align="left">
-${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :red_circle`: ''}
+${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle: ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 ${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue)}s (${getDiffPercent(compareValue, value)}`: ''}
-${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :green_circle`: ''}
+${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle: ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 </td>`
 }
 
@@ -623,15 +623,15 @@ function getCompareColumnBytes(value: number, compareValue: number | null, lower
   if (compareValue === null) {return ''}
   if (smallIsPositive) {
     return `<td align="left">
-${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :green_circle`: ''}
+${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle: ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 ${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}`: ''}
-${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :red_circle`: ''}
+${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle: ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 </td>`
   }
   return `<td align="left">
-${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :red_circle`: ''}
+${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle: ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 ${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}`: ''}
-${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :green_circle`: ''}
+${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle: ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 </td>`
 }
 
@@ -639,15 +639,15 @@ function getCompareColumn(value: number, compareValue: number | null, lowerPerce
   if (compareValue === null) {return ''}
   if (smallIsPositive) {
     return `<td align="left">
-${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle ${value - compareValue} (${getDiffPercent(compareValue, value)}) :green_circle`: ''}
+${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle: ${value - compareValue} (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 ${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${value - compareValue} (${getDiffPercent(compareValue, value)}`: ''}
-${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle ${value - compareValue} (${getDiffPercent(compareValue, value)}) :red_circle`: ''}
+${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle: ${value - compareValue} (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 </td>`
   }
   return `<td align="left">
-${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle ${value - compareValue} (${getDiffPercent(compareValue, value)}) :red_circle`: ''}
+${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle: ${value - compareValue} (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 ${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${value - compareValue} (${getDiffPercent(compareValue, value)}`: ''}
-${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle ${value - compareValue} (${getDiffPercent(compareValue, value)}) :green_circle`: ''}
+${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle: ${value - compareValue} (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 </td>`
 }
 
