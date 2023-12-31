@@ -6,14 +6,13 @@ import * as tc from '@actions/tool-cache'
 import {exec as e, ExecOptions} from '@actions/exec'
 import * as fs from 'fs'
 import {readdirSync, readFileSync} from 'fs'
-import {createHash, randomUUID} from 'crypto'
+import {createHash} from 'crypto'
 import {join} from 'path'
 import {Base64} from "js-base64";
 import {Octokit} from '@octokit/rest';
 import fetch from "node-fetch";
 import {Context} from "@actions/github/lib/context";
 import {DateTime} from 'luxon'
-import {NumberValue} from "d3";
 import {JSDOM} from 'jsdom';
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
@@ -171,6 +170,10 @@ function getPrBaseBranchSha(): string {
     return  process.env.GITHUB_BASE_REF || "default_branch"
 }
 
+function getBuildCountsForMetricHistory(): number {
+    return Number(core.getInput(c.INPUT_NI_HISTORY_BUILD_COUNT))
+}
+
 export async function createPRComment(content: string): Promise<void> {
   if (!isPREvent()) {
     throw new Error('Not a PR event.')
@@ -326,32 +329,17 @@ async function getImageData(commitSha: string) {
     });
 
     try {
-
         const context = github.context
         const refSha = await getBlobTreeSha(octokit, context, commitSha)
         const blobSha = await getBlobSha(octokit, context, refSha)
-        const content =  await getBlobContent(octokit, context, blobSha)
-        // Get the reference SHA
-
-
-        await console.log("refsha:" + refSha)
-
-        // Get the tree SHA
-
-        // Get the blob content
-
-        //await console.log("blobsha:" + blobSha)
-        const data = await JSON.parse(content);
-
-        await console.log("data" + data.image_details.total_bytes / 1e6)
-
+        const data =  JSON.parse(await getBlobContent(octokit, context, blobSha))
         return [
             data.image_details.total_bytes / 1e6,
             data.image_details.code_area.bytes / 1e6,
             data.image_details.image_heap.bytes / 1e6,
         ];
     } catch (error) {
-        console.error('Error fetching image data: ', error);
+        core.warning('Error fetching image data');
         return [0, 0, 0];
     }
 }
@@ -365,7 +353,6 @@ async function fetchData(): Promise<any> {
         },
     });
     return new Promise(async (resolve, reject) => {
-
         const response = await octokit.request(c.OCTOKIT_ROUTE_GET_EVENTS, {
             ...github.context.repo,
             headers: c.OCTOKIT_BASIC_HEADER
@@ -394,7 +381,6 @@ async function fetchData(): Promise<any> {
         const imageSizes = imageData.filter(entry => entry).map(entry => entry[0]);
         const codeAreaSizes = imageData.filter(entry => entry).map(entry => entry[1]);
         const imageHeapSizes = imageData.filter(entry => entry).map(entry => entry[2]);
-
         const data= {
             commitDates: commitDates,
             commitShas: shas,
@@ -404,17 +390,15 @@ async function fetchData(): Promise<any> {
             codeAreaSizes: codeAreaSizes,
             imageHeapSizes: imageHeapSizes
         }
-
         resolve(data);
     });
 }
 
 async function getPushEvents(response: any) {
     const eventsArray = response.data;
-    var linkHeader = response.headers.link;
-    const nextPageMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
-    var commitsLeft = Number(core.getInput('build-counts-for-metric-history'));
-    var pushEvents = [];
+    let linkHeader = response.headers.link;
+    let commitsLeft = getBuildCountsForMetricHistory();
+    const pushEvents = [];
 
     for (const event of eventsArray) {
         if (commitsLeft <= 0) {
@@ -437,9 +421,7 @@ async function getPushEvents(response: any) {
                 Authorization: `Bearer ${getGitHubToken()}`,
             },
         });
-
         const responseJson = await response.json();
-
         for (const event of responseJson) {
             if (commitsLeft <= 0) {
                 break;
@@ -504,7 +486,6 @@ export async function createChart() {
             }
         ]
 
-
         // Use JSDOM to create a virtual DOM
         const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
         global.document = dom.window.document;
@@ -515,8 +496,6 @@ export async function createChart() {
         const margin = {top: 20, right: 20, bottom: 60, left: 50};
         const width = svgWidth - margin.left - margin.right;
         const height = svgHeight - margin.top - margin.bottom;
-
-        const maxImageSizes: NumberValue = d3.max(convertToNumberValueIterable(data.imageSizes)) as NumberValue
 
         const xScale = d3.scaleBand().domain(commitDates).range([0, width - 200]).padding(0.1);
         const yScale = d3.scaleLinear().domain([0, 10]).range([height, 0]);
@@ -653,35 +632,16 @@ export async function createChart() {
 
         // Save the SVG as a file
         fs.writeFileSync('output_point_plot.svg', d3.select('body').html());
-        console.log('The point plot SVG file was created.');
+        core.info('The point plot SVG file was created.');
     } catch (error) {
-        console.error('Error fetching data:', error);
+        core.warning('Error fetching data');
     }
-}
-
-function convertToNumberValueIterable(arr: (number | string | undefined)[]): Iterable<NumberValue> {
-    // Filter out undefined values and convert strings to numbers
-    const filteredArr: (number | string)[] = arr.filter(el => typeof el === 'number' || (typeof el === 'string' && !isNaN(Number(el)))) as (number | string)[];
-
-    // Map the filtered array elements to NumberValue objects
-    const numberValueIterable: Iterable<NumberValue> = {
-        [Symbol.iterator]: function* () {
-            for (let num of filteredArr) {
-                if (typeof num === 'number' ) {
-                    num = num +3
-                }
-                yield { value: typeof num === 'string' ? parseInt(num, 10) : num } as unknown as NumberValue;
-            }
-        },
-    };
-
-    return numberValueIterable;
 }
 
 
 export async function saveImage(content: string): Promise<string> {
     const octokit = new Octokit({
-        auth: core.getInput("TOKEN"),
+        auth: core.getInput(c.INPUT_PAT_TOKEN),
         request: {
             fetch: fetch,
         },
@@ -697,27 +657,28 @@ export async function saveImage(content: string): Promise<string> {
 ${content}
 `
 
-    const response = await octokit.gists.create({
-        description: "build history metrics diagramm",
-        public: false,
-        files: {
-            'graalVmMetrics.svg': {
-                content: svgContent
+    try {
+        const response = await octokit.gists.create({
+            description: "build history metrics diagramm",
+            public: false,
+            files: {
+                'graalVmMetrics.svg': {
+                    content: svgContent
+                }
             }
-        }
-    });
+        });
 
-    core.info(JSON.stringify(response.data.id))
-    core.info(JSON.stringify(response))
-    const gistsResponse = (await octokit.request(`GET /gists/${response.data.id}`, {
-        gist_id: 'GIST_ID',
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })).data
+        const gistsResponse = (await octokit.request(`GET /gists/${response.data.id}`, {
+            gist_id: 'GIST_ID',
+            headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
+        })).data
+        core.info("Created Gist with metrics SVG successfully")
+        return gistsResponse.files['graalVmMetrics.svg'].raw_url
+    } catch (error) {
+        core.warning("Creating gist failed, please check that the PAT given in token has the right 'gist'")
+        return ''
+    }
 
-    core.info(JSON.stringify(gistsResponse))
-    core.info(JSON.stringify(gistsResponse.files))
-    core.info(JSON.stringify(gistsResponse.files['graalVmMetrics.svg'].raw_url))
-    return gistsResponse.files['graalVmMetrics.svg'].raw_url
 }

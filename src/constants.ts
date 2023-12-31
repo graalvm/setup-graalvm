@@ -8,6 +8,7 @@ export const INPUT_JAVA_VERSION = 'java-version'
 export const INPUT_DISTRIBUTION = 'distribution'
 export const INPUT_COMPONENTS = 'components'
 export const INPUT_GITHUB_TOKEN = 'github-token'
+export const INPUT_PAT_TOKEN = 'pat-token'
 export const INPUT_SET_JAVA_HOME = 'set-java-home'
 export const INPUT_CACHE = 'cache'
 export const INPUT_CHECK_FOR_UPDATES = 'check-for-updates'
@@ -44,6 +45,8 @@ export const EVENT_NAME_PULL_REQUEST = 'pull_request'
 
 export const ERROR_HINT =
   'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
+
+export const INPUT_NI_HISTORY_BUILD_COUNT = 'build-counts-for-metric-history'
 
 export const METRIC_PATH = 'graalvm-metrics'
 export const OCTOKIT_REF_BRANCHE_PREFIX = 'heads'
