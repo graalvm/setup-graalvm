@@ -51,14 +51,16 @@ interface GeneralInfo {
   }
 }
 
+interface analysisResults {
+  classes: AnalysisResult
+  types?: AnalysisResult
+  fields: AnalysisResult
+  methods: AnalysisResult
+}
+
 interface BuildOutput {
   general_info: GeneralInfo
-  analysis_results: {
-    classes: AnalysisResult
-    types?: AnalysisResult
-    fields: AnalysisResult
-    methods: AnalysisResult
-  }
+  analysis_results: analysisResults
   image_details: {
     total_bytes: number
     code_area: {
@@ -157,7 +159,7 @@ export async function generateReports(): Promise<void> {
       const imageUrl = await saveImage(fs.readFileSync('output_point_plot.svg', 'utf8'))
       core.summary.addRaw(`\n## Metric history plot\n`)
       core.summary.addRaw(`![graalvm-history-metrics-plot](${imageUrl})`)
-      const tableContent = fs.readFileSync('output_point_plot.svg', 'utf8').match(/\<table(.|\n)*<\/table>/)
+      const tableContent = fs.readFileSync('output_point_plot.svg', 'utf8').match(/<table(.|\n)*<\/table>/)
       if (tableContent !== null && tableContent.length > 0) {
         core.summary.addRaw(tableContent[0])
       }
@@ -436,19 +438,19 @@ return `#### Analysis Results
       analysisTypes.reachable,
       analysisTypes.total
       )}</td>
-      ${getCompareColumn(analysisTypes.reachable, compareAnalysisType.reachable, 98, 108)}
+      ${compareAnalysisType !== null? getCompareColumn(analysisTypes.reachable, compareAnalysisType.reachable, 98, 108): ''}
       <td align="right">${analysis.fields.reachable.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.fields.reachable,
       analysis.fields.total
       )}</td>
-      ${getCompareColumn(analysis.fields.reachable, compareAnalysis.fields.reachable, 98, 108)}
+      ${compareAnalysis !== null? getCompareColumn(analysis.fields.reachable, compareAnalysis.fields.reachable, 98, 108): ''}
       <td align="right">${analysis.methods.reachable.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.methods.reachable,
       analysis.methods.total
       )}</td>
-      ${getCompareColumn(analysis.methods.reachable, compareAnalysis.methods.reachable, 98, 108)}
+      ${compareAnalysis !== null? getCompareColumn(analysis.methods.reachable, compareAnalysis.methods.reachable, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reflection-registrations" target="_blank">Reflection</a></td>
@@ -457,19 +459,19 @@ return `#### Analysis Results
       analysisTypes.reflection,
       analysisTypes.total
       )}</td>
-      ${getCompareColumn(analysisTypes.reflection, compareAnalysisType.reflection, 98, 108)}
+      ${compareAnalysisType !== null? getCompareColumn(analysisTypes.reflection, compareAnalysisType.reflection, 98, 108): ''}
       <td align="right">${analysis.fields.reflection.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.fields.reflection,
       analysis.fields.total
       )}</td>
-      ${getCompareColumn(analysis.fields.reflection, compareAnalysis.fields.reflection, 98, 108)}
+      ${compareAnalysis !== null? getCompareColumn(analysis.fields.reflection, compareAnalysis.fields.reflection, 98, 108): ''}
       <td align="right">${analysis.methods.reflection.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.methods.reflection,
       analysis.methods.total
       )}</td>
-      ${getCompareColumn(analysis.methods.reflection, compareAnalysis.methods.reflection, 98, 108)}
+      ${compareAnalysis !== null? getCompareColumn(analysis.methods.reflection, compareAnalysis.methods.reflection, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-jni-access-registrations" target="_blank">JNI</a></td>
@@ -478,31 +480,31 @@ return `#### Analysis Results
       analysisTypes.jni,
       analysisTypes.total
       )}</td>
-      ${getCompareColumn(analysisTypes.jni, compareAnalysisType.jni, 98, 108)}
+      ${compareAnalysisType !== null? getCompareColumn(analysisTypes.jni, compareAnalysisType.jni, 98, 108): ''}
       <td align="right">${analysis.fields.jni.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.fields.jni,
       analysis.fields.total
       )}</td>
-      ${getCompareColumn(analysis.fields.jni, compareAnalysis.fields.jni, 98, 108)}
+      ${compareAnalysis !== null? getCompareColumn(analysis.fields.jni, compareAnalysis.fields.jni, 98, 108): ''}
       <td align="right">${analysis.methods.jni.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.methods.jni,
       analysis.methods.total
       )}</td>
-      ${getCompareColumn(analysis.methods.jni, compareAnalysis.methods.jni, 98, 108)}
+      ${compareAnalysis !== null? getCompareColumn(analysis.methods.jni, compareAnalysis.methods.jni, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reachability" target="_blank">Loaded</a></td>
       <td align="right">${analysisTypes.total.toLocaleString()}</td>
       <td align="right">100.000%</td>
-      ${getCompareColumn(analysisTypes.total, compareAnalysisType.total, 98, 108)}
+      ${compareAnalysisType !== null? getCompareColumn(analysisTypes.total, compareAnalysisType.total, 98, 108): ''}
       <td align="right">${analysis.fields.total.toLocaleString()}</td>
       <td align="right">100.000%</td>
-      ${getCompareColumn(analysis.fields.total, compareAnalysis.fields.total, 98, 108)}
+      ${compareAnalysis !== null? getCompareColumn(analysis.fields.total, compareAnalysis.fields.total, 98, 108): ''}
       <td align="right">${analysis.methods.total.toLocaleString()}</td>
       <td align="right">100.000%</td>
-      ${getCompareColumn(analysis.methods.total, compareAnalysis.methods.total, 98, 108)}
+      ${compareAnalysis !== null? getCompareColumn(analysis.methods.total, compareAnalysis.methods.total, 98, 108): ''}
     </tr>
   </tbody>
 </table>
@@ -530,7 +532,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
         details.code_area.bytes,
         details.total_bytes
     )}</td>
-      ${getCompareColumnBytes(details.code_area.bytes, compareDetails.code_area.bytes, 98, 110)}
+      ${compareDetails !== null? getCompareColumnBytes(details.code_area.bytes, compareDetails.code_area.bytes, 98, 110): ''}
       <td align="left">${details.code_area.compilation_units.toLocaleString()} compilation units</td>
     </tr>
     <tr>
@@ -540,7 +542,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
         details.image_heap.bytes,
         details.total_bytes
     )}</td>
-      ${getCompareColumnBytes(details.image_heap.bytes, compareDetails.image_heap.bytes, 98, 110)}
+      ${compareDetails !== null? getCompareColumnBytes(details.image_heap.bytes, compareDetails.image_heap.bytes, 98, 110): ''}
       <td align="left">${objectCount}${bytesToHuman(
         details.image_heap.resources.bytes
     )} for ${details.image_heap.resources.count.toLocaleString()} resources</td>
@@ -549,7 +551,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
       <td align="left"><a href="${DOCS_BASE}#glossary-other-data" target="_blank">Other data</a></td>
       <td align="right">${bytesToHuman(otherBytes)}</td>
       <td align="right">${toPercent(otherBytes, details.total_bytes)}</td>
-      ${getCompareColumnBytes(otherBytes, compareOtherBytes, 98, 110)}
+      ${compareOtherBytes !== null? getCompareColumnBytes(otherBytes, compareOtherBytes, 98, 110): ''}
       <td align="left"></td>
     </tr>
     <tr>
@@ -558,7 +560,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
         details.total_bytes
     )}</strong></td>
       <td align="right">100.000%</td>
-      ${getCompareColumnBytes(details.total_bytes, compareDetails.total_bytes, 98, 110)}
+      ${compareDetails !== null? getCompareColumnBytes(details.total_bytes, compareDetails.total_bytes, 98, 110): ''}
       <td align="left"></td>
     </tr>
   </tbody>
@@ -577,7 +579,7 @@ function getResourceUsageTable(resources: any, gcTotalTimeRatio: string, compare
       <td align="left">${resources.garbage_collection.total_secs.toFixed(
       2
   )}s${gcTotalTimeRatio} in ${resources.garbage_collection.count} GCs</td>
-      ${getCompareColumnTime(resources.garbage_collection.total_secs, compareResources.garbage_collection.total_secs, 98, 108)}
+      ${compareResources !== null? getCompareColumnTime(resources.garbage_collection.total_secs, compareResources.garbage_collection.total_secs, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-peak-rss" target="_blank">Peak RSS</a></td>
@@ -587,7 +589,7 @@ function getResourceUsageTable(resources: any, gcTotalTimeRatio: string, compare
       resources.memory.peak_rss_bytes,
       resources.memory.system_total
   )} of ${bytesToHuman(resources.memory.system_total)} system memory)</td>
-      ${getCompareColumnBytes(resources.memory.peak_rss_bytes, compareResources.memory.peak_rss_bytes, 98, 108)}
+      ${compareResources !== null? getCompareColumnBytes(resources.memory.peak_rss_bytes, compareResources.memory.peak_rss_bytes, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-cpu-load" target="_blank">CPU load</a></td>
@@ -595,7 +597,7 @@ function getResourceUsageTable(resources: any, gcTotalTimeRatio: string, compare
       resources.cpu.load,
       resources.cpu.total_cores
   )} of ${resources.cpu.total_cores} CPU cores)</td>
-      ${getCompareColumn(resources.cpu.load, compareResources.cpu.load, 98, 108)}
+      ${compareResources !== null? getCompareColumn(resources.cpu.load, compareResources.cpu.load, 98, 108): ''}
     </tr>
   </tbody>
 </table>
