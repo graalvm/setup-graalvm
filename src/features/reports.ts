@@ -421,14 +421,11 @@ return `#### Analysis Results
     <tr>
       <th align="left">Category</th>
       <th align="right">Types</th>
-      <th align="right">in %</th>
-      ${getCompareTableHeader(compareBranch)}
+      <th align="right">in %</th>${getCompareTableHeader(compareBranch)}
       <th align="right">Fields</th>
-      <th align="right">in %</th>
-      ${getCompareTableHeader(compareBranch)}
+      <th align="right">in %</th>${getCompareTableHeader(compareBranch)}
       <th align="right">Methods</th>
-      <th align="right">in %</th>
-      ${getCompareTableHeader(compareBranch)}
+      <th align="right">in %</th>${getCompareTableHeader(compareBranch)}
     </tr>
   </thead>
   <tbody>
@@ -438,20 +435,17 @@ return `#### Analysis Results
       <td align="right">${toPercent(
       analysisTypes.reachable,
       analysisTypes.total
-      )}</td>
-      ${compareAnalysisType !== null? getCompareColumn(analysisTypes.reachable, compareAnalysisType.reachable, 98, 108): null}
+      )}</td>${compareAnalysisType !== null? getCompareColumn(analysisTypes.reachable, compareAnalysisType.reachable, 98, 108): ''}
       <td align="right">${analysis.fields.reachable.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.fields.reachable,
       analysis.fields.total
-      )}</td>
-      ${compareAnalysis !== null? getCompareColumn(analysis.fields.reachable, compareAnalysis.fields.reachable, 98, 108): null}
+      )}</td>${compareAnalysis !== null? getCompareColumn(analysis.fields.reachable, compareAnalysis.fields.reachable, 98, 108): ''}
       <td align="right">${analysis.methods.reachable.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.methods.reachable,
       analysis.methods.total
-      )}</td>
-      ${compareAnalysis !== null? getCompareColumn(analysis.methods.reachable, compareAnalysis.methods.reachable, 98, 108): null}
+      )}</td>${compareAnalysis !== null? getCompareColumn(analysis.methods.reachable, compareAnalysis.methods.reachable, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reflection-registrations" target="_blank">Reflection</a></td>
@@ -459,20 +453,17 @@ return `#### Analysis Results
       <td align="right">${toPercent(
       analysisTypes.reflection,
       analysisTypes.total
-      )}</td>
-      ${compareAnalysisType !== null? getCompareColumn(analysisTypes.reflection, compareAnalysisType.reflection, 98, 108): null}
+      )}</td>${compareAnalysisType !== null? getCompareColumn(analysisTypes.reflection, compareAnalysisType.reflection, 98, 108): ''}
       <td align="right">${analysis.fields.reflection.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.fields.reflection,
       analysis.fields.total
-      )}</td>
-      ${compareAnalysis !== null? getCompareColumn(analysis.fields.reflection, compareAnalysis.fields.reflection, 98, 108): null}
+      )}</td>${compareAnalysis !== null? getCompareColumn(analysis.fields.reflection, compareAnalysis.fields.reflection, 98, 108): ''}
       <td align="right">${analysis.methods.reflection.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.methods.reflection,
       analysis.methods.total
-      )}</td>
-      ${compareAnalysis !== null? getCompareColumn(analysis.methods.reflection, compareAnalysis.methods.reflection, 98, 108): null}
+      )}</td>${compareAnalysis !== null? getCompareColumn(analysis.methods.reflection, compareAnalysis.methods.reflection, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-jni-access-registrations" target="_blank">JNI</a></td>
@@ -480,32 +471,26 @@ return `#### Analysis Results
       <td align="right">${toPercent(
       analysisTypes.jni,
       analysisTypes.total
-      )}</td>
-      ${compareAnalysisType !== null? getCompareColumn(analysisTypes.jni, compareAnalysisType.jni, 98, 108): null}
+      )}</td>${compareAnalysisType !== null? getCompareColumn(analysisTypes.jni, compareAnalysisType.jni, 98, 108): ''}
       <td align="right">${analysis.fields.jni.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.fields.jni,
       analysis.fields.total
-      )}</td>
-      ${compareAnalysis !== null? getCompareColumn(analysis.fields.jni, compareAnalysis.fields.jni, 98, 108): null}
+      )}</td>${compareAnalysis !== null? getCompareColumn(analysis.fields.jni, compareAnalysis.fields.jni, 98, 108): ''}
       <td align="right">${analysis.methods.jni.toLocaleString()}</td>
       <td align="right">${toPercent(
       analysis.methods.jni,
       analysis.methods.total
-      )}</td>
-      ${compareAnalysis !== null? getCompareColumn(analysis.methods.jni, compareAnalysis.methods.jni, 98, 108): null}
+      )}</td>${compareAnalysis !== null? getCompareColumn(analysis.methods.jni, compareAnalysis.methods.jni, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reachability" target="_blank">Loaded</a></td>
       <td align="right">${analysisTypes.total.toLocaleString()}</td>
-      <td align="right">100.000%</td>
-      ${compareAnalysisType !== null? getCompareColumn(analysisTypes.total, compareAnalysisType.total, 98, 108): null}
+      <td align="right">100.000%</td>${compareAnalysisType !== null? getCompareColumn(analysisTypes.total, compareAnalysisType.total, 98, 108): ''}
       <td align="right">${analysis.fields.total.toLocaleString()}</td>
-      <td align="right">100.000%</td>
-      ${compareAnalysis !== null? getCompareColumn(analysis.fields.total, compareAnalysis.fields.total, 98, 108): null}
+      <td align="right">100.000%</td>${compareAnalysis !== null? getCompareColumn(analysis.fields.total, compareAnalysis.fields.total, 98, 108): ''}
       <td align="right">${analysis.methods.total.toLocaleString()}</td>
-      <td align="right">100.000%</td>
-      ${compareAnalysis !== null? getCompareColumn(analysis.methods.total, compareAnalysis.methods.total, 98, 108): null}
+      <td align="right">100.000%</td>${compareAnalysis !== null? getCompareColumn(analysis.methods.total, compareAnalysis.methods.total, 98, 108): ''}
     </tr>
   </tbody>
 </table>
@@ -520,8 +505,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
     <tr>
       <th align="left">Category</th>
       <th align="right">Size</th>
-      <th align="right">in %</th>
-      ${getCompareTableHeader(compareBranch)}
+      <th align="right">in %</th>${getCompareTableHeader(compareBranch)}
       <th align="left">Details</th>
     </tr>
   </thead>
@@ -532,8 +516,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
       <td align="right">${toPercent(
         details.code_area.bytes,
         details.total_bytes
-    )}</td>
-      ${compareDetails !== null? getCompareColumnBytes(details.code_area.bytes, compareDetails.code_area.bytes, 98, 110): null}
+    )}</td>${compareDetails !== null? getCompareColumnBytes(details.code_area.bytes, compareDetails.code_area.bytes, 98, 110): ''}
       <td align="left">${details.code_area.compilation_units.toLocaleString()} compilation units</td>
     </tr>
     <tr>
@@ -542,8 +525,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
       <td align="right">${toPercent(
         details.image_heap.bytes,
         details.total_bytes
-    )}</td>
-      ${compareDetails !== null? getCompareColumnBytes(details.image_heap.bytes, compareDetails.image_heap.bytes, 98, 110): null}
+    )}</td>${compareDetails !== null? getCompareColumnBytes(details.image_heap.bytes, compareDetails.image_heap.bytes, 98, 110): ''}
       <td align="left">${objectCount}${bytesToHuman(
         details.image_heap.resources.bytes
     )} for ${details.image_heap.resources.count.toLocaleString()} resources</td>
@@ -551,8 +533,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-other-data" target="_blank">Other data</a></td>
       <td align="right">${bytesToHuman(otherBytes)}</td>
-      <td align="right">${toPercent(otherBytes, details.total_bytes)}</td>
-      ${compareOtherBytes !== null? getCompareColumnBytes(otherBytes, compareOtherBytes, 98, 110): null}
+      <td align="right">${toPercent(otherBytes, details.total_bytes)}</td>${compareOtherBytes !== null? getCompareColumnBytes(otherBytes, compareOtherBytes, 98, 110): ''}
       <td align="left"></td>
     </tr>
     <tr>
@@ -560,8 +541,7 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
       <td align="right"><strong>${bytesToHuman(
         details.total_bytes
     )}</strong></td>
-      <td align="right">100.000%</td>
-      ${compareDetails !== null? getCompareColumnBytes(details.total_bytes, compareDetails.total_bytes, 98, 110): null}
+      <td align="right">100.000%</td>${compareDetails !== null? getCompareColumnBytes(details.total_bytes, compareDetails.total_bytes, 98, 110): ''}
       <td align="left"></td>
     </tr>
   </tbody>
@@ -572,15 +552,13 @@ function getDetailsTable(details: any, objectCount: string, debugInfoLine: strin
 function getResourceUsageTable(resources: any, gcTotalTimeRatio: string, compareResources: any, compareBranch: any): string {
   return `#### Resource Usage
 
-<table>
-  ${getResourcesUsageHeader(compareBranch)}
+<table>${getResourcesUsageHeader(compareBranch)}
   <tbody>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-garbage-collections" target="_blank">Garbage collection</a></td>
       <td align="left">${resources.garbage_collection.total_secs.toFixed(
       2
-  )}s${gcTotalTimeRatio} in ${resources.garbage_collection.count} GCs</td>
-      ${compareResources !== null? getCompareColumnTime(resources.garbage_collection.total_secs, compareResources.garbage_collection.total_secs, 98, 108): null}
+  )}s${gcTotalTimeRatio} in ${resources.garbage_collection.count} GCs</td>${compareResources !== null? getCompareColumnTime(resources.garbage_collection.total_secs, compareResources.garbage_collection.total_secs, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-peak-rss" target="_blank">Peak RSS</a></td>
@@ -589,16 +567,14 @@ function getResourceUsageTable(resources: any, gcTotalTimeRatio: string, compare
   )} (${toPercent(
       resources.memory.peak_rss_bytes,
       resources.memory.system_total
-  )} of ${bytesToHuman(resources.memory.system_total)} system memory)</td>
-      ${compareResources !== null? getCompareColumnBytes(resources.memory.peak_rss_bytes, compareResources.memory.peak_rss_bytes, 98, 108): null}
+  )} of ${bytesToHuman(resources.memory.system_total)} system memory)</td>${compareResources !== null? getCompareColumnBytes(resources.memory.peak_rss_bytes, compareResources.memory.peak_rss_bytes, 98, 108): ''}
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-cpu-load" target="_blank">CPU load</a></td>
       <td align="left">${resources.cpu.load.toFixed(3)} (${toPercent(
       resources.cpu.load,
       resources.cpu.total_cores
-  )} of ${resources.cpu.total_cores} CPU cores)</td>
-      ${compareResources !== null? getCompareColumn(resources.cpu.load, compareResources.cpu.load, 98, 108): null}
+  )} of ${resources.cpu.total_cores} CPU cores)</td>${compareResources !== null? getCompareColumn(resources.cpu.load, compareResources.cpu.load, 98, 108): ''}
     </tr>
   </tbody>
 </table>
@@ -612,8 +588,7 @@ function getResourcesUsageHeader(compareBranch: string | null): string {
   return `<thead>
     <tr>
       <th align="left">Category</th>
-      <th align="right">Resources</th>
-      ${getCompareTableHeader(compareBranch)}
+      <th align="right">Resources</th>${getCompareTableHeader(compareBranch)}
     </tr>
   </thead>`
 }
