@@ -143,6 +143,7 @@ export async function generateReports(): Promise<void> {
 
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
+      core.info(report)
       core.summary.addRaw(report)
       await core.summary.write()
     }

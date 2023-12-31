@@ -62,7 +62,7 @@ inputs:
   gds-token:
     required: false
     description: 'Download token for the GraalVM Download Service. If provided, the action will set up GraalVM Enterprise Edition.'
-  token:
+  pat-token:
     required: false
     description: 'Download token for the GraalVM Download Service. If provided, the action will set up GraalVM Enterprise Edition.'
 outputs:
