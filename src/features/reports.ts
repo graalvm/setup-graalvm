@@ -148,9 +148,7 @@ export async function generateReports(): Promise<void> {
       await core.summary.write()
     }
     if (arePRReportsEnabled() && !arePRBaseComparisonEnabled()) {
-      const compareBranchBuildOutput: BuildOutput = JSON.parse(await getPrBaseBranchMetrics())
-      const prReport = createReport(buildOutput, compareBranchBuildOutput)
-      await createPRComment(prReport)
+      await createPRComment(report)
     }
 
     const treeSha = await createTree(JSON.stringify(buildOutput))
@@ -168,6 +166,9 @@ export async function generateReports(): Promise<void> {
     }
 
     if (arePRBaseComparisonEnabled()) {
+      const compareBranchBuildOutput: BuildOutput = JSON.parse(await getPrBaseBranchMetrics())
+      const prReport = createReport(buildOutput, compareBranchBuildOutput)
+      await createPRComment(prReport)
       const prMetrics: BuildOutput = JSON.parse(
           await getPrBaseBranchMetrics()
       )
