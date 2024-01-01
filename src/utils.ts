@@ -489,7 +489,8 @@ export async function createChart() {
         ]
 
         // Check if the user's system is in dark mode
-        const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDarkMode = false
+        //window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
         // Define color variables for both light and dark modes
         const lightModeColors = {
@@ -500,10 +501,10 @@ export async function createChart() {
         };
 
         const darkModeColors = {
-        axisStroke: 'white',  // Adjust to a suitable color for dark mode
-        gridStroke: 'darkgrey',  // Adjust to a suitable color for dark mode
-        labelFill: 'white',  // Adjust to a suitable color for dark mode
-        legendTextFill: 'white',  // Adjust to a suitable color for dark mode
+        axisStroke: 'white',  
+        gridStroke: 'darkgrey',  
+        labelFill: 'white', 
+        legendTextFill: 'white',  
 };
 
 // Use the appropriate color scheme based on dark mode status
