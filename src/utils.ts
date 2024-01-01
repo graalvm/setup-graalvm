@@ -488,6 +488,27 @@ export async function createChart() {
             }
         ]
 
+        // Check if the user's system is in dark mode
+        const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        // Define color variables for both light and dark modes
+        const lightModeColors = {
+        axisStroke: 'black',
+        gridStroke: 'lightgrey',
+        labelFill: 'black',
+        legendTextFill: 'black',
+        };
+
+        const darkModeColors = {
+        axisStroke: 'white',  // Adjust to a suitable color for dark mode
+        gridStroke: 'darkgrey',  // Adjust to a suitable color for dark mode
+        labelFill: 'white',  // Adjust to a suitable color for dark mode
+        legendTextFill: 'white',  // Adjust to a suitable color for dark mode
+};
+
+// Use the appropriate color scheme based on dark mode status
+const colors = isDarkMode ? darkModeColors : lightModeColors;
+
         // Use JSDOM to create a virtual DOM
         const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
         global.document = dom.window.document;
@@ -525,7 +546,7 @@ export async function createChart() {
                     .tickSizeOuter(0)
             )
             .selectAll('.tick line')
-            .attr('stroke', 'lightgrey')
+            .attr('stroke', colors.gridStroke)
             .attr('stroke-dasharray', '2,2')
             .attr('stroke-width', 1);
                
@@ -533,9 +554,10 @@ export async function createChart() {
         d3.select('.grid')
             .selectAll('text')
             .style('text-anchor', 'end')
+            .attr('stroke', colors.axisStroke)
             .attr('transform', 'rotate(-90)')
             .attr('x', -2)
-            .attr('y', -2);
+            .attr('y', 1);
 
         // Y-axis
         chart.append('g')
@@ -546,7 +568,7 @@ export async function createChart() {
                     .tickSizeOuter(0)
             )
             .selectAll('.tick line')
-            .attr('stroke', 'lightgrey')
+            .attr('stroke', colors.gridStroke)
             .attr('x2', width-200)
             .attr('stroke-dasharray', '2,2')
             .attr('stroke-width', 1);
