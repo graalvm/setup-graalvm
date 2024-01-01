@@ -515,7 +515,7 @@ export async function createChart() {
             .attr('class', 'legend')
             .attr('transform', `translate(${width - 190}, 0)`);
 
-        // Add dashed grid lines for the x-axis
+        // X-axis
         chart.append('g')
             .attr('class', 'grid')
             .attr('transform', `translate(0, ${height})`)
@@ -524,12 +524,15 @@ export async function createChart() {
                     .tickSizeInner(-height)
                     .tickSizeOuter(0)
             )
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('transform', 'rotate(-90)')
             .selectAll('.tick line')
             .attr('stroke', 'lightgrey')
             .attr('stroke-dasharray', '2,2')
             .attr('stroke-width', 1);
 
-        // Add dashed grid lines for the y-axis
+        // Y-axis
         chart.append('g')
             .attr('class', 'grid')
             .call(
@@ -541,14 +544,6 @@ export async function createChart() {
             .attr('stroke', 'lightgrey')
             .attr('stroke-dasharray', '2,2')
             .attr('stroke-width', 1);
-
-        // X-axis
-        chart.append('g')
-            .attr('transform', `translate(0, ${height})`)
-            .call(d3.axisBottom(xScale))
-            .selectAll('text')
-            .style('text-anchor', 'end')
-            .attr('transform', 'rotate(90)');
 
         // Y-axis
         chart.append('g')
