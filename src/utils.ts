@@ -493,7 +493,7 @@ export async function createChart() {
         global.document = dom.window.document;
 
         const svgWidth = 1000;
-        const svgHeight = 400;
+        const svgHeight = 500;
 
         const margin = {top: 20, right: 20, bottom: 60, left: 50};
         const width = svgWidth - margin.left - margin.right;
@@ -533,7 +533,9 @@ export async function createChart() {
         d3.select('.grid')
             .selectAll('text')
             .style('text-anchor', 'end')
-            .attr('transform', 'rotate(-90)'); 
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -1)
+            .attr('y', -1);
 
         // Y-axis
         chart.append('g')
