@@ -316,7 +316,7 @@ function formatDate(date: string, n: number) {
     if (n >= 30) {
         return commitTimeLocal.toFormat('dd.MM.\nHH:mm');
     } else {
-        return commitTimeLocal.toFormat('dd.MM.yyyy \n HH:mm');
+        return commitTimeLocal.toFormat('dd.MM.yy \n HH:mm');
     }
 }
 
@@ -499,7 +499,7 @@ export async function createChart() {
         const width = svgWidth - margin.left - margin.right;
         const height = svgHeight - margin.top - margin.bottom;
 
-        const xScale = d3.scaleBand().domain(commitDates).range([0, width - 200]).padding(0.1);
+        const xScale = d3.scaleBand().domain(commitDates).range([0, width - 200]);
         const yScale = d3.scaleLinear().domain([0, 10]).range([height, 0]);
 
         const svg = d3.select('body')
