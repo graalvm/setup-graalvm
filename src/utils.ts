@@ -528,9 +528,12 @@ export async function createChart() {
             .attr('stroke', 'lightgrey')
             .attr('stroke-dasharray', '2,2')
             .attr('stroke-width', 1)
+               
+        // Add and rotate x-axis tick labels
+        d3.select('.grid')
             .selectAll('text')
             .style('text-anchor', 'end')
-            .attr('transform', 'rotate(-90)');    
+            .attr('transform', 'rotate(-90)'); 
 
         // Y-axis
         chart.append('g')
