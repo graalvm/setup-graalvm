@@ -526,13 +526,14 @@ export async function createChart() {
             )
             .selectAll('.tick line')
             .attr('stroke', 'lightgrey')
+            .attr('x2', width-200)
             .attr('stroke-dasharray', '2,2')
-            .attr('stroke-width', 1)
+            .attr('stroke-width', 1);
                
         // Add and rotate x-axis tick labels
         d3.select('.grid')
             .selectAll('text')
-            .style('text-anchor', 'end')
+            .style('text-anchor', 'middle')
             .attr('transform', 'rotate(-90)'); 
 
         // Y-axis
