@@ -548,7 +548,7 @@ export async function createChart() {
             .call(d3.axisBottom(xScale))
             .selectAll('text')
             .style('text-anchor', 'end')
-            .attr('transform', 'rotate(-45)');
+            .attr('transform', 'rotate(90)');
 
         // Y-axis
         chart.append('g')
