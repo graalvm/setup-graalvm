@@ -495,7 +495,7 @@ export async function createChart() {
         const svgWidth = 1000;
         const svgHeight = 500;
 
-        const margin = {top: 20, right: 20, bottom: 60, left: 50};
+        const margin = {top: 20, right: 20, bottom: 80, left: 50};
         const width = svgWidth - margin.left - margin.right;
         const height = svgHeight - margin.top - margin.bottom;
 
@@ -534,8 +534,8 @@ export async function createChart() {
             .selectAll('text')
             .style('text-anchor', 'end')
             .attr('transform', 'rotate(-90)')
-            .attr('x', -1)
-            .attr('y', -1);
+            .attr('x', -2)
+            .attr('y', -2);
 
         // Y-axis
         chart.append('g')
