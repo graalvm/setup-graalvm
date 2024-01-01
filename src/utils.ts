@@ -524,13 +524,13 @@ export async function createChart() {
                     .tickSizeInner(-height)
                     .tickSizeOuter(0)
             )
-            .selectAll('text')
-            .style('text-anchor', 'end')
-            .attr('transform', 'rotate(-90)')
             .selectAll('.tick line')
             .attr('stroke', 'lightgrey')
             .attr('stroke-dasharray', '2,2')
-            .attr('stroke-width', 1);
+            .attr('stroke-width', 1)
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('transform', 'rotate(-90)');    
 
         // Y-axis
         chart.append('g')
@@ -544,10 +544,6 @@ export async function createChart() {
             .attr('stroke', 'lightgrey')
             .attr('stroke-dasharray', '2,2')
             .attr('stroke-width', 1);
-
-        // Y-axis
-        chart.append('g')
-            .call(d3.axisLeft(yScale))
 
         chart.append('text')
             .attr("text-anchor", "end")
