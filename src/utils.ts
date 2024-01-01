@@ -367,9 +367,11 @@ async function fetchData(): Promise<any> {
         const commitMessages = []
 
         for (const pushEvent of pushEvents) {
-            timestamps.push(pushEvent.created_at);
-            shas.push(pushEvent.payload.commits[pushEvent.payload.commits.length - 1].sha);
-            commitMessages.push(pushEvent.payload.commits[pushEvent.payload.commits.length - 1].message)
+            if(pushEvent.payload.commits[pushEvent.payload.commits.length - 1].message !== "Add image plot to assets"){
+                timestamps.push(pushEvent.created_at);
+                shas.push(pushEvent.payload.commits[pushEvent.payload.commits.length - 1].sha);
+                commitMessages.push(pushEvent.payload.commits[pushEvent.payload.commits.length - 1].message)
+            }
         }
 
         // Extract data for plotting
