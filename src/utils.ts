@@ -489,8 +489,12 @@ export async function createChart() {
         ]
 
         // Check if the user's system is in dark mode
-        const isDarkMode = false
-        //window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let isDarkMode = false;
+
+        if (window.matchMedia) {
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+            isDarkMode = prefersDarkMode.matches;
+        }
 
         // Define color variables for both light and dark modes
         const lightModeColors = {
@@ -558,7 +562,7 @@ const colors = isDarkMode ? darkModeColors : lightModeColors;
             .attr('stroke', colors.axisStroke)
             .attr('transform', 'rotate(-90)')
             .attr('x', -2)
-            .attr('y', 1);
+            .attr('y', -3);
 
         // Y-axis
         chart.append('g')
