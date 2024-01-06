@@ -491,11 +491,6 @@ export async function createChart() {
         // Check if the user's system is in dark mode
         let isDarkMode = false;
 
-        if (window.matchMedia) {
-            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
-            isDarkMode = prefersDarkMode.matches;
-        }
-
         // Define color variables for both light and dark modes
         const lightModeColors = {
         axisStroke: 'black',
@@ -551,7 +546,7 @@ const colors = isDarkMode ? darkModeColors : lightModeColors;
                     .tickSizeOuter(0)
             )
             .selectAll('.tick line')
-            .attr('stroke', colors.gridStroke)
+            //.attr('stroke', colors.gridStroke)
             .attr('stroke-dasharray', '2,2')
             .attr('stroke-width', 1);
                
@@ -559,7 +554,7 @@ const colors = isDarkMode ? darkModeColors : lightModeColors;
         d3.select('.grid')
             .selectAll('text')
             .style('text-anchor', 'end')
-            .attr('stroke', colors.axisStroke)
+            //.attr('stroke', colors.axisStroke)
             .attr('transform', 'rotate(-90)')
             .attr('x', -2)
             .attr('y', -3);
@@ -573,7 +568,7 @@ const colors = isDarkMode ? darkModeColors : lightModeColors;
                     .tickSizeOuter(0)
             )
             .selectAll('.tick line')
-            .attr('stroke', colors.gridStroke)
+            //.attr('stroke', colors.gridStroke)
             .attr('x2', width-200)
             .attr('stroke-dasharray', '2,2')
             .attr('stroke-width', 1);
