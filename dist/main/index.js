@@ -96993,6 +96993,7 @@ const DOCS_BASE = 'https://github.com/oracle/graal/blob/master/docs/reference-ma
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
 const INPUT_NI_PR_COMPARISON = 'native-image-pr-comparison';
+const INPUT_NI_PR_COMPARISON_PARAMETERS = 'native-image-pr-comparison-parameter';
 const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
 function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion) {
@@ -97055,6 +97056,9 @@ function arePRReportsEnabled() {
 function arePRBaseComparisonEnabled() {
     return (0, utils_1.isPREvent)() && core.getInput(INPUT_NI_PR_COMPARISON) === 'true';
 }
+function getPRComparePara() {
+    return core.getInput(INPUT_NI_PR_COMPARISON_PARAMETERS);
+}
 function getNativeImageOptionsFile() {
     let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV];
     if (optionsFile === undefined) {
@@ -97073,23 +97077,39 @@ function setNativeImageOption(value) {
     }
 }
 function createPRComparison(dataRecent, dataBase) {
+    const analysisRecent = dataRecent.analysis_results;
+    const analysisTypesRecent = analysisRecent.types ? analysisRecent.types : analysisRecent.classes;
+    const analysisBase = dataBase.analysis_results;
+    const analysisTypesBase = analysisRecent.types ? analysisBase.types : analysisBase.classes;
     const detailsRecent = dataRecent.image_details;
     const detailsBase = dataBase.image_details;
-    const debugInfoBytesRecent = detailsRecent.debug_info ? detailsRecent.debug_info.bytes : 0;
+    const debugInfoBytesRecent = detailsBase.debug_info ? detailsBase.debug_info.bytes : 0;
+    const debugInfoBytesBase = detailsBase.debug_info ? detailsBase.debug_info.bytes : 0;
     const otherBytesRecent = detailsRecent.total_bytes -
         detailsRecent.code_area.bytes -
         detailsRecent.image_heap.bytes -
         debugInfoBytesRecent;
-    const debugInfoBytesBase = detailsBase.debug_info ? detailsBase.debug_info.bytes : 0;
     const otherBytesBase = detailsBase.total_bytes -
         detailsBase.code_area.bytes -
         detailsBase.image_heap.bytes -
         debugInfoBytesBase;
-    const compareBranch = process.env.GITHUB_BASE_REF;
+    const resourcesRecent = dataRecent.resource_usage;
+    const resourcesBase = dataBase.resource_usage;
+    const baseBranch = process.env.GITHUB_BASE_REF;
     const recentBranch = process.env.GITHUB_HEAD_REF;
+    const compareParameter = getPRComparePara().toLowerCase();
+    core.info("Compare Para:" + compareParameter);
     return `## GraalVM Native Image PR comparison
 
-#### Image Details
+${compareParameter.includes('analysis results') ? createComparedAnalysisResultsDiagramm(recentBranch, baseBranch, analysisRecent, analysisTypesRecent, analysisBase, analysisTypesBase) : ''}
+${compareParameter.includes('image details') ? createComparedDetailsDiagramm(recentBranch, baseBranch, detailsRecent, detailsBase, otherBytesBase, otherBytesRecent) : ''}
+${compareParameter.includes('resource usage') ? createComparedResourceUsageDiagramm(recentBranch, baseBranch, resourcesRecent, resourcesBase) : ''}
+
+${getFooter()}`;
+}
+function createComparedDetailsDiagramm(recentBranch, baseBranch, detailsRecent, detailsBase, otherBytesBase, otherBytesRecent) {
+    core.info("---- 1 ---");
+    return `#### Image Details
 
 \`\`\`mermaid
 gantt
@@ -97100,22 +97120,89 @@ gantt
 
     section Code area
     ${recentBranch} (${bytesToHuman(detailsRecent.code_area.bytes)}): active, 0, ${detailsRecent.code_area.bytes}
-    ${compareBranch} (${bytesToHuman(detailsBase.code_area.bytes)}): 0, ${detailsBase.code_area.bytes}
+    ${baseBranch} (${bytesToHuman(detailsBase.code_area.bytes)}): 0, ${detailsBase.code_area.bytes}
     
     section Image heap
     ${recentBranch} (${bytesToHuman(detailsRecent.image_heap.bytes)}): active, 0, ${detailsRecent.image_heap.bytes}
-    ${compareBranch} (${bytesToHuman(detailsBase.image_heap.bytes)}): 0, ${detailsBase.image_heap.bytes}
+    ${baseBranch} (${bytesToHuman(detailsBase.image_heap.bytes)}): 0, ${detailsBase.image_heap.bytes}
     
     section Other data
     ${recentBranch} (${bytesToHuman(otherBytesRecent)}): active, 0, ${otherBytesRecent}
-    ${compareBranch} (${bytesToHuman(otherBytesBase)}): 0, ${otherBytesBase}
+    ${baseBranch} (${bytesToHuman(otherBytesBase)}): 0, ${otherBytesBase}
 
     section Total
     ${recentBranch} (${bytesToHuman(detailsRecent.total_bytes)})   : active, 0, ${detailsRecent.total_bytes}
-    ${compareBranch} (${bytesToHuman(detailsBase.total_bytes)})   : 0, ${detailsBase.total_bytes}
+    ${baseBranch} (${bytesToHuman(detailsBase.total_bytes)})   : 0, ${detailsBase.total_bytes}
 \`\`\`
+`;
+}
+function createComparedAnalysisResultsDiagramm(recentBranch, baseBranch, analysisRecent, analysisTypesRecent, analysisBase, analysisTypeBase) {
+    core.info("---- 2 ---");
+    return `#### Analysis Results
 
-<em>Report generated by <a href="https://github.com/marketplace/actions/github-action-for-graalvm" target="_blank">setup-graalvm</a>.</em>`;
+\`\`\`mermaid
+gantt
+    title Native Image Size Details 
+    todayMarker off
+    dateFormat  X
+    axisFormat %
+
+    section Types
+    ${recentBranch} (Reachable: ${analysisTypesRecent.reachable}): active, 0, ${analysisTypesRecent.reachable}
+    ${baseBranch} (Reachable: ${analysisTypeBase.reachable}): 0, ${analysisTypeBase.reachable}
+    ${recentBranch} (Reflection: ${analysisTypesRecent.reflection}): active, 0, ${analysisTypesRecent.reflection}
+    ${baseBranch} (Reflection: ${analysisTypeBase.reflection}): 0, ${analysisTypeBase.reflection}
+    ${recentBranch} (JNI: ${analysisTypesRecent.jni}): active, 0, ${analysisTypesRecent.jni}
+    ${baseBranch} (JNI: ${analysisTypeBase.jni}): 0, ${analysisTypeBase.jni}
+    ${recentBranch} (Loaded: ${analysisTypesRecent.loaded}): active, 0, ${analysisTypesRecent.loaded}
+    ${baseBranch} (Loaded: ${analysisTypeBase.loaded}): 0, ${analysisTypeBase.loaded}
+    
+    section Fields
+    ${recentBranch} (Reachable: ${analysisRecent.fields.reachable}): active, 0, ${analysisRecent.fields.reachable}
+    ${baseBranch} (Reachable: ${analysisBase.fields.reachable}): 0, ${analysisBase.fields.reachable}
+    ${recentBranch} (Reflection: ${analysisRecent.fields.reflection}): active, 0, ${analysisRecent.fields.reflection}
+    ${baseBranch} (Reflection: ${analysisBase.fields.reflection}): 0, ${analysisBase.fields.reflection}
+    ${recentBranch} (JNI: ${analysisRecent.fields.jni}): active, 0, ${analysisRecent.fields.jni}
+    ${baseBranch} (JNI: ${analysisBase.fields.jni}): 0, ${analysisBase.fields.jni}
+    ${recentBranch} (Loaded: ${analysisRecent.fields.loaded}): active, 0, ${analysisRecent.fields.loaded}
+    ${baseBranch} (Loaded: ${analysisBase.fields.loaded}): 0, ${analysisBase.fields.loaded}
+    
+    section Methods
+    ${recentBranch} (Reachable: ${analysisRecent.methods.reachable}): active, 0, ${analysisRecent.methods.reachable}
+    ${baseBranch} (Reachable: ${analysisBase.methods.reachable}): 0, ${analysisBase.methods.reachable}
+    ${recentBranch} (Reflection: ${analysisRecent.methods.reflection}): active, 0, ${analysisRecent.methods.reflection}
+    ${baseBranch} (Reflection: ${analysisBase.methods.reflection}): 0, ${analysisBase.methods.reflection}
+    ${recentBranch} (JNI: ${analysisRecent.methods.jni}): active, 0, ${analysisRecent.methods.jni}
+    ${baseBranch} (JNI: ${analysisBase.methods.jni}): 0, ${analysisBase.methods.jni}
+    ${recentBranch} (Loaded: ${analysisRecent.methods.loaded}): active, 0, ${analysisRecent.methods.loaded}
+    ${baseBranch} (Loaded: ${analysisBase.methods.loaded}): 0, ${analysisBase.methods.loaded}
+\`\`\`
+`;
+}
+function createComparedResourceUsageDiagramm(recentBranch, baseBranch, resourcesRecent, resourcesBase) {
+    core.info("---- 3 ---");
+    return `#### Resource Usage
+
+\`\`\`mermaid
+gantt
+    title Native Image Size Details 
+    todayMarker off
+    dateFormat  X
+    axisFormat %
+
+    section Garbage Collection
+    ${recentBranch} (${resourcesRecent.garbage_collection.total_secs}): active, 0, ${resourcesRecent.garbage_collection.total_secs}
+    ${baseBranch} (${resourcesBase.garbage_collection.total_secs}): 0, ${resourcesBase.garbage_collection.total_secs}
+    
+    section Peak RSS
+    ${recentBranch} (${bytesToHuman(resourcesRecent.memory.peak_rss_bytes)}): active, 0, ${resourcesRecent.memory.peak_rss_bytes}
+    ${baseBranch} (${bytesToHuman(resourcesBase.memory.peak_rss_bytes)}): 0, ${resourcesBase.memory.peak_rss_bytes}
+    
+    section CPU Load
+    ${recentBranch} (${bytesToHuman(resourcesRecent.cpu.load)}): active, 0, ${resourcesRecent.cpu.load}
+    ${baseBranch} (${bytesToHuman(resourcesBase.cpu.load)}): 0, ${resourcesBase.cpu.load}
+\`\`\`
+`;
 }
 function createReport(data, compareData = null) {
     const context = github.context;

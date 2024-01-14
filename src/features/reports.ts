@@ -229,14 +229,14 @@ function createPRComparison(dataRecent: BuildOutput, dataBase: BuildOutput): str
 
   return `## GraalVM Native Image PR comparison
 
-${"analysis results" in compareParameter? createComparedAnalysisResultsDiagramm(recentBranch, baseBranch, analysisRecent, analysisTypesRecent, analysisBase, analysisTypesBase): ''}
-${"image details" in compareParameter? createComparedDetailsDiagramm(recentBranch, baseBranch, detailsRecent, detailsBase, otherBytesBase, otherBytesRecent): ''}
-${"resource usage" in compareParameter? createComparedResourceUsageDiagramm(recentBranch, baseBranch, resourcesRecent, resourcesBase): ''}
+${compareParameter.includes('analysis results')? createComparedAnalysisResultsDiagramm(recentBranch, baseBranch, analysisRecent, analysisTypesRecent, analysisBase, analysisTypesBase): ''}
+${compareParameter.includes('image details')? createComparedDetailsDiagramm(recentBranch, baseBranch, detailsRecent, detailsBase, otherBytesBase, otherBytesRecent): ''}
+${compareParameter.includes('resource usage')? createComparedResourceUsageDiagramm(recentBranch, baseBranch, resourcesRecent, resourcesBase): ''}
 
 ${getFooter()}`
 }
 
-function createComparedDetailsDiagramm(recentBranch: string, baseBranch: string, detailsRecent: any, detailsBase: any, otherBytesBase: number, otherBytesRecent: number): string {
+function createComparedDetailsDiagramm(recentBranch: string | undefined, baseBranch: string | undefined, detailsRecent: any, detailsBase: any, otherBytesBase: number, otherBytesRecent: number): string {
   core.info("---- 1 ---")
 
   return`#### Image Details
@@ -267,7 +267,7 @@ gantt
 `
 }
 
-function createComparedAnalysisResultsDiagramm(recentBranch: string, baseBranch: string, analysisRecent: any, analysisTypesRecent: any, analysisBase: any, analysisTypeBase: any): string {
+function createComparedAnalysisResultsDiagramm(recentBranch: string | undefined, baseBranch: string | undefined, analysisRecent: any, analysisTypesRecent: any, analysisBase: any, analysisTypeBase: any): string {
   core.info("---- 2 ---")
   return`#### Analysis Results
 
@@ -311,7 +311,7 @@ gantt
 `
 }
 
-function createComparedResourceUsageDiagramm(recentBranch: string, baseBranch: string, resourcesRecent: any, resourcesBase: any): string {
+function createComparedResourceUsageDiagramm(recentBranch: string | undefined, baseBranch: string | undefined, resourcesRecent: any, resourcesBase: any): string {
   core.info("---- 3 ---")
   return`#### Resource Usage
 
