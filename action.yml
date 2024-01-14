@@ -43,18 +43,14 @@ inputs:
     required: false
     description: 'Post a comment containing a Native Image build report on pull requests.'
     default: 'false'
-  native-image-metric-history:
-    required: false
-    description: 'Post a diagramm showing the image details history for last builds.'
-    default: 'false'
-  build-counts-for-metric-history:
-    required: false
-    description: 'Set how many builds are considered for metric history.'
-    default: '10'
   native-image-pr-comparison:
     required: false
     description: 'Post a comment containing a comparison between the Native Image of the pr-branch and the pr-base-branch on pull.'
     default: 'false'
+  native-image-pr-comparison-parameter:
+    required: false
+    description: 'Comma seperated list of values, which should be compared by PR. Possible values: (analysis results, image details, resource usage).'
+    default: 'image details'
   version:
     required: false
     description: 'GraalVM version (release, latest, dev).'
