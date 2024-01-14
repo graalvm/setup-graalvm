@@ -96999,7 +96999,6 @@ function createPRComparison(dataRecent, dataBase) {
     const baseBranch = process.env.GITHUB_BASE_REF;
     const recentBranch = process.env.GITHUB_HEAD_REF;
     const compareParameter = getPRComparePara().toLowerCase();
-    core.info("Compare Para:" + compareParameter);
     return `## GraalVM Native Image PR comparison
 
 ${compareParameter.includes('analysis results') ? createComparedAnalysisResultsDiagramm(recentBranch, baseBranch, analysisRecent, analysisTypesRecent, analysisBase, analysisTypesBase) : ''}
@@ -97009,7 +97008,6 @@ ${compareParameter.includes('resource usage') ? createComparedResourceUsageDiagr
 ${getFooter()}`;
 }
 function createComparedDetailsDiagramm(recentBranch, baseBranch, detailsRecent, detailsBase, otherBytesBase, otherBytesRecent) {
-    core.info("---- 1 ---");
     return `#### Image Details
 
 \`\`\`mermaid
@@ -97038,55 +97036,53 @@ gantt
 `;
 }
 function createComparedAnalysisResultsDiagramm(recentBranch, baseBranch, analysisRecent, analysisTypesRecent, analysisBase, analysisTypeBase) {
-    core.info("---- 2 ---");
     return `#### Analysis Results
 
 \`\`\`mermaid
 gantt
-    title Native Image Size Details 
+    title Native Image Analysis Results 
     todayMarker off
     dateFormat  X
     axisFormat %
 
     section Types
-    ${recentBranch} (Reachable: ${analysisTypesRecent.reachable}): active, 0, ${analysisTypesRecent.reachable}
-    ${baseBranch} (Reachable: ${analysisTypeBase.reachable}): 0, ${analysisTypeBase.reachable}
-    ${recentBranch} (Reflection: ${analysisTypesRecent.reflection}): active, 0, ${analysisTypesRecent.reflection}
-    ${baseBranch} (Reflection: ${analysisTypeBase.reflection}): 0, ${analysisTypeBase.reflection}
-    ${recentBranch} (JNI: ${analysisTypesRecent.jni}): active, 0, ${analysisTypesRecent.jni}
-    ${baseBranch} (JNI: ${analysisTypeBase.jni}): 0, ${analysisTypeBase.jni}
-    ${recentBranch} (Loaded: ${analysisTypesRecent.loaded}): active, 0, ${analysisTypesRecent.loaded}
-    ${baseBranch} (Loaded: ${analysisTypeBase.loaded}): 0, ${analysisTypeBase.loaded}
+    ${recentBranch} ${analysisTypesRecent.reachable} (Reachable): active, 0, ${analysisTypesRecent.reachable}
+    ${baseBranch} ${analysisTypeBase.reachable} (Reachable): 0, ${analysisTypeBase.reachable}
+    ${recentBranch} ${analysisTypesRecent.reflection} (Reflection): active, 0, ${analysisTypesRecent.reflection}
+    ${baseBranch} ${analysisTypeBase.reflection} (Reflection): 0, ${analysisTypeBase.reflection}
+    ${recentBranch} ${analysisTypesRecent.jni} (JNI): active, 0, ${analysisTypesRecent.jni}
+    ${baseBranch} ${analysisTypeBase.jni} (JNI): 0, ${analysisTypeBase.jni}
+    ${recentBranch} ${analysisTypesRecent.loaded} (Loaded): active, 0, ${analysisTypesRecent.loaded}
+    ${baseBranch} ${analysisTypeBase.loaded} (Loaded): 0, ${analysisTypeBase.loaded}
     
     section Fields
-    ${recentBranch} (Reachable: ${analysisRecent.fields.reachable}): active, 0, ${analysisRecent.fields.reachable}
-    ${baseBranch} (Reachable: ${analysisBase.fields.reachable}): 0, ${analysisBase.fields.reachable}
-    ${recentBranch} (Reflection: ${analysisRecent.fields.reflection}): active, 0, ${analysisRecent.fields.reflection}
-    ${baseBranch} (Reflection: ${analysisBase.fields.reflection}): 0, ${analysisBase.fields.reflection}
-    ${recentBranch} (JNI: ${analysisRecent.fields.jni}): active, 0, ${analysisRecent.fields.jni}
-    ${baseBranch} (JNI: ${analysisBase.fields.jni}): 0, ${analysisBase.fields.jni}
-    ${recentBranch} (Loaded: ${analysisRecent.fields.loaded}): active, 0, ${analysisRecent.fields.loaded}
-    ${baseBranch} (Loaded: ${analysisBase.fields.loaded}): 0, ${analysisBase.fields.loaded}
+    ${recentBranch} ${analysisRecent.fields.reachable} (Reachable): active, 0, ${analysisRecent.fields.reachable}
+    ${baseBranch} ${analysisBase.fields.reachable} (Reachable): 0, ${analysisBase.fields.reachable}
+    ${recentBranch} ${analysisRecent.fields.reflection} (Reflection): active, 0, ${analysisRecent.fields.reflection}
+    ${baseBranch} ${analysisBase.fields.reflection} (Reflection): 0, ${analysisBase.fields.reflection}
+    ${recentBranch} ${analysisRecent.fields.jni} (JNI): active, 0, ${analysisRecent.fields.jni}
+    ${baseBranch} ${analysisBase.fields.jni} (JNI): 0, ${analysisBase.fields.jni}
+    ${recentBranch} ${analysisRecent.fields.loaded} (Loaded): active, 0, ${analysisRecent.fields.loaded}
+    ${baseBranch} ${analysisBase.fields.loaded} (Loaded): 0, ${analysisBase.fields.loaded}
     
     section Methods
-    ${recentBranch} (Reachable: ${analysisRecent.methods.reachable}): active, 0, ${analysisRecent.methods.reachable}
-    ${baseBranch} (Reachable: ${analysisBase.methods.reachable}): 0, ${analysisBase.methods.reachable}
-    ${recentBranch} (Reflection: ${analysisRecent.methods.reflection}): active, 0, ${analysisRecent.methods.reflection}
-    ${baseBranch} (Reflection: ${analysisBase.methods.reflection}): 0, ${analysisBase.methods.reflection}
-    ${recentBranch} (JNI: ${analysisRecent.methods.jni}): active, 0, ${analysisRecent.methods.jni}
-    ${baseBranch} (JNI: ${analysisBase.methods.jni}): 0, ${analysisBase.methods.jni}
-    ${recentBranch} (Loaded: ${analysisRecent.methods.loaded}): active, 0, ${analysisRecent.methods.loaded}
-    ${baseBranch} (Loaded: ${analysisBase.methods.loaded}): 0, ${analysisBase.methods.loaded}
+    ${recentBranch} ${analysisRecent.methods.reachable} (Reachable): active, 0, ${analysisRecent.methods.reachable}
+    ${baseBranch} ${analysisBase.methods.reachable} (Reachable): 0, ${analysisBase.methods.reachable}
+    ${recentBranch} ${analysisRecent.methods.reflection} (Reflection): active, 0, ${analysisRecent.methods.reflection}
+    ${baseBranch} ${analysisBase.methods.reflection} (Reflection): 0, ${analysisBase.methods.reflection}
+    ${recentBranch} ${analysisRecent.methods.jni} (JNI): active, 0, ${analysisRecent.methods.jni}
+    ${baseBranch} ${analysisBase.methods.jni} (JNI): 0, ${analysisBase.methods.jni}
+    ${recentBranch} ${analysisRecent.methods.loaded} (Loaded): active, 0, ${analysisRecent.methods.loaded}
+    ${baseBranch} ${analysisBase.methods.loaded} (JNI): 0, ${analysisBase.methods.loaded}
 \`\`\`
 `;
 }
 function createComparedResourceUsageDiagramm(recentBranch, baseBranch, resourcesRecent, resourcesBase) {
-    core.info("---- 3 ---");
     return `#### Resource Usage
 
 \`\`\`mermaid
-gantt
-    title Native Image Size Details 
+gantt.
+    title Native Image Resource Usage
     todayMarker off
     dateFormat  X
     axisFormat %
