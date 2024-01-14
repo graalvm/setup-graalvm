@@ -225,6 +225,7 @@ function createPRComparison(dataRecent: BuildOutput, dataBase: BuildOutput): str
   const recentBranch = process.env.GITHUB_HEAD_REF
 
   const compareParameter = getPRComparePara().toLowerCase()
+  core.info("Compare Para:" + compareParameter)
 
   return `## GraalVM Native Image PR comparison
 
@@ -236,6 +237,8 @@ ${getFooter()}`
 }
 
 function createComparedDetailsDiagramm(recentBranch: string, baseBranch: string, detailsRecent: any, detailsBase: any, otherBytesBase: number, otherBytesRecent: number): string {
+  core.info("---- 1 ---")
+
   return`#### Image Details
 
 \`\`\`mermaid
@@ -265,7 +268,8 @@ gantt
 }
 
 function createComparedAnalysisResultsDiagramm(recentBranch: string, baseBranch: string, analysisRecent: any, analysisTypesRecent: any, analysisBase: any, analysisTypeBase: any): string {
-  return`#### Image Details
+  core.info("---- 2 ---")
+  return`#### Analysis Results
 
 \`\`\`mermaid
 gantt
@@ -308,7 +312,8 @@ gantt
 }
 
 function createComparedResourceUsageDiagramm(recentBranch: string, baseBranch: string, resourcesRecent: any, resourcesBase: any): string {
-  return`#### Image Details
+  core.info("---- 3 ---")
+  return`#### Resource Usage
 
 \`\`\`mermaid
 gantt
