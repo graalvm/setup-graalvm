@@ -311,7 +311,7 @@ function createComparedResourceUsageDiagramm(recentBranch: string | undefined, b
   return`#### Resource Usage
 
 \`\`\`mermaid
-gantt.
+gantt
     title Native Image Resource Usage
     todayMarker off
     dateFormat  X
