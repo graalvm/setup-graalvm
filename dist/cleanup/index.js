@@ -96522,14 +96522,13 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.OCTOKIT_BASIC_HEADER = exports.OCTOKIT_ROUTE_GET_BLOB = exports.OCTOKIT_ROUTE_GET_TREE = exports.OCTOKIT_ROUTE_GET_REF_METRICS = exports.OCTOKIT_ROUTE_GET_REF = exports.OCTOKIT_ROUTE_CREATE_TREE = exports.OCTOKIT_ROUTE_CREATE_REF = exports.OCTOKIT_REF_BRANCHE_PREFIX = exports.METRIC_PATH = exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_PAT_TOKEN = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.OCTOKIT_BASIC_HEADER = exports.OCTOKIT_ROUTE_GET_BLOB = exports.OCTOKIT_ROUTE_GET_TREE = exports.OCTOKIT_ROUTE_GET_REF_METRICS = exports.OCTOKIT_ROUTE_GET_REF = exports.OCTOKIT_ROUTE_CREATE_TREE = exports.OCTOKIT_ROUTE_CREATE_REF = exports.OCTOKIT_REF_BRANCHE_PREFIX = exports.METRIC_PATH = exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_DISTRIBUTION = 'distribution';
 exports.INPUT_COMPONENTS = 'components';
 exports.INPUT_GITHUB_TOKEN = 'github-token';
-exports.INPUT_PAT_TOKEN = 'pat-token';
 exports.INPUT_SET_JAVA_HOME = 'set-java-home';
 exports.INPUT_CACHE = 'cache';
 exports.INPUT_CHECK_FOR_UPDATES = 'check-for-updates';
@@ -96920,7 +96919,6 @@ exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
 function generateReports() {
     return __awaiter(this, void 0, void 0, function* () {
         if (areJobReportsEnabled() || arePRReportsEnabled()) {
-            core.info(`DEBUGGING: ${BUILD_OUTPUT_JSON_PATH}`);
             if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
                 core.warning('Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?');
                 return;
@@ -96928,7 +96926,6 @@ function generateReports() {
             const buildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'));
             const report = createReport(buildOutput);
             if (areJobReportsEnabled()) {
-                core.info(report);
                 core.summary.addRaw(report);
                 yield core.summary.write();
             }

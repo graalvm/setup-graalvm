@@ -129,7 +129,6 @@ export async function setUpNativeImageBuildReports(
 
 export async function generateReports(): Promise<void> {
   if (areJobReportsEnabled() || arePRReportsEnabled()) {
-    core.info(`DEBUGGING: ${BUILD_OUTPUT_JSON_PATH}`)
     if (!fs.existsSync(BUILD_OUTPUT_JSON_PATH)) {
       core.warning(
           'Unable to find build output data to create a report. Are you sure this build job has used GraalVM Native Image?'
@@ -142,7 +141,6 @@ export async function generateReports(): Promise<void> {
 
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
-      core.info(report)
       core.summary.addRaw(report)
       await core.summary.write()
     }
