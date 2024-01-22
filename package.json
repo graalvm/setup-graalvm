@@ -35,7 +35,7 @@
     "@actions/http-client": "^1.0.11",
     "@actions/io": "^1.1.1",
     "@actions/tool-cache": "^1.7.1",
-    "@octokit/core": "^3.5.1",
+    "@octokit/rest": "^20.0.2",
     "@octokit/types": "^6.34.0",
     "d3": "^7.8.5",
     "js-base64": "^3.7.5",

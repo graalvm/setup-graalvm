@@ -279,8 +279,8 @@ gantt
     ${baseBranch} ${analysisTypeBase.reflection} (Reflection): 0, ${analysisTypeBase.reflection}
     ${recentBranch} ${analysisTypesRecent.jni} (JNI): active, 0, ${analysisTypesRecent.jni}
     ${baseBranch} ${analysisTypeBase.jni} (JNI): 0, ${analysisTypeBase.jni}
-    ${recentBranch} ${analysisTypesRecent.loaded} (Loaded): active, 0, ${analysisTypesRecent.loaded}
-    ${baseBranch} ${analysisTypeBase.loaded} (Loaded): 0, ${analysisTypeBase.loaded}
+    ${recentBranch} ${analysisTypesRecent.loaded} (Total Loaded): active, 0, ${analysisTypesRecent.loaded}
+    ${baseBranch} ${analysisTypeBase.loaded} (Total Loaded): 0, ${analysisTypeBase.loaded}
     
     section Fields
     ${recentBranch} ${analysisRecent.fields.reachable} (Reachable): active, 0, ${analysisRecent.fields.reachable}
@@ -289,8 +289,8 @@ gantt
     ${baseBranch} ${analysisBase.fields.reflection} (Reflection): 0, ${analysisBase.fields.reflection}
     ${recentBranch} ${analysisRecent.fields.jni} (JNI): active, 0, ${analysisRecent.fields.jni}
     ${baseBranch} ${analysisBase.fields.jni} (JNI): 0, ${analysisBase.fields.jni}
-    ${recentBranch} ${analysisRecent.fields.loaded} (Loaded): active, 0, ${analysisRecent.fields.loaded}
-    ${baseBranch} ${analysisBase.fields.loaded} (Loaded): 0, ${analysisBase.fields.loaded}
+    ${recentBranch} ${analysisRecent.fields.loaded} (Total Loaded): active, 0, ${analysisRecent.fields.loaded}
+    ${baseBranch} ${analysisBase.fields.loaded} (Total Loaded): 0, ${analysisBase.fields.loaded}
     
     section Methods
     ${recentBranch} ${analysisRecent.methods.reachable} (Reachable): active, 0, ${analysisRecent.methods.reachable}
@@ -299,8 +299,8 @@ gantt
     ${baseBranch} ${analysisBase.methods.reflection} (Reflection): 0, ${analysisBase.methods.reflection}
     ${recentBranch} ${analysisRecent.methods.jni} (JNI): active, 0, ${analysisRecent.methods.jni}
     ${baseBranch} ${analysisBase.methods.jni} (JNI): 0, ${analysisBase.methods.jni}
-    ${recentBranch} ${analysisRecent.methods.loaded} (Loaded): active, 0, ${analysisRecent.methods.loaded}
-    ${baseBranch} ${analysisBase.methods.loaded} (JNI): 0, ${analysisBase.methods.loaded}
+    ${recentBranch} ${analysisRecent.methods.loaded} (Total Loaded): active, 0, ${analysisRecent.methods.loaded}
+    ${baseBranch} ${analysisBase.methods.loaded} (Total Loaded): 0, ${analysisBase.methods.loaded}
 \`\`\`
 `
 }
@@ -316,18 +316,22 @@ gantt
     axisFormat %
 
     section Garbage Collection
-    ${recentBranch} (${resourcesRecent.garbage_collection.total_secs}): active, 0, ${resourcesRecent.garbage_collection.total_secs}
-    ${baseBranch} (${resourcesBase.garbage_collection.total_secs}): 0, ${resourcesBase.garbage_collection.total_secs}
+    ${recentBranch} (${resourcesRecent.garbage_collection.total_secs}s): active, 0, 1
+    ${baseBranch} (${resourcesBase.garbage_collection.total_secs}s): 0, ${normalizeValue(resourcesBase.garbage_collection.total_secs, resourcesRecent.garbage_collection.total_secs)}
     
     section Peak RSS
-    ${recentBranch} (${bytesToHuman(resourcesRecent.memory.peak_rss_bytes)}): active, 0, ${resourcesRecent.memory.peak_rss_bytes}
-    ${baseBranch} (${bytesToHuman(resourcesBase.memory.peak_rss_bytes)}): 0, ${resourcesBase.memory.peak_rss_bytes}
+    ${recentBranch} (${bytesToHuman(resourcesRecent.memory.peak_rss_bytes)}): active, 0, 1
+    ${baseBranch} (${bytesToHuman(resourcesBase.memory.peak_rss_bytes)}): 0, ${normalizeValue(resourcesBase.memory.peak_rss_bytes, resourcesRecent.memory.peak_rss_bytes)}
     
     section CPU Load
-    ${recentBranch} (${bytesToHuman(resourcesRecent.cpu.load)}): active, 0, ${resourcesRecent.cpu.load}
-    ${baseBranch} (${bytesToHuman(resourcesBase.cpu.load)}): 0, ${resourcesBase.cpu.load}
+    ${recentBranch} (${bytesToHuman(resourcesRecent.cpu.load)}): active, 0, 1
+    ${baseBranch} (${bytesToHuman(resourcesBase.cpu.load)}): 0, ${normalizeValue(resourcesBase.cpu.load, resourcesRecent.cpu.load)}
 \`\`\`
 `
+}
+
+function normalizeValue(value: number, baseValue: number): string {
+  return (value / baseValue).toFixed(2 )
 }
 
 function createReport(data: BuildOutput, compareData: BuildOutput | null = null): string {
