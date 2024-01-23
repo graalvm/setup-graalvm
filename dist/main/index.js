@@ -97184,21 +97184,21 @@ gantt
     axisFormat %
 
     section Garbage Collection
-    ${recentBranch} (${resourcesRecent.garbage_collection.total_secs}s): active, 0, 1
+    ${recentBranch} (${resourcesRecent.garbage_collection.total_secs}s): active, 0, 100
     ${baseBranch} (${resourcesBase.garbage_collection.total_secs}s): 0, ${normalizeValue(resourcesBase.garbage_collection.total_secs, resourcesRecent.garbage_collection.total_secs)}
     
     section Peak RSS
-    ${recentBranch} (${bytesToHuman(resourcesRecent.memory.peak_rss_bytes)}): active, 0, 1
+    ${recentBranch} (${bytesToHuman(resourcesRecent.memory.peak_rss_bytes)}): active, 0, 100
     ${baseBranch} (${bytesToHuman(resourcesBase.memory.peak_rss_bytes)}): 0, ${normalizeValue(resourcesBase.memory.peak_rss_bytes, resourcesRecent.memory.peak_rss_bytes)}
     
     section CPU Load
-    ${recentBranch} (${bytesToHuman(resourcesRecent.cpu.load)}): active, 0, 1
+    ${recentBranch} (${bytesToHuman(resourcesRecent.cpu.load)}): active, 0, 100
     ${baseBranch} (${bytesToHuman(resourcesBase.cpu.load)}): 0, ${normalizeValue(resourcesBase.cpu.load, resourcesRecent.cpu.load)}
 \`\`\`
 `;
 }
 function normalizeValue(value, baseValue) {
-    return (value / baseValue).toFixed(2);
+    return ((value / baseValue) * 100).toFixed(0);
 }
 function createReport(data, compareData = null) {
     const context = github.context;
@@ -97475,15 +97475,15 @@ function getCompareColumnTime(value, compareValue, lowerPercentageBoarder, highe
     }
     if (smallIsPositive) {
         return `<td align="left">
-${((value / compareValue) * 100) < lowerPercentageBoarder ? `:green_circle: ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :green_circle:` : ''}
-${lowerPercentageBoarder < ((value / compareValue) * 100) && ((value / compareValue) * 100) < higherPercentageBoarder ? `${(value - compareValue)}s (${getDiffPercent(compareValue, value)}` : ''}
-${((value / compareValue) * 100) > higherPercentageBoarder ? `:red_circle: ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :red_circle:` : ''}
+${((value / compareValue) * 100) < lowerPercentageBoarder ? `:green_circle: ${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}) :green_circle:` : ''}
+${lowerPercentageBoarder < ((value / compareValue) * 100) && ((value / compareValue) * 100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}` : ''}
+${((value / compareValue) * 100) > higherPercentageBoarder ? `:red_circle: ${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}) :red_circle:` : ''}
 </td>`;
     }
     return `<td align="left">
-${((value / compareValue) * 100) < lowerPercentageBoarder ? `:red_circle: ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :red_circle:` : ''}
-${lowerPercentageBoarder < ((value / compareValue) * 100) && ((value / compareValue) * 100) < higherPercentageBoarder ? `${(value - compareValue)}s (${getDiffPercent(compareValue, value)}` : ''}
-${((value / compareValue) * 100) > higherPercentageBoarder ? `:green_circle: ${(value - compareValue)}s (${getDiffPercent(compareValue, value)}) :green_circle:` : ''}
+${((value / compareValue) * 100) < lowerPercentageBoarder ? `:red_circle: ${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}) :red_circle:` : ''}
+${lowerPercentageBoarder < ((value / compareValue) * 100) && ((value / compareValue) * 100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}` : ''}
+${((value / compareValue) * 100) > higherPercentageBoarder ? `:green_circle: ${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}) :green_circle:` : ''}
 </td>`;
 }
 function getCompareColumnBytes(value, compareValue, lowerPercentageBoarder, higherPercentageBoarder, smallIsPositive = true) {
@@ -97509,15 +97509,15 @@ function getCompareColumn(value, compareValue, lowerPercentageBoarder, higherPer
     }
     if (smallIsPositive) {
         return `<td align="left">
-${((value / compareValue) * 100) < lowerPercentageBoarder ? `:green_circle: ${value - compareValue} (${getDiffPercent(compareValue, value)}) :green_circle:` : ''}
-${lowerPercentageBoarder < ((value / compareValue) * 100) && ((value / compareValue) * 100) < higherPercentageBoarder ? `${value - compareValue} (${getDiffPercent(compareValue, value)}` : ''}
-${((value / compareValue) * 100) > higherPercentageBoarder ? `:red_circle: ${value - compareValue} (${getDiffPercent(compareValue, value)}) :red_circle:` : ''}
+${((value / compareValue) * 100) < lowerPercentageBoarder ? `:green_circle: ${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}) :green_circle:` : ''}
+${lowerPercentageBoarder < ((value / compareValue) * 100) && ((value / compareValue) * 100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}` : ''}
+${((value / compareValue) * 100) > higherPercentageBoarder ? `:red_circle: ${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}) :red_circle:` : ''}
 </td>`;
     }
     return `<td align="left">
-${((value / compareValue) * 100) < lowerPercentageBoarder ? `:red_circle: ${value - compareValue} (${getDiffPercent(compareValue, value)}) :red_circle:` : ''}
-${lowerPercentageBoarder < ((value / compareValue) * 100) && ((value / compareValue) * 100) < higherPercentageBoarder ? `${value - compareValue} (${getDiffPercent(compareValue, value)}` : ''}
-${((value / compareValue) * 100) > higherPercentageBoarder ? `:green_circle: ${value - compareValue} (${getDiffPercent(compareValue, value)}) :green_circle:` : ''}
+${((value / compareValue) * 100) < lowerPercentageBoarder ? `:red_circle: ${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}) :red_circle:` : ''}
+${lowerPercentageBoarder < ((value / compareValue) * 100) && ((value / compareValue) * 100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}` : ''}
+${((value / compareValue) * 100) > higherPercentageBoarder ? `:green_circle: ${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}) :green_circle:` : ''}
 </td>`;
 }
 function toPercent(part, total) {
