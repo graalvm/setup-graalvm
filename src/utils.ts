@@ -267,9 +267,9 @@ export async function getPrBaseBranchMetrics(): Promise<string> {
 
 async function getBaseBranchCommitSha(octokit: Octokit, context: Context): Promise<string> {
     const prBaseBranchName = getPrBaseBranchSha()
-    const { data } = await octokit.request(c.OCTOKIT_ROUTE_GET_REF + c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName, {
+    const { data } = await octokit.request(c.OCTOKIT_ROUTE_GET_REF + c.OCTOKIT_REF_BRANCH_PREFIX + '/' + prBaseBranchName, {
         ...context.repo,
-        ref: c.OCTOKIT_REF_BRANCHE_PREFIX + '/' + prBaseBranchName,
+        ref: c.OCTOKIT_REF_BRANCH_PREFIX + '/' + prBaseBranchName,
         headers: c.OCTOKIT_BASIC_HEADER
     })
     return data.object.sha

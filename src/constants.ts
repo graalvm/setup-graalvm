@@ -45,7 +45,7 @@ export const ERROR_HINT =
 
 
 export const METRIC_PATH = 'graalvm-metrics'
-export const OCTOKIT_REF_BRANCHE_PREFIX = 'heads'
+export const OCTOKIT_REF_BRANCH_PREFIX = 'heads'
 
 export const OCTOKIT_ROUTE_CREATE_REF = 'POST /repos/{owner}/{repo}/git/refs'
 export const OCTOKIT_ROUTE_CREATE_TREE = 'POST /repos/{owner}/{repo}/git/trees'

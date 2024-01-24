@@ -279,8 +279,8 @@ gantt
     ${baseBranch} ${analysisTypeBase.reflection} (Reflection): 0, ${analysisTypeBase.reflection}
     ${recentBranch} ${analysisTypesRecent.jni} (JNI): active, 0, ${analysisTypesRecent.jni}
     ${baseBranch} ${analysisTypeBase.jni} (JNI): 0, ${analysisTypeBase.jni}
-    ${recentBranch} ${analysisTypesRecent.loaded} (Total Loaded): active, 0, ${analysisTypesRecent.loaded}
-    ${baseBranch} ${analysisTypeBase.loaded} (Total Loaded): 0, ${analysisTypeBase.loaded}
+    ${recentBranch} ${analysisTypesRecent.total} (Total Loaded): active, 0, ${analysisTypesRecent.total}
+    ${baseBranch} ${analysisTypeBase.total} (Total Loaded): 0, ${analysisTypeBase.total}
     
     section Fields
     ${recentBranch} ${analysisRecent.fields.reachable} (Reachable): active, 0, ${analysisRecent.fields.reachable}
@@ -289,8 +289,8 @@ gantt
     ${baseBranch} ${analysisBase.fields.reflection} (Reflection): 0, ${analysisBase.fields.reflection}
     ${recentBranch} ${analysisRecent.fields.jni} (JNI): active, 0, ${analysisRecent.fields.jni}
     ${baseBranch} ${analysisBase.fields.jni} (JNI): 0, ${analysisBase.fields.jni}
-    ${recentBranch} ${analysisRecent.fields.loaded} (Total Loaded): active, 0, ${analysisRecent.fields.loaded}
-    ${baseBranch} ${analysisBase.fields.loaded} (Total Loaded): 0, ${analysisBase.fields.loaded}
+    ${recentBranch} ${analysisRecent.fields.total} (Total Loaded): active, 0, ${analysisRecent.fields.total}
+    ${baseBranch} ${analysisBase.fields.total} (Total Loaded): 0, ${analysisBase.fields.total}
     
     section Methods
     ${recentBranch} ${analysisRecent.methods.reachable} (Reachable): active, 0, ${analysisRecent.methods.reachable}
@@ -299,8 +299,8 @@ gantt
     ${baseBranch} ${analysisBase.methods.reflection} (Reflection): 0, ${analysisBase.methods.reflection}
     ${recentBranch} ${analysisRecent.methods.jni} (JNI): active, 0, ${analysisRecent.methods.jni}
     ${baseBranch} ${analysisBase.methods.jni} (JNI): 0, ${analysisBase.methods.jni}
-    ${recentBranch} ${analysisRecent.methods.loaded} (Total Loaded): active, 0, ${analysisRecent.methods.loaded}
-    ${baseBranch} ${analysisBase.methods.loaded} (Total Loaded): 0, ${analysisBase.methods.loaded}
+    ${recentBranch} ${analysisRecent.methods.total} (Total Loaded): active, 0, ${analysisRecent.methods.total}
+    ${baseBranch} ${analysisBase.methods.total} (Total Loaded): 0, ${analysisBase.methods.total}
 \`\`\`
 `
 }
