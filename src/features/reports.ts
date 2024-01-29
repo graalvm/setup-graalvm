@@ -369,8 +369,8 @@ function createReport(data: BuildOutput): string {
         details.total_bytes
       )}</td>
       <td align="left">${objectCount}${bytesToHuman(
-    details.image_heap.resources.bytes
-  )} for ${details.image_heap.resources.count.toLocaleString()} resources</td>
+        details.image_heap.resources.bytes
+      )} for ${details.image_heap.resources.count.toLocaleString()} resources</td>
     </tr>${debugInfoLine}
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-other-data" target="_blank">Other data</a></td>
@@ -404,16 +404,16 @@ function createReport(data: BuildOutput): string {
       <td align="left">${bytesToHuman(
         resources.memory.peak_rss_bytes
       )} (${toPercent(
-    resources.memory.peak_rss_bytes,
-    resources.memory.system_total
-  )} of ${bytesToHuman(resources.memory.system_total)} system memory)</td>
+        resources.memory.peak_rss_bytes,
+        resources.memory.system_total
+      )} of ${bytesToHuman(resources.memory.system_total)} system memory)</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-cpu-load" target="_blank">CPU load</a></td>
       <td align="left">${resources.cpu.load.toFixed(3)} (${toPercent(
-    resources.cpu.load,
-    resources.cpu.total_cores
-  )} of ${resources.cpu.total_cores} CPU cores)</td>
+        resources.cpu.load,
+        resources.cpu.total_cores
+      )} of ${resources.cpu.total_cores} CPU cores)</td>
     </tr>
   </tbody>
 </table>
