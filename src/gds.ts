@@ -6,8 +6,7 @@ import * as io from '@actions/io'
 import * as path from 'path'
 import * as stream from 'stream'
 import * as util from 'util'
-import {IHeaders} from '@actions/http-client/interfaces'
-import {IncomingHttpHeaders} from 'http'
+import {IncomingHttpHeaders, OutgoingHttpHeaders} from 'http'
 import {RetryHelper} from '@actions/tool-cache/lib/retry-helper'
 import {calculateSHA256} from './utils'
 import {ok} from 'assert'
@@ -132,7 +131,7 @@ class HTTPError extends Error {
 async function downloadTool(
   url: string,
   userAgent: string,
-  headers?: IHeaders
+  headers?: OutgoingHttpHeaders
 ): Promise<string> {
   const dest = path.join(getTempDirectory(), uuidv4())
   await io.mkdirP(path.dirname(dest))
@@ -169,7 +168,7 @@ async function downloadToolAttempt(
   url: string,
   userAgent: string,
   dest: string,
-  headers?: IHeaders
+  headers?: OutgoingHttpHeaders
 ): Promise<string> {
   if (fs.existsSync(dest)) {
     throw new Error(`Destination file path ${dest} already exists`)
