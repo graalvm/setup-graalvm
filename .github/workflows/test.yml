@@ -27,7 +27,12 @@ jobs:
       matrix:
         java-version: ['21', '17', '20', 'dev']
         distribution: ['graalvm', 'graalvm-community']
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [
+          ubuntu-latest,
+          macos-14, # macOS on Apple silicon
+          macos-12, # macOS on Intel
+          windows-latest
+        ]
         components: ['']
         include:
           - java-version: '21'
