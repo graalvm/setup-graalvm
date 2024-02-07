@@ -680,13 +680,13 @@ function getCompareColumnTime(value: number, compareValue: number | null, lowerP
   if (smallIsPositive) {
     return `<td align="left">
 ${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle: ${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
-${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}`: ''}
+${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)})`: ''}
 ${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle: ${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 </td>`
   }
   return `<td align="left">
 ${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle: ${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
-${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}`: ''}
+${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)})`: ''}
 ${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle: ${(value - compareValue).toFixed(2)}s (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 </td>`
 }
@@ -696,13 +696,13 @@ function getCompareColumnBytes(value: number, compareValue: number | null, lower
   if (smallIsPositive) {
     return `<td align="left">
 ${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle: ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
-${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}`: ''}
+${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)})`: ''}
 ${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle: ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 </td>`
   }
   return `<td align="left">
 ${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle: ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
-${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}`: ''}
+${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)})`: ''}
 ${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle: ${bytesToHuman(value - compareValue)} (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 </td>`
 }
@@ -712,13 +712,13 @@ function getCompareColumn(value: number, compareValue: number | null, lowerPerce
   if (smallIsPositive) {
     return `<td align="left">
 ${((value / compareValue)*100) < lowerPercentageBoarder ? `:green_circle: ${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
-${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}`: ''}
+${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)})`: ''}
 ${((value / compareValue)*100) > higherPercentageBoarder ? `:red_circle: ${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
 </td>`
   }
   return `<td align="left">
 ${((value / compareValue)*100) < lowerPercentageBoarder ? `:red_circle: ${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}) :red_circle:`: ''}
-${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}`: ''}
+${lowerPercentageBoarder < ((value / compareValue)*100) && ((value / compareValue)*100) < higherPercentageBoarder ? `${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)})`: ''}
 ${((value / compareValue)*100) > higherPercentageBoarder ? `:green_circle: ${(value - compareValue).toFixed(2)} (${getDiffPercent(compareValue, value)}) :green_circle:`: ''}
 </td>`
 }
