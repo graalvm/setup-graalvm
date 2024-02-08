@@ -15,34 +15,6 @@ This action:
 - has built-in support for GraalVM components and the [GraalVM Updater][gu]
 
 
-## Migrating from GraalVM 22.3 or Earlier to the New GraalVM for JDK 17 and Later
-
-The [GraalVM for JDK 17 and JDK 20 release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the GraalVM version scheme with OpenJDK.
-As a result, this action no longer requires the `version` option to select a specific GraalVM version.
-At the same time, it introduces a new `distribution` option to select a specific GraalVM distribution (`graalvm`, `graalvm-community`, or `mandrel`).
-Therefore, to migrate your workflow to use the latest GraalVM release, replace the `version` with the `distribution` option in the workflow `yml` config, for example:
-
-```yml
-# ...
-- uses: graalvm/setup-graalvm@v1
-  with:
-    java-version: '17'
-    version: '22.3.2' # Old 'version' option for the GraalVM version
-    # ...
-```
-
-can be replaced with:
-
-```yml
-# ...
-- uses: graalvm/setup-graalvm@v1
-  with:
-    java-version: '17.0.7' # for a specific JDK 17; or '17' for the latest JDK 17
-    distribution: 'graalvm' # New 'distribution' option
-    # ...
-```
-
-
 ## Templates
 
 ### Quickstart Template
@@ -161,6 +133,35 @@ jobs:
 ```
 
 </details>
+
+
+## Migrating from GraalVM 22.3 or Earlier to the New GraalVM for JDK 17 and Later
+
+The [GraalVM for JDK 17 and JDK 20 release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the GraalVM version scheme with OpenJDK.
+As a result, this action no longer requires the `version` option to select a specific GraalVM version.
+At the same time, it introduces a new `distribution` option to select a specific GraalVM distribution (`graalvm`, `graalvm-community`, or `mandrel`).
+Therefore, to migrate your workflow to use the latest GraalVM release, replace the `version` with the `distribution` option in the workflow `yml` config, for example:
+
+```yml
+# ...
+- uses: graalvm/setup-graalvm@v1
+  with:
+    java-version: '17'
+    version: '22.3.2' # Old 'version' option for the GraalVM version
+    # ...
+```
+
+can be replaced with:
+
+```yml
+# ...
+- uses: graalvm/setup-graalvm@v1
+  with:
+    java-version: '17.0.7' # for a specific JDK 17; or '17' for the latest JDK 17
+    distribution: 'graalvm' # New 'distribution' option
+    # ...
+```
+
 
 ## Options
 
