@@ -35,6 +35,9 @@ jobs:
         ]
         components: ['']
         include:
+          - java-version: '22-ea'
+            distribution: 'graalvm'
+            os: ubuntu-latest
           - java-version: '21'
             distribution: ''
             os: ubuntu-latest

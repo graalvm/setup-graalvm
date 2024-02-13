@@ -33,6 +33,25 @@ export async function exec(
   }
 }
 
+export async function getLatestPrerelease(
+  repo: string
+): Promise<c.ReleasesResponse['data'][number]> {
+  const githubToken = getGitHubToken()
+  const options = githubToken.length > 0 ? {auth: githubToken} : {}
+  const octokit = new GitHubDotCom(options)
+  const releases: c.ReleasesResponse['data'] = (
+    await octokit.request('GET /repos/{owner}/{repo}/releases', {
+      owner: c.GRAALVM_GH_USER,
+      repo
+    })
+  ).data
+  const firstPrerelease = releases.find(r => r.prerelease)
+  if (!firstPrerelease) {
+    throw new Error(`Unable to find latest prerelease in ${repo}`)
+  }
+  return firstPrerelease
+}
+
 export async function getLatestRelease(
   repo: string
 ): Promise<c.LatestReleaseResponse['data']> {

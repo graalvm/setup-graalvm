@@ -3,6 +3,7 @@ import * as semver from 'semver'
 import {
   downloadAndExtractJDK,
   downloadExtractAndCacheJDK,
+  getLatestPrerelease,
   getLatestRelease,
   getMatchingTags,
   getTaggedRelease
@@ -13,6 +14,7 @@ import {basename} from 'path'
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm'
 const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`
+const ORACLE_GRAALVM_REPO_EA_BUILDS = 'oracle-graalvm-dev-builds'
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds'
 const GRAALVM_JDK_TAG_PREFIX = 'jdk-'
 const GRAALVM_TAG_PREFIX = 'vm-'
@@ -45,11 +47,34 @@ export async function setUpGraalVMJDK(
         `java-version set to '${javaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
       )
     }
+  } else if (javaVersion === '22-ea') {
+    downloadUrl = await findLatestEABuildDownloadUrl(javaVersion)
   } else {
     downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${toolName}${c.GRAALVM_FILE_EXTENSION}`
   }
   const downloader = async () => downloadGraalVMJDK(downloadUrl, javaVersion)
   return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
+}
+
+async function findLatestEABuildDownloadUrl(
+  javaEaVersion: string
+): Promise<string> {
+  const latestPrerelease = await getLatestPrerelease(
+    ORACLE_GRAALVM_REPO_EA_BUILDS
+  )
+  const expectedFileNamePrefix = 'graalvm-jdk-'
+  const expectedFileNameSuffix = `_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin${c.GRAALVM_FILE_EXTENSION}`
+  for (const asset of latestPrerelease.assets) {
+    if (
+      asset.name.startsWith(expectedFileNamePrefix) &&
+      asset.name.endsWith(expectedFileNameSuffix)
+    ) {
+      return asset.browser_download_url
+    }
+  }
+  throw new Error(
+    `Could not find Oracle GraalVM build for ${javaEaVersion}. ${c.ERROR_HINT}`
+  )
 }
 
 export async function setUpGraalVMJDKCE(

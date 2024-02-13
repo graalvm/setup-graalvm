@@ -93850,6 +93850,7 @@ const tool_cache_1 = __nccwpck_require__(7784);
 const path_1 = __nccwpck_require__(1017);
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
 const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`;
+const ORACLE_GRAALVM_REPO_EA_BUILDS = 'oracle-graalvm-dev-builds';
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds';
 const GRAALVM_JDK_TAG_PREFIX = 'jdk-';
 const GRAALVM_TAG_PREFIX = 'vm-';
@@ -93879,6 +93880,9 @@ function setUpGraalVMJDK(javaVersionOrDev) {
                 throw new Error(`java-version set to '${javaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`);
             }
         }
+        else if (javaVersion === '22-ea') {
+            downloadUrl = yield findLatestEABuildDownloadUrl(javaVersion);
+        }
         else {
             downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${toolName}${c.GRAALVM_FILE_EXTENSION}`;
         }
@@ -93887,6 +93891,20 @@ function setUpGraalVMJDK(javaVersionOrDev) {
     });
 }
 exports.setUpGraalVMJDK = setUpGraalVMJDK;
+function findLatestEABuildDownloadUrl(javaEaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const latestPrerelease = yield (0, utils_1.getLatestPrerelease)(ORACLE_GRAALVM_REPO_EA_BUILDS);
+        const expectedFileNamePrefix = 'graalvm-jdk-';
+        const expectedFileNameSuffix = `_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin${c.GRAALVM_FILE_EXTENSION}`;
+        for (const asset of latestPrerelease.assets) {
+            if (asset.name.startsWith(expectedFileNamePrefix) &&
+                asset.name.endsWith(expectedFileNameSuffix)) {
+                return asset.browser_download_url;
+            }
+        }
+        throw new Error(`Could not find Oracle GraalVM build for ${javaEaVersion}. ${c.ERROR_HINT}`);
+    });
+}
 function setUpGraalVMJDKCE(javaVersionOrDev) {
     return __awaiter(this, void 0, void 0, function* () {
         if (javaVersionOrDev === c.VERSION_DEV) {
@@ -94621,7 +94639,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.exec = void 0;
+exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.getLatestPrerelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
@@ -94651,6 +94669,23 @@ function exec(commandLine, args, options) {
     });
 }
 exports.exec = exec;
+function getLatestPrerelease(repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const githubToken = getGitHubToken();
+        const options = githubToken.length > 0 ? { auth: githubToken } : {};
+        const octokit = new GitHubDotCom(options);
+        const releases = (yield octokit.request('GET /repos/{owner}/{repo}/releases', {
+            owner: c.GRAALVM_GH_USER,
+            repo
+        })).data;
+        const firstPrerelease = releases.find(r => r.prerelease);
+        if (!firstPrerelease) {
+            throw new Error(`Unable to find latest prerelease in ${repo}`);
+        }
+        return firstPrerelease;
+    });
+}
+exports.getLatestPrerelease = getLatestPrerelease;
 function getLatestRelease(repo) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();

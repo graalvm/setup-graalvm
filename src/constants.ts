@@ -49,6 +49,9 @@ export type LatestReleaseResponse =
 export type MatchingRefsResponse =
   otypes.Endpoints['GET /repos/{owner}/{repo}/git/matching-refs/{ref}']['response']
 
+export type ReleasesResponse =
+  otypes.Endpoints['GET /repos/{owner}/{repo}/releases']['response']
+
 function determineJDKArchitecture(): string {
   switch (process.arch) {
     case 'x64': {
