@@ -29,7 +29,8 @@ export async function setUpGraalVMJDK(
     return setUpGraalVMJDKDevBuild()
   }
   const javaVersion = javaVersionOrDev
-  let toolName = determineToolName(javaVersion, false)
+  const toolName = determineToolName(javaVersion, false)
+  let downloadName = toolName
   let downloadUrl: string
   if (javaVersion.includes('.')) {
     if (semver.valid(javaVersion)) {
@@ -37,7 +38,6 @@ export async function setUpGraalVMJDK(
       const minorJavaVersion = semver.minor(javaVersion)
       const patchJavaVersion = semver.patch(javaVersion)
       const isGARelease = minorJavaVersion === 0 && patchJavaVersion === 0
-      let downloadName = toolName
       if (isGARelease) {
         // For GA versions of JDKs, /archive/ does not use minor and patch version (see https://www.oracle.com/java/technologies/jdk-script-friendly-urls/)
         downloadName = determineToolName(majorJavaVersion.toString(), false)
@@ -51,7 +51,7 @@ export async function setUpGraalVMJDK(
   } else if (javaVersion === '22-ea') {
     downloadUrl = await findLatestEABuildDownloadUrl(javaVersion)
   } else {
-    downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${toolName}${c.GRAALVM_FILE_EXTENSION}`
+    downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${downloadName}${c.GRAALVM_FILE_EXTENSION}`
   }
   const downloader = async () => downloadGraalVMJDK(downloadUrl, javaVersion)
   return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
@@ -126,7 +126,7 @@ export async function findLatestGraalVMJDKCEJavaVersion(
 }
 
 function determineToolName(javaVersion: string, isCommunity: boolean) {
-  return `graalvm${isCommunity ? '-community' : ''}-jdk-${toSemVer(javaVersion)}_${
+  return `graalvm${isCommunity ? '-community' : ''}-jdk-${javaVersion}_${
     c.JDK_PLATFORM
   }-${c.JDK_ARCH}_bin`
 }

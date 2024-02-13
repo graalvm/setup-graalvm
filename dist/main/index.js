@@ -93861,7 +93861,8 @@ function setUpGraalVMJDK(javaVersionOrDev) {
             return setUpGraalVMJDKDevBuild();
         }
         const javaVersion = javaVersionOrDev;
-        let toolName = determineToolName(javaVersion, false);
+        const toolName = determineToolName(javaVersion, false);
+        let downloadName = toolName;
         let downloadUrl;
         if (javaVersion.includes('.')) {
             if (semver.valid(javaVersion)) {
@@ -93869,7 +93870,6 @@ function setUpGraalVMJDK(javaVersionOrDev) {
                 const minorJavaVersion = semver.minor(javaVersion);
                 const patchJavaVersion = semver.patch(javaVersion);
                 const isGARelease = minorJavaVersion === 0 && patchJavaVersion === 0;
-                let downloadName = toolName;
                 if (isGARelease) {
                     // For GA versions of JDKs, /archive/ does not use minor and patch version (see https://www.oracle.com/java/technologies/jdk-script-friendly-urls/)
                     downloadName = determineToolName(majorJavaVersion.toString(), false);
@@ -93884,7 +93884,7 @@ function setUpGraalVMJDK(javaVersionOrDev) {
             downloadUrl = yield findLatestEABuildDownloadUrl(javaVersion);
         }
         else {
-            downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${toolName}${c.GRAALVM_FILE_EXTENSION}`;
+            downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${downloadName}${c.GRAALVM_FILE_EXTENSION}`;
         }
         const downloader = () => __awaiter(this, void 0, void 0, function* () { return downloadGraalVMJDK(downloadUrl, javaVersion); });
         return (0, utils_1.downloadExtractAndCacheJDK)(downloader, toolName, javaVersion);
@@ -93945,7 +93945,7 @@ function findLatestGraalVMJDKCEJavaVersion(majorJavaVersion) {
 }
 exports.findLatestGraalVMJDKCEJavaVersion = findLatestGraalVMJDKCEJavaVersion;
 function determineToolName(javaVersion, isCommunity) {
-    return `graalvm${isCommunity ? '-community' : ''}-jdk-${(0, utils_1.toSemVer)(javaVersion)}_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin`;
+    return `graalvm${isCommunity ? '-community' : ''}-jdk-${javaVersion}_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin`;
 }
 function downloadGraalVMJDK(downloadUrl, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
