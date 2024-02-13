@@ -2,6 +2,7 @@ import * as c from './constants'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as httpClient from '@actions/http-client'
+import * as semver from 'semver'
 import * as tc from '@actions/tool-cache'
 import {ExecOptions, exec as e} from '@actions/exec'
 import {readFileSync, readdirSync} from 'fs'
@@ -154,17 +155,25 @@ function findJavaHomeInSubfolder(searchPath: string): string {
   }
 }
 
-/**
- * This helper turns GraalVM version numbers (e.g., `22.0.0.2`) into valid
- * semver.org versions (e.g., `22.0.0-2`), which is needed because
- * @actions/tool-cache uses `semver` to validate versions.
- */
 export function toSemVer(version: string): string {
   const parts = version.split('.')
-  const major = parts[0]
-  const minor = parts.length > 1 ? parts[1] : '0'
-  const patch = parts.length > 2 ? parts.slice(2).join('-') : '0'
-  return `${major}.${minor}.${patch}`
+  if (parts.length === 4) {
+    /**
+     * Turn legacy GraalVM version numbers (e.g., `22.0.0.2`) into valid
+     * semver.org versions (e.g., `22.0.0-2`).
+     */
+    return `${parts[0]}.${parts[1]}.${parts.slice(2).join('-')}`
+  }
+
+  const versionParts = version.split('-', 2)
+  const suffix = versionParts.length === 2 ? '-' + versionParts[1] : ''
+  const validVersion = semver.valid(semver.coerce(versionParts[0]) + suffix)
+  if (!validVersion) {
+    throw new Error(
+      `Unable to convert '${version}' to semantic version. ${c.ERROR_HINT}`
+    )
+  }
+  return validVersion
 }
 
 export function isPREvent(): boolean {
