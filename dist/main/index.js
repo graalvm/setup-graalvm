@@ -93945,7 +93945,7 @@ function findLatestGraalVMJDKCEJavaVersion(majorJavaVersion) {
 }
 exports.findLatestGraalVMJDKCEJavaVersion = findLatestGraalVMJDKCEJavaVersion;
 function determineToolName(javaVersion, isCommunity) {
-    return `graalvm${isCommunity ? '-community' : ''}-jdk-${javaVersion}_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin`;
+    return `graalvm${isCommunity ? '-community' : ''}-jdk-${(0, utils_1.toSemVer)(javaVersion)}_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin`;
 }
 function downloadGraalVMJDK(downloadUrl, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -94644,6 +94644,7 @@ const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const httpClient = __importStar(__nccwpck_require__(6255));
+const semver = __importStar(__nccwpck_require__(1383));
 const tc = __importStar(__nccwpck_require__(7784));
 const exec_1 = __nccwpck_require__(1514);
 const fs_1 = __nccwpck_require__(7147);
@@ -94774,17 +94775,22 @@ function findJavaHomeInSubfolder(searchPath) {
         throw new Error(`Unexpected amount of directory items found: ${baseContents.length}`);
     }
 }
-/**
- * This helper turns GraalVM version numbers (e.g., `22.0.0.2`) into valid
- * semver.org versions (e.g., `22.0.0-2`), which is needed because
- * @actions/tool-cache uses `semver` to validate versions.
- */
 function toSemVer(version) {
     const parts = version.split('.');
-    const major = parts[0];
-    const minor = parts.length > 1 ? parts[1] : '0';
-    const patch = parts.length > 2 ? parts.slice(2).join('-') : '0';
-    return `${major}.${minor}.${patch}`;
+    if (parts.length === 4) {
+        /**
+         * Turn legacy GraalVM version numbers (e.g., `22.0.0.2`) into valid
+         * semver.org versions (e.g., `22.0.0-2`).
+         */
+        return `${parts[0]}.${parts[1]}.${parts.slice(2).join('-')}`;
+    }
+    const versionParts = version.split('-', 2);
+    const suffix = versionParts.length === 2 ? '-' + versionParts[1] : '';
+    const validVersion = semver.valid(semver.coerce(versionParts[0]) + suffix);
+    if (!validVersion) {
+        throw new Error(`Unable to convert '${version}' to semantic version. ${c.ERROR_HINT}`);
+    }
+    return validVersion;
 }
 exports.toSemVer = toSemVer;
 function isPREvent() {

@@ -6,7 +6,8 @@ import {
   getLatestPrerelease,
   getLatestRelease,
   getMatchingTags,
-  getTaggedRelease
+  getTaggedRelease,
+  toSemVer
 } from './utils'
 import {downloadGraalVMEELegacy} from './gds'
 import {downloadTool} from '@actions/tool-cache'
@@ -125,7 +126,7 @@ export async function findLatestGraalVMJDKCEJavaVersion(
 }
 
 function determineToolName(javaVersion: string, isCommunity: boolean) {
-  return `graalvm${isCommunity ? '-community' : ''}-jdk-${javaVersion}_${
+  return `graalvm${isCommunity ? '-community' : ''}-jdk-${toSemVer(javaVersion)}_${
     c.JDK_PLATFORM
   }-${c.JDK_ARCH}_bin`
 }
