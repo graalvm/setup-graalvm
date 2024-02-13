@@ -101,14 +101,14 @@ describe('dependency cache', () => {
     })
 
     it('throws error if unsupported package manager specified', () => {
-      return expect(restore('ant')).rejects.toThrowError(
+      return expect(restore('ant')).rejects.toThrow(
         'unknown package manager specified: ant'
       )
     })
 
     describe('for maven', () => {
       it('throws error if no pom.xml found', async () => {
-        await expect(restore('maven')).rejects.toThrowError(
+        await expect(restore('maven')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
           )} matched to [**/pom.xml], make sure you have checked out the target repository`
@@ -118,14 +118,14 @@ describe('dependency cache', () => {
         createFile(join(workspace, 'pom.xml'))
 
         await restore('maven')
-        expect(spyCacheRestore).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith('maven cache is not found')
+        expect(spyCacheRestore).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith('maven cache is not found')
       })
     })
     describe('for gradle', () => {
       it('throws error if no build.gradle found', async () => {
-        await expect(restore('gradle')).rejects.toThrowError(
+        await expect(restore('gradle')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
           )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt], make sure you have checked out the target repository`
@@ -135,17 +135,17 @@ describe('dependency cache', () => {
         createFile(join(workspace, 'build.gradle'))
 
         await restore('gradle')
-        expect(spyCacheRestore).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith('gradle cache is not found')
+        expect(spyCacheRestore).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found')
       })
       it('downloads cache based on build.gradle.kts', async () => {
         createFile(join(workspace, 'build.gradle.kts'))
 
         await restore('gradle')
-        expect(spyCacheRestore).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith('gradle cache is not found')
+        expect(spyCacheRestore).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found')
       })
     })
     it('downloads cache based on buildSrc/Versions.kt', async () => {
@@ -153,13 +153,13 @@ describe('dependency cache', () => {
       createFile(join(workspace, 'buildSrc', 'Versions.kt'))
 
       await restore('gradle')
-      expect(spyCacheRestore).toBeCalled()
-      expect(spyWarning).not.toBeCalled()
-      expect(spyInfo).toBeCalledWith('gradle cache is not found')
+      expect(spyCacheRestore).toHaveBeenCalled()
+      expect(spyWarning).not.toHaveBeenCalled()
+      expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found')
     })
     describe('for sbt', () => {
       it('throws error if no build.sbt found', async () => {
-        await expect(restore('sbt')).rejects.toThrowError(
+        await expect(restore('sbt')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
           )} matched to [**/*.sbt,**/project/build.properties,**/project/**.{scala,sbt}], make sure you have checked out the target repository`
@@ -169,9 +169,9 @@ describe('dependency cache', () => {
         createFile(join(workspace, 'build.sbt'))
 
         await restore('sbt')
-        expect(spyCacheRestore).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith('sbt cache is not found')
+        expect(spyCacheRestore).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith('sbt cache is not found')
       })
     })
   })
@@ -191,7 +191,7 @@ describe('dependency cache', () => {
     })
 
     it('throws error if unsupported package manager specified', () => {
-      return expect(save('ant')).rejects.toThrowError(
+      return expect(save('ant')).rejects.toThrow(
         'unknown package manager specified: ant'
       )
     })
@@ -201,10 +201,10 @@ describe('dependency cache', () => {
       createStateForMissingBuildFile()
 
       await save('maven')
-      expect(spyCacheSave).toBeCalled()
-      expect(spyWarning).not.toBeCalled()
-      expect(spyInfo).toBeCalled()
-      expect(spyInfo).toBeCalledWith(
+      expect(spyCacheSave).toHaveBeenCalled()
+      expect(spyWarning).not.toHaveBeenCalled()
+      expect(spyInfo).toHaveBeenCalled()
+      expect(spyInfo).toHaveBeenCalledWith(
         expect.stringMatching(/^Cache saved with the key:.*/)
       )
     })
@@ -225,24 +225,26 @@ describe('dependency cache', () => {
       it('uploads cache even if no pom.xml found', async () => {
         createStateForMissingBuildFile()
         await save('maven')
-        expect(spyCacheSave).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
+        expect(spyCacheSave).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
       })
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'pom.xml'))
 
         await save('maven')
-        expect(spyCacheSave).not.toBeCalled()
-        expect(spyWarning).toBeCalledWith('Error retrieving key from state.')
+        expect(spyCacheSave).not.toHaveBeenCalled()
+        expect(spyWarning).toHaveBeenCalledWith(
+          'Error retrieving key from state.'
+        )
       })
       it('uploads cache', async () => {
         createFile(join(workspace, 'pom.xml'))
         createStateForSuccessfulRestore()
 
         await save('maven')
-        expect(spyCacheSave).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith(
+        expect(spyCacheSave).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith(
           expect.stringMatching(/^Cache saved with the key:.*/)
         )
       })
@@ -252,24 +254,26 @@ describe('dependency cache', () => {
         createStateForMissingBuildFile()
 
         await save('gradle')
-        expect(spyCacheSave).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
+        expect(spyCacheSave).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
       })
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'build.gradle'))
 
         await save('gradle')
-        expect(spyCacheSave).not.toBeCalled()
-        expect(spyWarning).toBeCalledWith('Error retrieving key from state.')
+        expect(spyCacheSave).not.toHaveBeenCalled()
+        expect(spyWarning).toHaveBeenCalledWith(
+          'Error retrieving key from state.'
+        )
       })
       it('uploads cache based on build.gradle', async () => {
         createFile(join(workspace, 'build.gradle'))
         createStateForSuccessfulRestore()
 
         await save('gradle')
-        expect(spyCacheSave).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith(
+        expect(spyCacheSave).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith(
           expect.stringMatching(/^Cache saved with the key:.*/)
         )
       })
@@ -278,9 +282,9 @@ describe('dependency cache', () => {
         createStateForSuccessfulRestore()
 
         await save('gradle')
-        expect(spyCacheSave).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith(
+        expect(spyCacheSave).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith(
           expect.stringMatching(/^Cache saved with the key:.*/)
         )
       })
@@ -290,9 +294,9 @@ describe('dependency cache', () => {
         createStateForSuccessfulRestore()
 
         await save('gradle')
-        expect(spyCacheSave).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith(
+        expect(spyCacheSave).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith(
           expect.stringMatching(/^Cache saved with the key:.*/)
         )
       })
@@ -301,24 +305,26 @@ describe('dependency cache', () => {
       it('uploads cache even if no build.sbt found', async () => {
         createStateForMissingBuildFile()
         await save('sbt')
-        expect(spyCacheSave).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
+        expect(spyCacheSave).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
       })
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'build.sbt'))
 
         await save('sbt')
-        expect(spyCacheSave).not.toBeCalled()
-        expect(spyWarning).toBeCalledWith('Error retrieving key from state.')
+        expect(spyCacheSave).not.toHaveBeenCalled()
+        expect(spyWarning).toHaveBeenCalledWith(
+          'Error retrieving key from state.'
+        )
       })
       it('uploads cache', async () => {
         createFile(join(workspace, 'build.sbt'))
         createStateForSuccessfulRestore()
 
         await save('sbt')
-        expect(spyCacheSave).toBeCalled()
-        expect(spyWarning).not.toBeCalled()
-        expect(spyInfo).toBeCalledWith(
+        expect(spyCacheSave).toHaveBeenCalled()
+        expect(spyWarning).not.toHaveBeenCalled()
+        expect(spyInfo).toHaveBeenCalledWith(
           expect.stringMatching(/^Cache saved with the key:.*/)
         )
       })

@@ -27,7 +27,6 @@
 import {run as cleanup} from '../src/cleanup'
 import * as core from '@actions/core'
 import * as cache from '@actions/cache'
-import * as util from '../src/utils'
 
 describe('cleanup', () => {
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>
@@ -62,8 +61,8 @@ describe('cleanup', () => {
       return name === 'cache' ? 'gradle' : ''
     })
     await cleanup()
-    expect(spyCacheSave).toBeCalled()
-    expect(spyWarning).not.toBeCalled()
+    expect(spyCacheSave).toHaveBeenCalled()
+    expect(spyWarning).not.toHaveBeenCalled()
   })
 
   it('does not fail even though the save process throws error', async () => {
@@ -74,7 +73,7 @@ describe('cleanup', () => {
       return name === 'cache' ? 'gradle' : ''
     })
     await cleanup()
-    expect(spyCacheSave).toBeCalled()
+    expect(spyCacheSave).toHaveBeenCalled()
   })
 })
 
