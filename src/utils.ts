@@ -65,6 +65,7 @@ export async function getContents(
 }
 
 export async function getTaggedRelease(
+  owner: string,
   repo: string,
   tag: string
 ): Promise<c.LatestReleaseResponse['data']> {
@@ -73,7 +74,7 @@ export async function getTaggedRelease(
   const octokit = new GitHubDotCom(options)
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
-      owner: c.GRAALVM_GH_USER,
+      owner,
       repo,
       tag
     })
@@ -81,6 +82,8 @@ export async function getTaggedRelease(
 }
 
 export async function getMatchingTags(
+  owner: string,
+  repo: string,
   tagPrefix: string
 ): Promise<c.MatchingRefsResponse['data']> {
   const githubToken = getGitHubToken()
@@ -90,8 +93,8 @@ export async function getMatchingTags(
     await octokit.request(
       'GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}',
       {
-        owner: c.GRAALVM_GH_USER,
-        repo: c.GRAALVM_RELEASES_REPO,
+        owner,
+        repo,
         tagPrefix
       }
     )

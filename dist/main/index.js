@@ -79751,7 +79751,19 @@ class ProgressEvent extends Event {
     type = webidl.converters.DOMString(type)
     eventInitDict = webidl.converters.ProgressEventInit(eventInitDict ?? {})
 
+<<<<<<< HEAD
     super(type, eventInitDict)
+=======
+    // First, split on ||
+    this.set = this.raw
+      .split('||')
+      // map the range to a 2d array of comparators
+      .map(r => this.parseRange(r))
+      // throw out any comparator lists that are empty
+      // this generally means that it was not a valid range, which is allowed
+      // in loose mode, but will still throw if the WHOLE range is invalid.
+      .filter(c => c.length)
+>>>>>>> Added Liberica distribution
 
     this[kState] = {
       lengthComputable: eventInitDict.lengthComputable,
@@ -79812,6 +79824,7 @@ webidl.converters.ProgressEventInit = webidl.dictionaryConverter([
   }
 ])
 
+<<<<<<< HEAD
 module.exports = {
   ProgressEvent
 }
@@ -79821,6 +79834,22 @@ module.exports = {
 
 /***/ 9054:
 /***/ ((module) => {
+=======
+    const loose = this.options.loose
+    // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
+    const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE]
+    range = range.replace(hr, hyphenReplace(this.options.includePrerelease))
+    debug('hyphen replace', range)
+    // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
+    range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace)
+    debug('comparator trim', range)
+
+    // `~ 1.2.3` => `~1.2.3`
+    range = range.replace(re[t.TILDETRIM], tildeTrimReplace)
+
+    // `^ 1.2.3` => `^1.2.3`
+    range = range.replace(re[t.CARETTRIM], caretTrimReplace)
+>>>>>>> Added Liberica distribution
 
 "use strict";
 
@@ -81794,6 +81823,7 @@ module.exports = MockPool
 /***/ 4347:
 /***/ ((module) => {
 
+<<<<<<< HEAD
 "use strict";
 
 
@@ -81817,6 +81847,37 @@ module.exports = {
   kNetConnect: Symbol('net connect'),
   kGetNetConnect: Symbol('get net connect'),
   kConnected: Symbol('connected')
+=======
+// Note: this is the semver.org version of the spec that it implements
+// Not necessarily the package version of this code.
+const SEMVER_SPEC_VERSION = '2.0.0'
+
+const MAX_LENGTH = 256
+const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
+/* istanbul ignore next */ 9007199254740991
+
+// Max safe segment length for coercion.
+const MAX_SAFE_COMPONENT_LENGTH = 16
+
+const RELEASE_TYPES = [
+  'major',
+  'premajor',
+  'minor',
+  'preminor',
+  'patch',
+  'prepatch',
+  'prerelease',
+]
+
+module.exports = {
+  MAX_LENGTH,
+  MAX_SAFE_COMPONENT_LENGTH,
+  MAX_SAFE_INTEGER,
+  RELEASE_TYPES,
+  SEMVER_SPEC_VERSION,
+  FLAG_INCLUDE_PRERELEASE: 0b001,
+  FLAG_LOOSE: 0b010,
+>>>>>>> Added Liberica distribution
 }
 
 
@@ -81953,9 +82014,15 @@ function getResponseData (data) {
   }
 }
 
+<<<<<<< HEAD
 function getMockDispatch (mockDispatches, key) {
   const basePath = key.query ? buildURL(key.path, key.query) : key.path
   const resolvedPath = typeof basePath === 'string' ? safeUrl(basePath) : basePath
+=======
+const { MAX_SAFE_COMPONENT_LENGTH } = __nccwpck_require__(2293)
+const debug = __nccwpck_require__(427)
+exports = module.exports = {}
+>>>>>>> Added Liberica distribution
 
   // Match path
   let matchedMockDispatches = mockDispatches.filter(({ consumed }) => !consumed).filter(({ path }) => matchValue(safeUrl(path), resolvedPath))
@@ -81963,6 +82030,7 @@ function getMockDispatch (mockDispatches, key) {
     throw new MockNotMatchedError(`Mock dispatch not matched for path '${resolvedPath}'`)
   }
 
+<<<<<<< HEAD
   // Match method
   matchedMockDispatches = matchedMockDispatches.filter(({ method }) => matchValue(method, key.method))
   if (matchedMockDispatches.length === 0) {
@@ -81982,6 +82050,24 @@ function getMockDispatch (mockDispatches, key) {
   }
 
   return matchedMockDispatches[0]
+=======
+const createToken = (name, value, isGlobal) => {
+  // Replace all greedy whitespace to prevent regex dos issues. These regex are
+  // used internally via the safeRe object since all inputs in this library get
+  // normalized first to trim and collapse all extra whitespace. The original
+  // regexes are exported for userland consumption and lower level usage. A
+  // future breaking change could export the safer regex only with a note that
+  // all input should have extra whitespace removed.
+  const safe = value
+    .split('\\s*').join('\\s{0,1}')
+    .split('\\s+').join('\\s')
+  const index = R++
+  debug(name, index, value)
+  t[name] = index
+  src[index] = value
+  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
+  safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
+>>>>>>> Added Liberica distribution
 }
 
 function addMockDispatch (mockDispatches, key, data) {
@@ -81992,6 +82078,7 @@ function addMockDispatch (mockDispatches, key, data) {
   return newMockDispatch
 }
 
+<<<<<<< HEAD
 function deleteMockDispatch (mockDispatches, key) {
   const index = mockDispatches.findIndex(dispatch => {
     if (!dispatch.consumed) {
@@ -82003,6 +82090,10 @@ function deleteMockDispatch (mockDispatches, key) {
     mockDispatches.splice(index, 1)
   }
 }
+=======
+createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
+createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+')
+>>>>>>> Added Liberica distribution
 
 function buildKey (opts) {
   const { path, method, body, headers, query } = opts
@@ -82015,6 +82106,7 @@ function buildKey (opts) {
   }
 }
 
+<<<<<<< HEAD
 function generateKeyValues (data) {
   return Object.entries(data).reduce((keyValuePairs, [key, value]) => [
     ...keyValuePairs,
@@ -82022,6 +82114,9 @@ function generateKeyValues (data) {
     Array.isArray(value) ? value.map(x => Buffer.from(`${x}`)) : Buffer.from(`${value}`)
   ], [])
 }
+=======
+createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*')
+>>>>>>> Added Liberica distribution
 
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
@@ -82102,12 +82197,16 @@ function mockDispatch (opts, handler) {
     const responseHeaders = generateKeyValues(headers)
     const responseTrailers = generateKeyValues(trailers)
 
+<<<<<<< HEAD
     handler.abort = nop
     handler.onHeaders(statusCode, responseHeaders, resume, getStatusText(statusCode))
     handler.onData(Buffer.from(responseData))
     handler.onComplete(responseTrailers)
     deleteMockDispatch(mockDispatches, key)
   }
+=======
+createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+')
+>>>>>>> Added Liberica distribution
 
   function resume () {}
 
@@ -92738,7 +92837,11 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+<<<<<<< HEAD
 exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+=======
+exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+>>>>>>> Added Liberica distribution
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -92756,6 +92859,7 @@ exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS ? '.exe' : '';
 exports.DISTRIBUTION_GRAALVM = 'graalvm';
 exports.DISTRIBUTION_GRAALVM_COMMUNITY = 'graalvm-community';
 exports.DISTRIBUTION_MANDREL = 'mandrel';
+exports.DISTRIBUTION_LIBERICA = 'liberica';
 exports.VERSION_DEV = 'dev';
 exports.VERSION_LATEST = 'latest';
 exports.JDK_ARCH = determineJDKArchitecture();
@@ -93955,7 +94059,7 @@ function setUpGraalVMJDKCE(javaVersionOrDev) {
 exports.setUpGraalVMJDKCE = setUpGraalVMJDKCE;
 function findLatestGraalVMJDKCEJavaVersion(majorJavaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const matchingRefs = yield (0, utils_1.getMatchingTags)(`${GRAALVM_JDK_TAG_PREFIX}${majorJavaVersion}`);
+        const matchingRefs = yield (0, utils_1.getMatchingTags)(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO, `${GRAALVM_JDK_TAG_PREFIX}${majorJavaVersion}`);
         const lowestNonExistingVersion = '0.0.1';
         let highestVersion = lowestNonExistingVersion;
         const versionNumberStartIndex = `refs/tags/${GRAALVM_JDK_TAG_PREFIX}`.length;
@@ -94028,7 +94132,7 @@ function setUpGraalVMLatest_22_X(gdsToken, javaVersion) {
         if (gdsToken.length > 0) {
             return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion);
         }
-        const latestRelease = yield (0, utils_1.getTaggedRelease)(c.GRAALVM_RELEASES_REPO, GRAALVM_TAG_PREFIX + lockedVersion);
+        const latestRelease = yield (0, utils_1.getTaggedRelease)(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO, GRAALVM_TAG_PREFIX + lockedVersion);
         const version = findGraalVMVersion(latestRelease);
         return setUpGraalVMRelease(gdsToken, version, javaVersion);
     });
@@ -94202,6 +94306,119 @@ function installGUComponents(gdsToken, graalVMHome, components) {
 
 /***/ }),
 
+/***/ 9684:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.findLibericaURL = exports.findLatestLibericaJavaVersion = exports.setUpLiberica = void 0;
+const c = __importStar(__nccwpck_require__(9042));
+const semver = __importStar(__nccwpck_require__(1383));
+const utils_1 = __nccwpck_require__(1314);
+const tool_cache_1 = __nccwpck_require__(7784);
+const LIBERICA_GH_USER = 'bell-sw';
+const LIBERICA_RELEASES_REPO = 'LibericaNIK';
+const LIBERICA_JDK_TAG_PREFIX = 'jdk-';
+const LIBERICA_VM_PREFIX = 'bellsoft-liberica-vm-';
+function setUpLiberica(javaVersion, version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const resolvedJavaVersion = yield findLatestLibericaJavaVersion(javaVersion);
+        const downloadUrl = yield findLibericaURL(resolvedJavaVersion, version);
+        const toolName = determineToolName(javaVersion, version);
+        return (0, utils_1.downloadExtractAndCacheJDK)(() => __awaiter(this, void 0, void 0, function* () { return (0, tool_cache_1.downloadTool)(downloadUrl); }), toolName, javaVersion);
+    });
+}
+exports.setUpLiberica = setUpLiberica;
+function findLatestLibericaJavaVersion(javaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const matchingRefs = yield (0, utils_1.getMatchingTags)(LIBERICA_GH_USER, LIBERICA_RELEASES_REPO, `${LIBERICA_JDK_TAG_PREFIX}${javaVersion}`);
+        const noMatch = '0.0.1';
+        let bestMatch = noMatch;
+        const prefixLength = `refs/tags/${LIBERICA_JDK_TAG_PREFIX}`.length;
+        const patternLength = javaVersion.length;
+        for (const matchingRef of matchingRefs) {
+            const version = matchingRef.ref.substring(prefixLength);
+            if (semver.valid(version) &&
+                // pattern '17.0.1' should match '17.0.1+12' but not '17.0.10'
+                (version.length <= patternLength ||
+                    !isDigit(version.charAt(patternLength))) &&
+                semver.compareBuild(version, bestMatch) == 1) {
+                bestMatch = version;
+            }
+        }
+        if (bestMatch === noMatch) {
+            throw new Error(`Unable to find the latest version for JDK${javaVersion}. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`);
+        }
+        return bestMatch;
+    });
+}
+exports.findLatestLibericaJavaVersion = findLatestLibericaJavaVersion;
+function findLibericaURL(javaVersion, version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const release = yield (0, utils_1.getTaggedRelease)(LIBERICA_GH_USER, LIBERICA_RELEASES_REPO, LIBERICA_JDK_TAG_PREFIX + javaVersion);
+        const platform = determinePlatformPart();
+        const assetPrefix = `${LIBERICA_VM_PREFIX}${determineToolVersionPart(version)}openjdk${javaVersion}`;
+        const assetSuffix = `-${platform}${c.GRAALVM_FILE_EXTENSION}`;
+        for (const asset of release.assets) {
+            if (asset.name.startsWith(assetPrefix) &&
+                asset.name.endsWith(assetSuffix)) {
+                return asset.browser_download_url;
+            }
+        }
+        throw new Error(`Unable to find asset for java-version: ${javaVersion}, version: ${version}, platform: ${platform}`);
+    });
+}
+exports.findLibericaURL = findLibericaURL;
+function determineToolVersionPart(version) {
+    return version === 'std' || version === '' ? '' : `${version}-`;
+}
+function determineToolName(javaVersion, version) {
+    return `${LIBERICA_VM_PREFIX}${determineToolVersionPart(version)}openjdk${javaVersion}-${determinePlatformPart()}`;
+}
+function determinePlatformPart() {
+    // for linux-musl, return `linux-${c.JDK_ARCH}-musl`
+    return `${c.JDK_PLATFORM}-${c.GRAALVM_ARCH}`;
+}
+function isDigit(c) {
+    return c.charAt(0) >= '0' && c.charAt(0) <= '9';
+}
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -94250,6 +94467,7 @@ const cache_2 = __nccwpck_require__(9179);
 const dependencies_1 = __nccwpck_require__(7760);
 const gu_1 = __nccwpck_require__(5609);
 const mandrel_1 = __nccwpck_require__(8766);
+const liberica_1 = __nccwpck_require__(9684);
 const check_for_updates_1 = __nccwpck_require__(6780);
 const musl_1 = __nccwpck_require__(316);
 const msvc_1 = __nccwpck_require__(1165);
@@ -94295,6 +94513,9 @@ function run() {
                         break;
                     case c.DISTRIBUTION_MANDREL:
                         graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalVMVersion, javaVersion);
+                        break;
+                    case c.DISTRIBUTION_LIBERICA:
+                        graalVMHome = yield (0, liberica_1.setUpLiberica)(javaVersion, graalVMVersion);
                         break;
                     case '':
                         if (javaVersion === c.VERSION_DEV) {
@@ -94727,6 +94948,7 @@ function getLatestRelease(repo) {
     });
 }
 exports.getLatestRelease = getLatestRelease;
+<<<<<<< HEAD
 function getContents(repo, path) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
@@ -94741,26 +94963,29 @@ function getContents(repo, path) {
 }
 exports.getContents = getContents;
 function getTaggedRelease(repo, tag) {
+=======
+function getTaggedRelease(owner, repo, tag) {
+>>>>>>> Added Liberica distribution
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
         const options = githubToken.length > 0 ? { auth: githubToken } : {};
         const octokit = new GitHubDotCom(options);
         return (yield octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
-            owner: c.GRAALVM_GH_USER,
+            owner,
             repo,
             tag
         })).data;
     });
 }
 exports.getTaggedRelease = getTaggedRelease;
-function getMatchingTags(tagPrefix) {
+function getMatchingTags(owner, repo, tagPrefix) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
         const options = githubToken.length > 0 ? { auth: githubToken } : {};
         const octokit = new GitHubDotCom(options);
         return (yield octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}', {
-            owner: c.GRAALVM_GH_USER,
-            repo: c.GRAALVM_RELEASES_REPO,
+            owner,
+            repo,
             tagPrefix
         })).data;
     });

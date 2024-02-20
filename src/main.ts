@@ -8,6 +8,7 @@ import {restore} from './features/cache'
 import {setUpDependencies} from './dependencies'
 import {setUpGUComponents} from './gu'
 import {setUpMandrel} from './mandrel'
+import {setUpLiberica} from './liberica'
 import {checkForUpdates} from './features/check-for-updates'
 import {setUpNativeImageMusl} from './features/musl'
 import {setUpWindowsEnvironment} from './msvc'
@@ -64,6 +65,9 @@ async function run(): Promise<void> {
           break
         case c.DISTRIBUTION_MANDREL:
           graalVMHome = await setUpMandrel(graalVMVersion, javaVersion)
+          break
+        case c.DISTRIBUTION_LIBERICA:
+          graalVMHome = await setUpLiberica(javaVersion, graalVMVersion)
           break
         case '':
           if (javaVersion === c.VERSION_DEV) {

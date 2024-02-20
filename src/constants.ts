@@ -20,6 +20,7 @@ export const EXECUTABLE_SUFFIX = IS_WINDOWS ? '.exe' : ''
 export const DISTRIBUTION_GRAALVM = 'graalvm'
 export const DISTRIBUTION_GRAALVM_COMMUNITY = 'graalvm-community'
 export const DISTRIBUTION_MANDREL = 'mandrel'
+export const DISTRIBUTION_LIBERICA = 'liberica'
 
 export const VERSION_DEV = 'dev'
 export const VERSION_LATEST = 'latest'
