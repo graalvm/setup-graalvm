@@ -138,6 +138,8 @@ export async function findLatestGraalVMJDKCEJavaVersion(
   majorJavaVersion: string
 ): Promise<string> {
   const matchingRefs = await getMatchingTags(
+    c.GRAALVM_GH_USER,
+    c.GRAALVM_RELEASES_REPO,
     `${GRAALVM_JDK_TAG_PREFIX}${majorJavaVersion}`
   )
   const lowestNonExistingVersion = '0.0.1'
@@ -244,6 +246,7 @@ export async function setUpGraalVMLatest_22_X(
     return setUpGraalVMRelease(gdsToken, lockedVersion, javaVersion)
   }
   const latestRelease = await getTaggedRelease(
+    c.GRAALVM_GH_USER,
     c.GRAALVM_RELEASES_REPO,
     GRAALVM_TAG_PREFIX + lockedVersion
   )

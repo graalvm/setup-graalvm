@@ -7,7 +7,7 @@ import {
   findHighestJavaVersion,
   findLatestEABuildDownloadUrl
 } from '../src/graalvm'
-import {GRAALVM_RELEASES_REPO} from '../src/constants'
+import {GRAALVM_GH_USER, GRAALVM_RELEASES_REPO} from '../src/constants'
 
 process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
 process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
@@ -53,6 +53,7 @@ test('find version/javaVersion', async () => {
   expect(error.message).toContain('Unable to find the latest Java version for')
 
   const latestRelease = await getTaggedRelease(
+    GRAALVM_GH_USER,
     GRAALVM_RELEASES_REPO,
     'vm-22.3.1'
   )

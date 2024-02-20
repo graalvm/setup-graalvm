@@ -83,7 +83,7 @@ jobs:
           java --version
           native-image --version
   test-ce: # make sure the action works on a clean machine without building
-    needs: test  
+    needs: test
     name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -242,6 +242,48 @@ jobs:
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
           native-image --version
+        if: runner.os == 'Windows'
+  test-liberica:
+    needs: test
+    name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        java-version: ['17', '21.0.2']
+        version: ['core', 'full', 'std', '']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          distribution: liberica
+          java-version: ${{ matrix.java-version }}
+          version: ${{ matrix.version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check environment
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
+          echo "JAVA_HOME: $JAVA_HOME"
+          java --version
+          java --version | fgrep -qw ${{ matrix.java-version }} || exit 23
+          native-image --version
+          native-image --version | fgrep -qw ${{ matrix.java-version }} || exit 24
+        if: runner.os != 'Windows'
+      - name: Check Windows environment
+        shell: pwsh
+        run: |
+          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+          echo "JAVA_HOME: $env:JAVA_HOME"
+          java --version
+          if (!(java --version | findstr \<${{ matrix.java-version }}\>)) {
+            exit 23
+          }
+          native-image --version
+          if (!(native-image --version | findstr \<${{ matrix.java-version }}\>)) {
+            exit 24
+          }
         if: runner.os == 'Windows'
   test-native-image-windows:
     name: native-image on windows-latest
