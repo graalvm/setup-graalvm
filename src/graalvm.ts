@@ -3,11 +3,10 @@ import * as semver from 'semver'
 import {
   downloadAndExtractJDK,
   downloadExtractAndCacheJDK,
-  getLatestPrerelease,
+  getContents,
   getLatestRelease,
   getMatchingTags,
-  getTaggedRelease,
-  toSemVer
+  getTaggedRelease
 } from './utils'
 import {downloadGraalVMEELegacy} from './gds'
 import {downloadTool} from '@actions/tool-cache'
@@ -15,7 +14,8 @@ import {basename} from 'path'
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm'
 const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`
-const ORACLE_GRAALVM_REPO_EA_BUILDS = 'oracle-graalvm-dev-builds'
+const ORACLE_GRAALVM_REPO_EA_BUILDS = 'oracle-graalvm-ea-builds'
+const ORACLE_GRAALVM_REPO_EA_BUILDS_LATEST_SYMBOL = 'latest-ea'
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds'
 const GRAALVM_JDK_TAG_PREFIX = 'jdk-'
 const GRAALVM_TAG_PREFIX = 'vm-'
@@ -32,7 +32,9 @@ export async function setUpGraalVMJDK(
   const toolName = determineToolName(javaVersion, false)
   let downloadName = toolName
   let downloadUrl: string
-  if (javaVersion.includes('.')) {
+  if (javaVersion.endsWith('-ea')) {
+    downloadUrl = await findLatestEABuildDownloadUrl(javaVersion)
+  } else if (javaVersion.includes('.')) {
     if (semver.valid(javaVersion)) {
       const majorJavaVersion = semver.major(javaVersion)
       const minorJavaVersion = semver.minor(javaVersion)
@@ -48,8 +50,6 @@ export async function setUpGraalVMJDK(
         `java-version set to '${javaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
       )
     }
-  } else if (javaVersion === '22-ea') {
-    downloadUrl = await findLatestEABuildDownloadUrl(javaVersion)
   } else {
     downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${downloadName}${c.GRAALVM_FILE_EXTENSION}`
   }
@@ -57,25 +57,52 @@ export async function setUpGraalVMJDK(
   return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
 }
 
-async function findLatestEABuildDownloadUrl(
+export async function findLatestEABuildDownloadUrl(
   javaEaVersion: string
 ): Promise<string> {
-  const latestPrerelease = await getLatestPrerelease(
-    ORACLE_GRAALVM_REPO_EA_BUILDS
+  const filePath = `versions/${javaEaVersion}.json`
+  let response
+  try {
+    response = await getContents(ORACLE_GRAALVM_REPO_EA_BUILDS, filePath)
+  } catch (error) {
+    throw new Error(
+      `Unable to resolve download URL for '${javaEaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
+    )
+  }
+  if (
+    Array.isArray(response) ||
+    response.type !== 'file' ||
+    !response.content
+  ) {
+    throw new Error(
+      `Unexpected response when resolving download URL for '${javaEaVersion}'. ${c.ERROR_REQUEST}`
+    )
+  }
+  const versionData = JSON.parse(
+    Buffer.from(response.content, 'base64').toString('utf-8')
   )
-  const expectedFileNamePrefix = 'graalvm-jdk-'
-  const expectedFileNameSuffix = `_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin${c.GRAALVM_FILE_EXTENSION}`
-  for (const asset of latestPrerelease.assets) {
-    if (
-      asset.name.startsWith(expectedFileNamePrefix) &&
-      asset.name.endsWith(expectedFileNameSuffix)
-    ) {
-      return asset.browser_download_url
+  let latestVersion
+  if (javaEaVersion === ORACLE_GRAALVM_REPO_EA_BUILDS_LATEST_SYMBOL) {
+    latestVersion = versionData as c.OracleGraalVMEAVersion
+  } else {
+    latestVersion = (versionData as c.OracleGraalVMEAVersion[]).find(
+      v => v.latest
+    )
+    if (!latestVersion) {
+      throw new Error(
+        `Unable to find latest version for '${javaEaVersion}'. ${c.ERROR_REQUEST}`
+      )
     }
   }
-  throw new Error(
-    `Could not find Oracle GraalVM build for ${javaEaVersion}. ${c.ERROR_HINT}`
+  const file = latestVersion.files.find(
+    f => f.arch === c.JDK_ARCH && f.platform === c.GRAALVM_PLATFORM
   )
+  if (!file || !file.filename.startsWith('graalvm-jdk-')) {
+    throw new Error(
+      `Unable to find file metadata for '${javaEaVersion}'. ${c.ERROR_REQUEST}`
+    )
+  }
+  return `${latestVersion.download_base_url}${file.filename}`
 }
 
 export async function setUpGraalVMJDKCE(

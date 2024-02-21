@@ -92738,7 +92738,7 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -92770,6 +92770,7 @@ exports.GDS_BASE = 'https://gds.oracle.com/api/20220101';
 exports.GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
 exports.ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
 exports.EVENT_NAME_PULL_REQUEST = 'pull_request';
+exports.ERROR_REQUEST = 'Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.';
 exports.ERROR_HINT = 'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.';
 function determineJDKArchitecture() {
     switch (process.arch) {
@@ -93841,7 +93842,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpGraalVMRelease = exports.findGraalVMVersion = exports.setUpGraalVMLatest_22_X = exports.findHighestJavaVersion = exports.setUpGraalVMJDKDevBuild = exports.findLatestGraalVMJDKCEJavaVersion = exports.setUpGraalVMJDKCE = exports.setUpGraalVMJDK = void 0;
+exports.setUpGraalVMRelease = exports.findGraalVMVersion = exports.setUpGraalVMLatest_22_X = exports.findHighestJavaVersion = exports.setUpGraalVMJDKDevBuild = exports.findLatestGraalVMJDKCEJavaVersion = exports.setUpGraalVMJDKCE = exports.findLatestEABuildDownloadUrl = exports.setUpGraalVMJDK = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const semver = __importStar(__nccwpck_require__(1383));
 const utils_1 = __nccwpck_require__(1314);
@@ -93850,7 +93851,8 @@ const tool_cache_1 = __nccwpck_require__(7784);
 const path_1 = __nccwpck_require__(1017);
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
 const GRAALVM_CE_DL_BASE = `https://github.com/graalvm/${c.GRAALVM_RELEASES_REPO}/releases/download`;
-const ORACLE_GRAALVM_REPO_EA_BUILDS = 'oracle-graalvm-dev-builds';
+const ORACLE_GRAALVM_REPO_EA_BUILDS = 'oracle-graalvm-ea-builds';
+const ORACLE_GRAALVM_REPO_EA_BUILDS_LATEST_SYMBOL = 'latest-ea';
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds';
 const GRAALVM_JDK_TAG_PREFIX = 'jdk-';
 const GRAALVM_TAG_PREFIX = 'vm-';
@@ -93864,7 +93866,10 @@ function setUpGraalVMJDK(javaVersionOrDev) {
         const toolName = determineToolName(javaVersion, false);
         let downloadName = toolName;
         let downloadUrl;
-        if (javaVersion.includes('.')) {
+        if (javaVersion.endsWith('-ea')) {
+            downloadUrl = yield findLatestEABuildDownloadUrl(javaVersion);
+        }
+        else if (javaVersion.includes('.')) {
             if (semver.valid(javaVersion)) {
                 const majorJavaVersion = semver.major(javaVersion);
                 const minorJavaVersion = semver.minor(javaVersion);
@@ -93880,9 +93885,6 @@ function setUpGraalVMJDK(javaVersionOrDev) {
                 throw new Error(`java-version set to '${javaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`);
             }
         }
-        else if (javaVersion === '22-ea') {
-            downloadUrl = yield findLatestEABuildDownloadUrl(javaVersion);
-        }
         else {
             downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${downloadName}${c.GRAALVM_FILE_EXTENSION}`;
         }
@@ -93893,18 +93895,38 @@ function setUpGraalVMJDK(javaVersionOrDev) {
 exports.setUpGraalVMJDK = setUpGraalVMJDK;
 function findLatestEABuildDownloadUrl(javaEaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        const latestPrerelease = yield (0, utils_1.getLatestPrerelease)(ORACLE_GRAALVM_REPO_EA_BUILDS);
-        const expectedFileNamePrefix = 'graalvm-jdk-';
-        const expectedFileNameSuffix = `_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin${c.GRAALVM_FILE_EXTENSION}`;
-        for (const asset of latestPrerelease.assets) {
-            if (asset.name.startsWith(expectedFileNamePrefix) &&
-                asset.name.endsWith(expectedFileNameSuffix)) {
-                return asset.browser_download_url;
+        const filePath = `versions/${javaEaVersion}.json`;
+        let response;
+        try {
+            response = yield (0, utils_1.getContents)(ORACLE_GRAALVM_REPO_EA_BUILDS, filePath);
+        }
+        catch (error) {
+            throw new Error(`Unable to resolve download URL for '${javaEaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`);
+        }
+        if (Array.isArray(response) ||
+            response.type !== 'file' ||
+            !response.content) {
+            throw new Error(`Unexpected response when resolving download URL for '${javaEaVersion}'. ${c.ERROR_REQUEST}`);
+        }
+        const versionData = JSON.parse(Buffer.from(response.content, 'base64').toString('utf-8'));
+        let latestVersion;
+        if (javaEaVersion === ORACLE_GRAALVM_REPO_EA_BUILDS_LATEST_SYMBOL) {
+            latestVersion = versionData;
+        }
+        else {
+            latestVersion = versionData.find(v => v.latest);
+            if (!latestVersion) {
+                throw new Error(`Unable to find latest version for '${javaEaVersion}'. ${c.ERROR_REQUEST}`);
             }
         }
-        throw new Error(`Could not find Oracle GraalVM build for ${javaEaVersion}. ${c.ERROR_HINT}`);
+        const file = latestVersion.files.find(f => f.arch === c.JDK_ARCH && f.platform === c.GRAALVM_PLATFORM);
+        if (!file || !file.filename.startsWith('graalvm-jdk-')) {
+            throw new Error(`Unable to find file metadata for '${javaEaVersion}'. ${c.ERROR_REQUEST}`);
+        }
+        return `${latestVersion.download_base_url}${file.filename}`;
     });
 }
+exports.findLatestEABuildDownloadUrl = findLatestEABuildDownloadUrl;
 function setUpGraalVMJDKCE(javaVersionOrDev) {
     return __awaiter(this, void 0, void 0, function* () {
         if (javaVersionOrDev === c.VERSION_DEV) {
@@ -94639,7 +94661,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getLatestRelease = exports.getLatestPrerelease = exports.exec = void 0;
+exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getContents = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
@@ -94670,23 +94692,6 @@ function exec(commandLine, args, options) {
     });
 }
 exports.exec = exec;
-function getLatestPrerelease(repo) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const githubToken = getGitHubToken();
-        const options = githubToken.length > 0 ? { auth: githubToken } : {};
-        const octokit = new GitHubDotCom(options);
-        const releases = (yield octokit.request('GET /repos/{owner}/{repo}/releases', {
-            owner: c.GRAALVM_GH_USER,
-            repo
-        })).data;
-        const firstPrerelease = releases.find(r => r.prerelease);
-        if (!firstPrerelease) {
-            throw new Error(`Unable to find latest prerelease in ${repo}`);
-        }
-        return firstPrerelease;
-    });
-}
-exports.getLatestPrerelease = getLatestPrerelease;
 function getLatestRelease(repo) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
@@ -94699,6 +94704,19 @@ function getLatestRelease(repo) {
     });
 }
 exports.getLatestRelease = getLatestRelease;
+function getContents(repo, path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const githubToken = getGitHubToken();
+        const options = githubToken.length > 0 ? { auth: githubToken } : {};
+        const octokit = new GitHubDotCom(options);
+        return (yield octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+            owner: c.GRAALVM_GH_USER,
+            repo,
+            path
+        })).data;
+    });
+}
+exports.getContents = getContents;
 function getTaggedRelease(repo, tag) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
