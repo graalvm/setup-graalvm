@@ -2,7 +2,11 @@ import * as path from 'path'
 import * as graalvm from '../src/graalvm'
 import {expect, test} from '@jest/globals'
 import {getTaggedRelease} from '../src/utils'
-import {findGraalVMVersion, findHighestJavaVersion} from '../src/graalvm'
+import {
+  findGraalVMVersion,
+  findHighestJavaVersion,
+  findLatestEABuildDownloadUrl
+} from '../src/graalvm'
 import {GRAALVM_RELEASES_REPO} from '../src/constants'
 
 process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
@@ -78,4 +82,22 @@ test('find version/javaVersion', async () => {
     error = err
   }
   expect(error.message).toContain('Could not find highest Java version.')
+})
+
+test('find version/javaVersion', async () => {
+  let url22EA = await findLatestEABuildDownloadUrl('22-ea')
+  expect(url22EA).not.toBe('')
+  let urlLatestEA = await findLatestEABuildDownloadUrl('latest-ea')
+  expect(urlLatestEA).not.toBe('')
+
+  let error = new Error('unexpected')
+  try {
+    await findLatestEABuildDownloadUrl('8-ea')
+  } catch (err) {
+    if (!(err instanceof Error)) {
+      fail(`Unexpected non-Error: ${err}`)
+    }
+    error = err
+  }
+  expect(error.message).toContain('Unable to resolve download URL for')
 })
