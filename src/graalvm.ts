@@ -28,12 +28,20 @@ export async function setUpGraalVMJDK(
   if (javaVersionOrDev === c.VERSION_DEV) {
     return setUpGraalVMJDKDevBuild()
   }
-  const javaVersion = javaVersionOrDev
+  let javaVersion = javaVersionOrDev
   const toolName = determineToolName(javaVersion, false)
   let downloadName = toolName
   let downloadUrl: string
   if (javaVersion.endsWith('-ea')) {
     downloadUrl = await findLatestEABuildDownloadUrl(javaVersion)
+    const filename = basename(downloadUrl)
+    const resolvedVersion = semver.valid(semver.coerce(filename))
+    if (!resolvedVersion) {
+      throw new Error(
+        `Unable to determine resolved version based on '${filename}'. ${c.ERROR_REQUEST}`
+      )
+    }
+    javaVersion = resolvedVersion
   } else if (javaVersion.includes('.')) {
     if (semver.valid(javaVersion)) {
       const majorJavaVersion = semver.major(javaVersion)
