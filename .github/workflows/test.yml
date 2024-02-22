@@ -245,7 +245,7 @@ jobs:
         if: runner.os == 'Windows'
   test-liberica:
     needs: test
-    name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+    name: Liberica (${{ matrix.java-version }}, '${{ matrix.version }}', ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
