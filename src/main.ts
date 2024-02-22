@@ -31,7 +31,7 @@ async function run(): Promise<void> {
     const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
 
     if (c.IS_WINDOWS) {
-      setUpWindowsEnvironment(graalVMVersion)
+      setUpWindowsEnvironment(javaVersion, graalVMVersion)
     }
     await setUpDependencies(components)
     if (enableNativeImageMusl) {
