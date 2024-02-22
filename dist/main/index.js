@@ -93862,12 +93862,18 @@ function setUpGraalVMJDK(javaVersionOrDev) {
         if (javaVersionOrDev === c.VERSION_DEV) {
             return setUpGraalVMJDKDevBuild();
         }
-        const javaVersion = javaVersionOrDev;
+        let javaVersion = javaVersionOrDev;
         const toolName = determineToolName(javaVersion, false);
         let downloadName = toolName;
         let downloadUrl;
         if (javaVersion.endsWith('-ea')) {
             downloadUrl = yield findLatestEABuildDownloadUrl(javaVersion);
+            const filename = (0, path_1.basename)(downloadUrl);
+            const resolvedVersion = semver.valid(semver.coerce(filename));
+            if (!resolvedVersion) {
+                throw new Error(`Unable to determine resolved version based on '${filename}'. ${c.ERROR_REQUEST}`);
+            }
+            javaVersion = resolvedVersion;
         }
         else if (javaVersion.includes('.')) {
             if (semver.valid(javaVersion)) {
