@@ -94269,7 +94269,7 @@ function run() {
             const enableCheckForUpdates = core.getInput(c.INPUT_CHECK_FOR_UPDATES) === 'true';
             const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true';
             if (c.IS_WINDOWS) {
-                (0, msvc_1.setUpWindowsEnvironment)(graalVMVersion);
+                (0, msvc_1.setUpWindowsEnvironment)(javaVersion, graalVMVersion);
             }
             yield (0, dependencies_1.setUpDependencies)(components);
             if (enableNativeImageMusl) {
@@ -94565,6 +94565,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.setUpWindowsEnvironment = void 0;
 const core = __importStar(__nccwpck_require__(2186));
+const semver = __importStar(__nccwpck_require__(1383));
 const child_process_1 = __nccwpck_require__(2081);
 const fs_1 = __nccwpck_require__(7147);
 const constants_1 = __nccwpck_require__(9042);
@@ -94588,9 +94589,15 @@ function findVcvarsallPath() {
     }
     throw new Error('Failed to find vcvarsall.bat');
 }
-function setUpWindowsEnvironment(graalVMVersion) {
-    if (graalVMVersion === constants_1.VERSION_DEV) {
+function setUpWindowsEnvironment(javaVersion, graalVMVersion) {
+    if (javaVersion === javaVersion || graalVMVersion === constants_1.VERSION_DEV) {
         return; // no longer required in dev builds
+    }
+    const javaVersionSemVer = semver.coerce(javaVersion);
+    if (javaVersionSemVer &&
+        semver.valid(javaVersionSemVer) &&
+        semver.gte(javaVersionSemVer, '18.0.0')) {
+        return; // no longer required in GraalVM for JDK 17 and later. JDK 17 builds from 22.3 still need this, so skip 17.X.X
     }
     core.startGroup('Updating Windows environment...');
     const vcvarsallPath = findVcvarsallPath();
