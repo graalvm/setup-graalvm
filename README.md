@@ -93,7 +93,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '22-ea' # or 'latest-ea' for the newest Java version available
+          java-version: '22-ea' # or 'latest-ea' for the latest Java version available
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -187,8 +187,8 @@ can be replaced with:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | `'21'` or `'17.0.7'` for a specific Java version, `'22-ea'` or `'latest-ea'` for an early access build based on JDK 22 or the newest Java version available (requires `distribution: 'graalvm'`), `'dev'` for a dev build with the latest Java version available.<br>(`'8'`, `'11'`, `'16'`, `'19'` are supported for older GraalVM releases.) |
-| `distribution`  | `''` | GraalVM distribution (`graalvm` for Oracle GraalVM, `graalvm-community` for GraalVM Community Edition, `mandrel` for Mandrel). |
+| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.2'`, `'17.0.7'`</li><li>early access (EA) builds: `'22-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
+| `distribution`  | `'graalvm'` | GraalVM distribution <ul><li>Oracle GraalVM: `'graalvm'`</li><li>GraalVM Community Edition: `'graalvm-community'`</li><li>Mandrel: `'mandrel'`</li></ul> |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
 | `cache`         | `''`     | Name of the build platform to cache dependencies. Turned off by default (`''`). It can also be `'maven'`, `'gradle'`, or `'sbt'` and works the same way as described in [actions/setup-java][setup-java-caching]. |
