@@ -6,6 +6,7 @@ import {
   getMatchingTags
 } from './utils'
 import {downloadTool} from '@actions/tool-cache'
+import {spawnSync} from 'child_process'
 
 const LIBERICA_GH_USER = 'bell-sw'
 const LIBERICA_RELEASES_REPO = 'LibericaNIK'
@@ -96,8 +97,21 @@ function determineToolName(javaVersion: string, version: string) {
 }
 
 function determinePlatformPart() {
-  // for linux-musl, return `linux-${c.JDK_ARCH}-musl`
-  return `${c.JDK_PLATFORM}-${c.GRAALVM_ARCH}`
+  if (isMuslBasedLinux()) {
+    return `linux-${c.JDK_ARCH}-musl`
+  } else {
+    return `${c.JDK_PLATFORM}-${c.GRAALVM_ARCH}`
+  }
+}
+
+function isMuslBasedLinux() {
+  if (c.IS_LINUX) {
+    const output = spawnSync('ldd', ['--version']).stderr.toString('utf8')
+    if (output.indexOf('musl') > -1) {
+      return true
+    }
+  }
+  return false
 }
 
 function isDigit(c: string) {

@@ -1,4 +1,5 @@
 import * as liberica from '../src/liberica'
+import * as c from '../src/constants'
 import * as path from 'path'
 import * as semver from 'semver'
 import {expect, test} from '@jest/globals'
@@ -35,18 +36,22 @@ test('find latest JDK version', async () => {
 }, 30000)
 
 test('find asset URL', async () => {
-  await expectURL(
-    '17.0.10+13',
-    'core',
-    'bellsoft-liberica-vm-core-openjdk17.0.10'
-  )
+  await expectURL('11.0.22+12', '', 'bellsoft-liberica-vm-openjdk11.0.22')
   await expectURL('17.0.10+13', 'std', 'bellsoft-liberica-vm-openjdk17.0.10')
   await expectURL(
     '21.0.2+14',
-    'full',
-    'bellsoft-liberica-vm-full-openjdk21.0.2'
+    'core',
+    'bellsoft-liberica-vm-core-openjdk21.0.2'
   )
-  await expectURL('21.0.2+14', '', 'bellsoft-liberica-vm-openjdk21.0.2')
+
+  if (!c.IS_LINUX) {
+    // This check can fail on Linux because there's no `full` version for aarch64 and musl
+    await expectURL(
+      '21.0.2+14',
+      'full',
+      'bellsoft-liberica-vm-full-openjdk21.0.2'
+    )
+  }
 }, 10000)
 
 type verifier = (

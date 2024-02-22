@@ -94349,6 +94349,7 @@ const c = __importStar(__nccwpck_require__(9042));
 const semver = __importStar(__nccwpck_require__(1383));
 const utils_1 = __nccwpck_require__(1314);
 const tool_cache_1 = __nccwpck_require__(7784);
+const child_process_1 = __nccwpck_require__(2081);
 const LIBERICA_GH_USER = 'bell-sw';
 const LIBERICA_RELEASES_REPO = 'LibericaNIK';
 const LIBERICA_JDK_TAG_PREFIX = 'jdk-';
@@ -94409,8 +94410,21 @@ function determineToolName(javaVersion, version) {
     return `${LIBERICA_VM_PREFIX}${determineToolVersionPart(version)}openjdk${javaVersion}-${determinePlatformPart()}`;
 }
 function determinePlatformPart() {
-    // for linux-musl, return `linux-${c.JDK_ARCH}-musl`
-    return `${c.JDK_PLATFORM}-${c.GRAALVM_ARCH}`;
+    if (isMuslBasedLinux()) {
+        return `linux-${c.JDK_ARCH}-musl`;
+    }
+    else {
+        return `${c.JDK_PLATFORM}-${c.GRAALVM_ARCH}`;
+    }
+}
+function isMuslBasedLinux() {
+    if (c.IS_LINUX) {
+        const output = (0, child_process_1.spawnSync)('ldd', ['--version']).stderr.toString('utf8');
+        if (output.indexOf('musl') > -1) {
+            return true;
+        }
+    }
+    return false;
 }
 function isDigit(c) {
     return c.charAt(0) >= '0' && c.charAt(0) <= '9';
