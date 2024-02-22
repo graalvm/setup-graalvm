@@ -15,6 +15,8 @@ export const IS_LINUX = process.platform === 'linux'
 export const IS_MACOS = process.platform === 'darwin'
 export const IS_WINDOWS = process.platform === 'win32'
 
+export const EXECUTABLE_SUFFIX = IS_WINDOWS ? '.exe' : ''
+
 export const DISTRIBUTION_GRAALVM = 'graalvm'
 export const DISTRIBUTION_GRAALVM_COMMUNITY = 'graalvm-community'
 export const DISTRIBUTION_MANDREL = 'mandrel'

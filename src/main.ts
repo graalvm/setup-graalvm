@@ -3,7 +3,7 @@ import * as core from '@actions/core'
 import * as graalvm from './graalvm'
 import * as semver from 'semver'
 import {isFeatureAvailable as isCacheAvailable} from '@actions/cache'
-import {join} from 'path'
+import {basename, join} from 'path'
 import {restore} from './features/cache'
 import {setUpDependencies} from './dependencies'
 import {setUpGUComponents} from './gu'
@@ -12,6 +12,7 @@ import {checkForUpdates} from './features/check-for-updates'
 import {setUpNativeImageMusl} from './features/musl'
 import {setUpWindowsEnvironment} from './msvc'
 import {setUpNativeImageBuildReports} from './features/reports'
+import {exec} from '@actions/exec'
 
 async function run(): Promise<void> {
   try {
@@ -151,6 +152,12 @@ async function run(): Promise<void> {
       await restore(cache)
     }
     setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion)
+
+    core.startGroup(`Successfully set up '${basename(graalVMHome)}'`)
+    await exec(join(graalVMHome, 'bin', `java${c.EXECUTABLE_SUFFIX}`), [
+      '--version'
+    ])
+    core.endGroup()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

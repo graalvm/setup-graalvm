@@ -92738,7 +92738,7 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -92752,6 +92752,7 @@ exports.INPUT_NI_MUSL = 'native-image-musl';
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
+exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS ? '.exe' : '';
 exports.DISTRIBUTION_GRAALVM = 'graalvm';
 exports.DISTRIBUTION_GRAALVM_COMMUNITY = 'graalvm-community';
 exports.DISTRIBUTION_MANDREL = 'mandrel';
@@ -94253,6 +94254,7 @@ const check_for_updates_1 = __nccwpck_require__(6780);
 const musl_1 = __nccwpck_require__(316);
 const msvc_1 = __nccwpck_require__(1165);
 const reports_1 = __nccwpck_require__(2046);
+const exec_1 = __nccwpck_require__(1514);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -94360,6 +94362,11 @@ function run() {
                 yield (0, cache_2.restore)(cache);
             }
             (0, reports_1.setUpNativeImageBuildReports)(isGraalVMforJDK17OrLater, graalVMVersion);
+            core.startGroup(`Successfully set up '${(0, path_1.basename)(graalVMHome)}'`);
+            yield (0, exec_1.exec)((0, path_1.join)(graalVMHome, 'bin', `java${c.EXECUTABLE_SUFFIX}`), [
+                '--version'
+            ]);
+            core.endGroup();
         }
         catch (error) {
             if (error instanceof Error)
