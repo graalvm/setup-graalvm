@@ -5,7 +5,7 @@ This GitHub action sets up [Oracle GraalVM][graalvm-medium], GraalVM [Community 
 
 This action:
 
-- supports Oracle GraalVM [releases][graalvm-dl], GraalVM Community Edition (CE) [releases], [dev builds][dev-builds], GraalVM Enterprise Edition (EE) [releases][graalvm-ee] (set [`gds-token`](#options)) 22.1.0 and later, and [Mandrel][mandrel] (see [Options](#options))
+- supports Oracle GraalVM [releases][graalvm-dl], [EA builds][ea-builds], GraalVM Community Edition (CE) [releases], [dev builds][dev-builds], GraalVM Enterprise Edition (EE) [releases][graalvm-ee] (set [`gds-token`](#options)) 22.1.0 and later, and [Mandrel][mandrel] (see [Options](#options))
 - exports a `$GRAALVM_HOME` environment variable
 - adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(Native Image, Truffle languages, and tools can be invoked directly)
 - sets `$JAVA_HOME` to `$GRAALVM_HOME` by default<br>(can be disabled via `set-java-home: 'false'`, see [Options](#options))
@@ -29,8 +29,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '21'
-          distribution: 'graalvm' # See 'Options' for all available distributions
+          java-version: '21'      # See 'Options' section below for all supported versions
+          distribution: 'graalvm' # See 'Options' section below for all available distributions
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Example step
         run: |
@@ -79,6 +79,26 @@ jobs:
           name: helloworld-${{ matrix.os }}
           path: helloworld*
 ```
+
+<details>
+<summary><h4>Template for Oracle GraalVM Early Access (EA) builds</h4></summary>
+
+```yml
+name: Oracle GraalVM Early Access build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '22-ea' # or 'latest-ea' for the newest Java version available
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+</details>
 
 <details>
 <summary><h4>Template for older GraalVM releases</h4></summary>
@@ -167,7 +187,7 @@ can be replaced with:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | `'21'` or `'17.0.7'` for a specific Java version, `'dev'` for a dev build with the latest Java version available.<br>(`'8'`, `'11'`, `'16'`, `'19'` are supported for older GraalVM releases.) |
+| `java-version`<br>*(required)* | n/a | `'21'` or `'17.0.7'` for a specific Java version, `'22-ea'` or `'latest-ea'` for an early access build based on JDK 22 or the newest Java version available (requires `distribution: 'graalvm'`), `'dev'` for a dev build with the latest Java version available.<br>(`'8'`, `'11'`, `'16'`, `'19'` are supported for older GraalVM releases.) |
 | `distribution`  | `''` | GraalVM distribution (`graalvm` for Oracle GraalVM, `graalvm-community` for GraalVM Community Edition, `mandrel` for Mandrel). |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
@@ -192,6 +212,7 @@ Only pull requests from committers that can be verified as having signed the OCA
 
 [dev-build]: https://github.com/graalvm/graalvm-ce-dev-builds/releases/latest
 [dev-builds]: https://github.com/graalvm/graalvm-ce-dev-builds
+[ea-builds]: https://github.com/graalvm/oracle-graalvm-ea-builds
 [gha-annotations]: https://github.com/actions/toolkit/tree/main/packages/core#annotations
 [gha-permissions]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
 [gha-secrets]: https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository
