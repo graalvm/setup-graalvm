@@ -94364,7 +94364,7 @@ function run() {
             (0, reports_1.setUpNativeImageBuildReports)(isGraalVMforJDK17OrLater, graalVMVersion);
             core.startGroup(`Successfully set up '${(0, path_1.basename)(graalVMHome)}'`);
             yield (0, exec_1.exec)((0, path_1.join)(graalVMHome, 'bin', `java${c.EXECUTABLE_SUFFIX}`), [
-                '--version'
+                javaVersion.startsWith('8') ? '-version' : '--version'
             ]);
             core.endGroup();
         }

@@ -102,8 +102,12 @@ jobs:
             java-version: '17'
             components: 'native-image'
             os: ubuntu-20.04
+          - version: '21.2.0'
+            java-version: '8' # for JDK 8 notification
+            components: 'native-image'
+            os: ubuntu-latest
           - version: '22.3.1'
-            java-version: '11' # for JDK11 notification
+            java-version: '11' # for JDK 11 notification
             components: 'native-image'
             os: macos-11
           - version: '22.3.1'
@@ -132,8 +136,8 @@ jobs:
             [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
           fi
           echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | grep "GraalVM" || exit 34
+          java -version
+          java -version 2>&1 | grep "GraalVM" || exit 34
           native-image --version
           if [[ "${{ matrix.java-version }}" != "dev" ]]; then
             gu list
@@ -143,7 +147,7 @@ jobs:
         run: |
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
-          java --version
+          java -version
           native-image --version
           gu.cmd remove native-image
         if: runner.os == 'Windows'

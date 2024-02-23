@@ -155,7 +155,7 @@ async function run(): Promise<void> {
 
     core.startGroup(`Successfully set up '${basename(graalVMHome)}'`)
     await exec(join(graalVMHome, 'bin', `java${c.EXECUTABLE_SUFFIX}`), [
-      '--version'
+      javaVersion.startsWith('8') ? '-version' : '--version'
     ])
     core.endGroup()
   } catch (error) {
