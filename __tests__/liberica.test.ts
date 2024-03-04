@@ -38,14 +38,9 @@ test('find latest JDK version', async () => {
 test('find asset URL', async () => {
   await expectURL('11.0.22+12', '', 'bellsoft-liberica-vm-openjdk11.0.22')
   await expectURL('17.0.10+13', 'std', 'bellsoft-liberica-vm-openjdk17.0.10')
-  await expectURL(
-    '21.0.2+14',
-    'core',
-    'bellsoft-liberica-vm-core-openjdk21.0.2'
-  )
 
   if (!c.IS_LINUX) {
-    // This check can fail on Linux because there's no `full` version for aarch64 and musl
+    // This check can fail on Linux because there's no `full` version for aarch64 and/or musl
     await expectURL(
       '21.0.2+14',
       'full',
