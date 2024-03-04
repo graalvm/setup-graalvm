@@ -74855,6 +74855,9 @@ function httpRedirectFetch (fetchParams, response) {
     // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name
     request.headersList.delete('authorization')
 
+    // https://fetch.spec.whatwg.org/#authentication-entries
+    request.headersList.delete('proxy-authorization', true)
+
     // "Cookie" and "Host" are forbidden request-headers, which undici doesn't implement.
     request.headersList.delete('cookie')
     request.headersList.delete('host')
@@ -77845,20 +77848,8 @@ function isURLPotentiallyTrustworthy (url) {
     return true
   }
 
-<<<<<<< HEAD
   // If scheme is data, return true
   if (url.protocol === 'data:') return true
-=======
-    // First, split on ||
-    this.set = this.raw
-      .split('||')
-      // map the range to a 2d array of comparators
-      .map(r => this.parseRange(r))
-      // throw out any comparator lists that are empty
-      // this generally means that it was not a valid range, which is allowed
-      // in loose mode, but will still throw if the WHOLE range is invalid.
-      .filter(c => c.length)
->>>>>>> Added Liberica distribution
 
   // If file, return true
   if (url.protocol === 'file:') return true
@@ -77915,7 +77906,6 @@ function bytesMatch (bytes, metadataList) {
     return true
   }
 
-<<<<<<< HEAD
   // 4. Let metadata be the result of getting the strongest
   //    metadata from parsedMetadata.
   const list = parsedMetadata.sort((c, d) => d.algo.localeCompare(c.algo))
@@ -77934,22 +77924,6 @@ function bytesMatch (bytes, metadataList) {
 
     // See https://github.com/web-platform-tests/wpt/commit/e4c5cc7a5e48093220528dfdd1c4012dc3837a0e
     // "be liberal with padding". This is annoying, and it's not even in the spec.
-=======
-    const loose = this.options.loose
-    // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
-    const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE]
-    range = range.replace(hr, hyphenReplace(this.options.includePrerelease))
-    debug('hyphen replace', range)
-    // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
-    range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace)
-    debug('comparator trim', range)
-
-    // `~ 1.2.3` => `~1.2.3`
-    range = range.replace(re[t.TILDETRIM], tildeTrimReplace)
-
-    // `^ 1.2.3` => `^1.2.3`
-    range = range.replace(re[t.CARETTRIM], caretTrimReplace)
->>>>>>> Added Liberica distribution
 
     if (expectedValue.endsWith('==')) {
       expectedValue = expectedValue.slice(0, -2)
@@ -80450,7 +80424,6 @@ class RedirectHandler {
       this.history.push(new URL(this.opts.path, this.opts.origin))
     }
 
-<<<<<<< HEAD
     if (!this.location) {
       return this.handler.onHeaders(statusCode, headers, resume, statusText)
     }
@@ -80466,27 +80439,6 @@ class RedirectHandler {
     this.opts.origin = origin
     this.opts.maxRedirections = 0
     this.opts.query = null
-=======
-const RELEASE_TYPES = [
-  'major',
-  'premajor',
-  'minor',
-  'preminor',
-  'patch',
-  'prepatch',
-  'prerelease',
-]
-
-module.exports = {
-  MAX_LENGTH,
-  MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_INTEGER,
-  RELEASE_TYPES,
-  SEMVER_SPEC_VERSION,
-  FLAG_INCLUDE_PRERELEASE: 0b001,
-  FLAG_LOOSE: 0b010,
-}
->>>>>>> Added Liberica distribution
 
     // https://tools.ietf.org/html/rfc7231#section-6.4.4
     // In case of HTTP 303, always replace method to be either HEAD or GET
@@ -80712,14 +80664,8 @@ class RetryHandler {
     } = retryOptions
     let { counter, currentTimeout } = state
 
-<<<<<<< HEAD
     currentTimeout =
       currentTimeout != null && currentTimeout > 0 ? currentTimeout : timeout
-=======
-const { MAX_SAFE_COMPONENT_LENGTH } = __nccwpck_require__(2293)
-const debug = __nccwpck_require__(427)
-exports = module.exports = {}
->>>>>>> Added Liberica distribution
 
     // Any code that is not a Undici's originated and allowed to retry
     if (
@@ -80732,7 +80678,6 @@ exports = module.exports = {}
       return
     }
 
-<<<<<<< HEAD
     // If a set of method are provided and the current method is not in the list
     if (Array.isArray(methods) && !methods.includes(method)) {
       cb(err)
@@ -80775,25 +80720,6 @@ exports = module.exports = {}
 
   onHeaders (statusCode, rawHeaders, resume, statusMessage) {
     const headers = parseHeaders(rawHeaders)
-=======
-const createToken = (name, value, isGlobal) => {
-  // Replace all greedy whitespace to prevent regex dos issues. These regex are
-  // used internally via the safeRe object since all inputs in this library get
-  // normalized first to trim and collapse all extra whitespace. The original
-  // regexes are exported for userland consumption and lower level usage. A
-  // future breaking change could export the safer regex only with a note that
-  // all input should have extra whitespace removed.
-  const safe = value
-    .split('\\s*').join('\\s{0,1}')
-    .split('\\s+').join('\\s')
-  const index = R++
-  debug(name, index, value)
-  t[name] = index
-  src[index] = value
-  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
-  safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
-}
->>>>>>> Added Liberica distribution
 
     this.retryCount += 1
 
@@ -80807,20 +80733,14 @@ const createToken = (name, value, isGlobal) => {
       return false
     }
 
-<<<<<<< HEAD
     // Checkpoint for resume from where we left it
     if (this.resume != null) {
       this.resume = null
-=======
-createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
-createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+')
->>>>>>> Added Liberica distribution
 
       if (statusCode !== 206) {
         return true
       }
 
-<<<<<<< HEAD
       const contentRange = parseRangeHeader(headers['content-range'])
       // If no content range
       if (!contentRange) {
@@ -80832,9 +80752,6 @@ createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+')
         )
         return false
       }
-=======
-createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*')
->>>>>>> Added Liberica distribution
 
       // Let's start with a weak etag check
       if (this.etag != null && this.etag !== headers.etag) {
@@ -80892,15 +80809,11 @@ createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*')
         this.end = contentLength != null ? Number(contentLength) : null
       }
 
-<<<<<<< HEAD
       assert(Number.isFinite(this.start))
       assert(
         this.end == null || Number.isFinite(this.end),
         'invalid content-length'
       )
-=======
-createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+')
->>>>>>> Added Liberica distribution
 
       this.resume = resume
       this.etag = headers.etag != null ? headers.etag : null
@@ -92262,11 +92175,7 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-<<<<<<< HEAD
-exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
-=======
-exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
->>>>>>> Added Liberica distribution
+exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -93004,7 +92913,6 @@ function getLatestRelease(repo) {
     });
 }
 exports.getLatestRelease = getLatestRelease;
-<<<<<<< HEAD
 function getContents(repo, path) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
@@ -93018,10 +92926,7 @@ function getContents(repo, path) {
     });
 }
 exports.getContents = getContents;
-function getTaggedRelease(repo, tag) {
-=======
 function getTaggedRelease(owner, repo, tag) {
->>>>>>> Added Liberica distribution
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
         const options = githubToken.length > 0 ? { auth: githubToken } : {};

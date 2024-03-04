@@ -74855,6 +74855,9 @@ function httpRedirectFetch (fetchParams, response) {
     // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name
     request.headersList.delete('authorization')
 
+    // https://fetch.spec.whatwg.org/#authentication-entries
+    request.headersList.delete('proxy-authorization', true)
+
     // "Cookie" and "Host" are forbidden request-headers, which undici doesn't implement.
     request.headersList.delete('cookie')
     request.headersList.delete('host')
@@ -79751,19 +79754,7 @@ class ProgressEvent extends Event {
     type = webidl.converters.DOMString(type)
     eventInitDict = webidl.converters.ProgressEventInit(eventInitDict ?? {})
 
-<<<<<<< HEAD
     super(type, eventInitDict)
-=======
-    // First, split on ||
-    this.set = this.raw
-      .split('||')
-      // map the range to a 2d array of comparators
-      .map(r => this.parseRange(r))
-      // throw out any comparator lists that are empty
-      // this generally means that it was not a valid range, which is allowed
-      // in loose mode, but will still throw if the WHOLE range is invalid.
-      .filter(c => c.length)
->>>>>>> Added Liberica distribution
 
     this[kState] = {
       lengthComputable: eventInitDict.lengthComputable,
@@ -79824,7 +79815,6 @@ webidl.converters.ProgressEventInit = webidl.dictionaryConverter([
   }
 ])
 
-<<<<<<< HEAD
 module.exports = {
   ProgressEvent
 }
@@ -79834,22 +79824,6 @@ module.exports = {
 
 /***/ 9054:
 /***/ ((module) => {
-=======
-    const loose = this.options.loose
-    // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
-    const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE]
-    range = range.replace(hr, hyphenReplace(this.options.includePrerelease))
-    debug('hyphen replace', range)
-    // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
-    range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace)
-    debug('comparator trim', range)
-
-    // `~ 1.2.3` => `~1.2.3`
-    range = range.replace(re[t.TILDETRIM], tildeTrimReplace)
-
-    // `^ 1.2.3` => `^1.2.3`
-    range = range.replace(re[t.CARETTRIM], caretTrimReplace)
->>>>>>> Added Liberica distribution
 
 "use strict";
 
@@ -81823,7 +81797,6 @@ module.exports = MockPool
 /***/ 4347:
 /***/ ((module) => {
 
-<<<<<<< HEAD
 "use strict";
 
 
@@ -81847,37 +81820,6 @@ module.exports = {
   kNetConnect: Symbol('net connect'),
   kGetNetConnect: Symbol('get net connect'),
   kConnected: Symbol('connected')
-=======
-// Note: this is the semver.org version of the spec that it implements
-// Not necessarily the package version of this code.
-const SEMVER_SPEC_VERSION = '2.0.0'
-
-const MAX_LENGTH = 256
-const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
-/* istanbul ignore next */ 9007199254740991
-
-// Max safe segment length for coercion.
-const MAX_SAFE_COMPONENT_LENGTH = 16
-
-const RELEASE_TYPES = [
-  'major',
-  'premajor',
-  'minor',
-  'preminor',
-  'patch',
-  'prepatch',
-  'prerelease',
-]
-
-module.exports = {
-  MAX_LENGTH,
-  MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_INTEGER,
-  RELEASE_TYPES,
-  SEMVER_SPEC_VERSION,
-  FLAG_INCLUDE_PRERELEASE: 0b001,
-  FLAG_LOOSE: 0b010,
->>>>>>> Added Liberica distribution
 }
 
 
@@ -82014,15 +81956,9 @@ function getResponseData (data) {
   }
 }
 
-<<<<<<< HEAD
 function getMockDispatch (mockDispatches, key) {
   const basePath = key.query ? buildURL(key.path, key.query) : key.path
   const resolvedPath = typeof basePath === 'string' ? safeUrl(basePath) : basePath
-=======
-const { MAX_SAFE_COMPONENT_LENGTH } = __nccwpck_require__(2293)
-const debug = __nccwpck_require__(427)
-exports = module.exports = {}
->>>>>>> Added Liberica distribution
 
   // Match path
   let matchedMockDispatches = mockDispatches.filter(({ consumed }) => !consumed).filter(({ path }) => matchValue(safeUrl(path), resolvedPath))
@@ -82030,7 +81966,6 @@ exports = module.exports = {}
     throw new MockNotMatchedError(`Mock dispatch not matched for path '${resolvedPath}'`)
   }
 
-<<<<<<< HEAD
   // Match method
   matchedMockDispatches = matchedMockDispatches.filter(({ method }) => matchValue(method, key.method))
   if (matchedMockDispatches.length === 0) {
@@ -82050,24 +81985,6 @@ exports = module.exports = {}
   }
 
   return matchedMockDispatches[0]
-=======
-const createToken = (name, value, isGlobal) => {
-  // Replace all greedy whitespace to prevent regex dos issues. These regex are
-  // used internally via the safeRe object since all inputs in this library get
-  // normalized first to trim and collapse all extra whitespace. The original
-  // regexes are exported for userland consumption and lower level usage. A
-  // future breaking change could export the safer regex only with a note that
-  // all input should have extra whitespace removed.
-  const safe = value
-    .split('\\s*').join('\\s{0,1}')
-    .split('\\s+').join('\\s')
-  const index = R++
-  debug(name, index, value)
-  t[name] = index
-  src[index] = value
-  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
-  safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
->>>>>>> Added Liberica distribution
 }
 
 function addMockDispatch (mockDispatches, key, data) {
@@ -82078,7 +81995,6 @@ function addMockDispatch (mockDispatches, key, data) {
   return newMockDispatch
 }
 
-<<<<<<< HEAD
 function deleteMockDispatch (mockDispatches, key) {
   const index = mockDispatches.findIndex(dispatch => {
     if (!dispatch.consumed) {
@@ -82090,10 +82006,6 @@ function deleteMockDispatch (mockDispatches, key) {
     mockDispatches.splice(index, 1)
   }
 }
-=======
-createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
-createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+')
->>>>>>> Added Liberica distribution
 
 function buildKey (opts) {
   const { path, method, body, headers, query } = opts
@@ -82106,7 +82018,6 @@ function buildKey (opts) {
   }
 }
 
-<<<<<<< HEAD
 function generateKeyValues (data) {
   return Object.entries(data).reduce((keyValuePairs, [key, value]) => [
     ...keyValuePairs,
@@ -82114,9 +82025,6 @@ function generateKeyValues (data) {
     Array.isArray(value) ? value.map(x => Buffer.from(`${x}`)) : Buffer.from(`${value}`)
   ], [])
 }
-=======
-createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*')
->>>>>>> Added Liberica distribution
 
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
@@ -82197,16 +82105,12 @@ function mockDispatch (opts, handler) {
     const responseHeaders = generateKeyValues(headers)
     const responseTrailers = generateKeyValues(trailers)
 
-<<<<<<< HEAD
     handler.abort = nop
     handler.onHeaders(statusCode, responseHeaders, resume, getStatusText(statusCode))
     handler.onData(Buffer.from(responseData))
     handler.onComplete(responseTrailers)
     deleteMockDispatch(mockDispatches, key)
   }
-=======
-createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+')
->>>>>>> Added Liberica distribution
 
   function resume () {}
 
@@ -92837,11 +92741,7 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-<<<<<<< HEAD
-exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
-=======
-exports.ERROR_HINT = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
->>>>>>> Added Liberica distribution
+exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
@@ -94962,7 +94862,6 @@ function getLatestRelease(repo) {
     });
 }
 exports.getLatestRelease = getLatestRelease;
-<<<<<<< HEAD
 function getContents(repo, path) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
@@ -94976,10 +94875,7 @@ function getContents(repo, path) {
     });
 }
 exports.getContents = getContents;
-function getTaggedRelease(repo, tag) {
-=======
 function getTaggedRelease(owner, repo, tag) {
->>>>>>> Added Liberica distribution
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
         const options = githubToken.length > 0 ? { auth: githubToken } : {};
