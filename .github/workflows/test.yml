@@ -250,7 +250,7 @@ jobs:
     strategy:
       matrix:
         java-version: ['17', '21.0.2']
-        version: ['core', 'full', 'std', '']
+        version: ['', 'std', 'full']
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
