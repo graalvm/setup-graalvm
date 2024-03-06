@@ -15,11 +15,11 @@ const LIBERICA_VM_PREFIX = 'bellsoft-liberica-vm-'
 
 export async function setUpLiberica(
   javaVersion: string,
-  version: string
+  javaPackage: string
 ): Promise<string> {
   const resolvedJavaVersion = await findLatestLibericaJavaVersion(javaVersion)
-  const downloadUrl = await findLibericaURL(resolvedJavaVersion, version)
-  const toolName = determineToolName(javaVersion, version)
+  const downloadUrl = await findLibericaURL(resolvedJavaVersion, javaPackage)
+  const toolName = determineToolName(javaVersion, javaPackage)
   return downloadExtractAndCacheJDK(
     async () => downloadTool(downloadUrl),
     toolName,
@@ -61,7 +61,7 @@ export async function findLatestLibericaJavaVersion(
 
 export async function findLibericaURL(
   javaVersion: string,
-  version: string
+  javaPackage: string
 ): Promise<string> {
   const release = await getTaggedRelease(
     LIBERICA_GH_USER,
@@ -69,8 +69,8 @@ export async function findLibericaURL(
     LIBERICA_JDK_TAG_PREFIX + javaVersion
   )
   const platform = determinePlatformPart()
-  const assetPrefix = `${LIBERICA_VM_PREFIX}${determineToolVersionPart(
-    version
+  const assetPrefix = `${LIBERICA_VM_PREFIX}${determineVariantPart(
+    javaPackage
   )}openjdk${javaVersion}`
   const assetSuffix = `-${platform}${c.GRAALVM_FILE_EXTENSION}`
   for (const asset of release.assets) {
@@ -82,18 +82,18 @@ export async function findLibericaURL(
     }
   }
   throw new Error(
-    `Unable to find asset for java-version: ${javaVersion}, version: ${version}, platform: ${platform}`
+    `Unable to find asset for java-version: ${javaVersion}, java-package: ${javaPackage}, platform: ${platform}`
   )
 }
 
-function determineToolVersionPart(version: string) {
-  return version === 'std' || version === '' ? '' : `${version}-`
+function determineToolName(javaVersion: string, javaPackage: string) {
+  const variant = determineVariantPart(javaPackage)
+  const platform = determinePlatformPart()
+  return `${LIBERICA_VM_PREFIX}${variant}openjdk${javaVersion}-${platform}`
 }
 
-function determineToolName(javaVersion: string, version: string) {
-  return `${LIBERICA_VM_PREFIX}${determineToolVersionPart(
-    version
-  )}openjdk${javaVersion}-${determinePlatformPart()}`
+function determineVariantPart(javaPackage: string) {
+  return javaPackage !== null && javaPackage.includes('+fx') ? 'full-' : ''
 }
 
 function determinePlatformPart() {

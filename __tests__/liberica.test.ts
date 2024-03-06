@@ -37,13 +37,13 @@ test('find latest JDK version', async () => {
 
 test('find asset URL', async () => {
   await expectURL('11.0.22+12', '', 'bellsoft-liberica-vm-openjdk11.0.22')
-  await expectURL('17.0.10+13', 'std', 'bellsoft-liberica-vm-openjdk17.0.10')
+  await expectURL('17.0.10+13', 'jdk', 'bellsoft-liberica-vm-openjdk17.0.10')
 
   if (!c.IS_LINUX) {
-    // This check can fail on Linux because there's no `full` version for aarch64 and/or musl
+    // This check can fail on Linux because there's no `jdk+fx` package for aarch64 and/or musl
     await expectURL(
       '21.0.2+14',
-      'full',
+      'jdk+fx',
       'bellsoft-liberica-vm-full-openjdk21.0.2'
     )
   }
@@ -127,10 +127,10 @@ async function expectLatestToFail(pattern: string) {
 
 async function expectURL(
   javaVersion: string,
-  version: string,
+  javaPackage: string,
   expectedPrefix: string
 ) {
-  const url = await liberica.findLibericaURL(javaVersion, version)
+  const url = await liberica.findLibericaURL(javaVersion, javaPackage)
   expect(url).toBeDefined()
   const parts = url.split('/')
   const file = parts[parts.length - 1]

@@ -8,6 +8,10 @@ inputs:
   java-version:
     required: true
     description: 'Java version. See examples of supported syntax in the README file.'
+  java-package:
+    description: 'The package type (jdk or jdk+fx). Currently applies to Liberica only.'
+    required: false
+    default: 'jdk'
   distribution:
     description: 'GraalVM distribution. See the list of available distributions in the README file.'
     required: false
