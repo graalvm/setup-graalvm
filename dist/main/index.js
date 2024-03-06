@@ -92741,10 +92741,11 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
+exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
 exports.INPUT_JAVA_VERSION = 'java-version';
+exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_DISTRIBUTION = 'distribution';
 exports.INPUT_COMPONENTS = 'components';
 exports.INPUT_GITHUB_TOKEN = 'github-token';
@@ -94254,11 +94255,11 @@ const LIBERICA_GH_USER = 'bell-sw';
 const LIBERICA_RELEASES_REPO = 'LibericaNIK';
 const LIBERICA_JDK_TAG_PREFIX = 'jdk-';
 const LIBERICA_VM_PREFIX = 'bellsoft-liberica-vm-';
-function setUpLiberica(javaVersion, version) {
+function setUpLiberica(javaVersion, javaPackage) {
     return __awaiter(this, void 0, void 0, function* () {
         const resolvedJavaVersion = yield findLatestLibericaJavaVersion(javaVersion);
-        const downloadUrl = yield findLibericaURL(resolvedJavaVersion, version);
-        const toolName = determineToolName(javaVersion, version);
+        const downloadUrl = yield findLibericaURL(resolvedJavaVersion, javaPackage);
+        const toolName = determineToolName(javaVersion, javaPackage);
         return (0, utils_1.downloadExtractAndCacheJDK)(() => __awaiter(this, void 0, void 0, function* () { return (0, tool_cache_1.downloadTool)(downloadUrl); }), toolName, javaVersion);
     });
 }
@@ -94287,11 +94288,11 @@ function findLatestLibericaJavaVersion(javaVersion) {
     });
 }
 exports.findLatestLibericaJavaVersion = findLatestLibericaJavaVersion;
-function findLibericaURL(javaVersion, version) {
+function findLibericaURL(javaVersion, javaPackage) {
     return __awaiter(this, void 0, void 0, function* () {
         const release = yield (0, utils_1.getTaggedRelease)(LIBERICA_GH_USER, LIBERICA_RELEASES_REPO, LIBERICA_JDK_TAG_PREFIX + javaVersion);
         const platform = determinePlatformPart();
-        const assetPrefix = `${LIBERICA_VM_PREFIX}${determineToolVersionPart(version)}openjdk${javaVersion}`;
+        const assetPrefix = `${LIBERICA_VM_PREFIX}${determineVariantPart(javaPackage)}openjdk${javaVersion}`;
         const assetSuffix = `-${platform}${c.GRAALVM_FILE_EXTENSION}`;
         for (const asset of release.assets) {
             if (asset.name.startsWith(assetPrefix) &&
@@ -94299,15 +94300,17 @@ function findLibericaURL(javaVersion, version) {
                 return asset.browser_download_url;
             }
         }
-        throw new Error(`Unable to find asset for java-version: ${javaVersion}, version: ${version}, platform: ${platform}`);
+        throw new Error(`Unable to find asset for java-version: ${javaVersion}, java-package: ${javaPackage}, platform: ${platform}`);
     });
 }
 exports.findLibericaURL = findLibericaURL;
-function determineToolVersionPart(version) {
-    return version === 'std' || version === '' ? '' : `${version}-`;
+function determineToolName(javaVersion, javaPackage) {
+    const variant = determineVariantPart(javaPackage);
+    const platform = determinePlatformPart();
+    return `${LIBERICA_VM_PREFIX}${variant}openjdk${javaVersion}-${platform}`;
 }
-function determineToolName(javaVersion, version) {
-    return `${LIBERICA_VM_PREFIX}${determineToolVersionPart(version)}openjdk${javaVersion}-${determinePlatformPart()}`;
+function determineVariantPart(javaPackage) {
+    return javaPackage !== null && javaPackage.includes('+fx') ? 'full-' : '';
 }
 function determinePlatformPart() {
     if (isMuslBasedLinux()) {
@@ -94391,6 +94394,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, { required: true });
+            const javaPackage = core.getInput(c.INPUT_JAVA_PACKAGE);
             const distribution = core.getInput(c.INPUT_DISTRIBUTION);
             const graalVMVersion = core.getInput(c.INPUT_VERSION);
             const gdsToken = core.getInput(c.INPUT_GDS_TOKEN);

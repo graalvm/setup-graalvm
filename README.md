@@ -189,6 +189,7 @@ can be replaced with:
 |-----------------|:--------:|-------------|
 | `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.2'`, `'17.0.7'`</li><li>early access (EA) builds: `'22-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
 | `distribution`  | `'graalvm'` | GraalVM distribution <ul><li>Oracle GraalVM: `'graalvm'`</li><li>GraalVM Community Edition: `'graalvm-community'`</li><li>Mandrel: `'mandrel'`</li><li>Liberica: `'liberica'`</li></ul> |
+| `java-package`  | `'jdk'` | The package type (`'jdk'` or `'jdk+fx'`). Currently applies to Liberica only. |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
 | `cache`         | `''`     | Name of the build platform to cache dependencies. Turned off by default (`''`). It can also be `'maven'`, `'gradle'`, or `'sbt'` and works the same way as described in [actions/setup-java][setup-java-caching]. |
@@ -197,7 +198,7 @@ can be replaced with:
 | `native-image-job-reports` *) | `'false'` | If set to `'true'`, post a job summary containing a Native Image build report. |
 | `native-image-pr-reports`  *) | `'false'` | If set to `'true'`, post a comment containing a Native Image build report on pull requests. Requires `write` permissions for the [`pull-requests` scope][gha-permissions]. |
 | `components`    | `''`     | Comma-separated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
-| `version` | `''` | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release, <br>`std` (default) or `full` for Liberica|
+| `version` | `''` | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release. |
 | `gds-token`     | `''`     | Download token for the GraalVM Download Service. If a non-empty token is provided, the action will set up GraalVM Enterprise Edition (see [GraalVM EE template](#template-for-graalvm-enterprise-edition)). |
 
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*

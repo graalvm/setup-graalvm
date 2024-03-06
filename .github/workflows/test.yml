@@ -245,12 +245,12 @@ jobs:
         if: runner.os == 'Windows'
   test-liberica:
     needs: test
-    name: Liberica (${{ matrix.java-version }}, '${{ matrix.version }}', ${{ matrix.os }})
+    name: Liberica (${{ matrix.java-version }}, '${{ matrix.java-package }}', ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         java-version: ['17', '21.0.2']
-        version: ['', 'std', 'full']
+        java-package: ['', 'jdk', 'jdk+fx']
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
@@ -259,7 +259,7 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java-version }}
-          version: ${{ matrix.version }}
+          java-package: ${{ matrix.java-package }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check environment
         run: |
