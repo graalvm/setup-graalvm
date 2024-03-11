@@ -30,18 +30,13 @@ function findVcvarsallPath(): string {
 
 export function setUpWindowsEnvironment(
   javaVersion: string,
-  graalVMVersion: string
+  graalVMVersion: string,
+  isGraalVMforJDK17OrLater: boolean
 ): void {
   if (javaVersion === javaVersion || graalVMVersion === VERSION_DEV) {
     return // no longer required in dev builds
-  }
-  const javaVersionSemVer = semver.coerce(javaVersion)
-  if (
-    javaVersionSemVer &&
-    semver.valid(javaVersionSemVer) &&
-    semver.gte(javaVersionSemVer, '18.0.0')
-  ) {
-    return // no longer required in GraalVM for JDK 17 and later. JDK 17 builds from 22.3 still need this, so skip 17.X.X
+  } else if (isGraalVMforJDK17OrLater) {
+    return // no longer required in GraalVM for JDK 17 and later.
   }
 
   core.startGroup('Updating Windows environment...')

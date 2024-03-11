@@ -94270,15 +94270,15 @@ function run() {
             const cache = core.getInput(c.INPUT_CACHE);
             const enableCheckForUpdates = core.getInput(c.INPUT_CHECK_FOR_UPDATES) === 'true';
             const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true';
+            const isGraalVMforJDK17OrLater = distribution.length > 0 || graalVMVersion.length == 0;
             if (c.IS_WINDOWS) {
-                (0, msvc_1.setUpWindowsEnvironment)(javaVersion, graalVMVersion);
+                (0, msvc_1.setUpWindowsEnvironment)(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater);
             }
             yield (0, dependencies_1.setUpDependencies)(components);
             if (enableNativeImageMusl) {
                 yield (0, musl_1.setUpNativeImageMusl)();
             }
             // Download GraalVM JDK
-            const isGraalVMforJDK17OrLater = distribution.length > 0 || graalVMVersion.length == 0;
             let graalVMHome;
             if (isGraalVMforJDK17OrLater) {
                 if (enableCheckForUpdates &&
@@ -94572,7 +94572,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.setUpWindowsEnvironment = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const semver = __importStar(__nccwpck_require__(1383));
 const child_process_1 = __nccwpck_require__(2081);
 const fs_1 = __nccwpck_require__(7147);
 const constants_1 = __nccwpck_require__(9042);
@@ -94596,15 +94595,12 @@ function findVcvarsallPath() {
     }
     throw new Error('Failed to find vcvarsall.bat');
 }
-function setUpWindowsEnvironment(javaVersion, graalVMVersion) {
+function setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater) {
     if (javaVersion === javaVersion || graalVMVersion === constants_1.VERSION_DEV) {
         return; // no longer required in dev builds
     }
-    const javaVersionSemVer = semver.coerce(javaVersion);
-    if (javaVersionSemVer &&
-        semver.valid(javaVersionSemVer) &&
-        semver.gte(javaVersionSemVer, '18.0.0')) {
-        return; // no longer required in GraalVM for JDK 17 and later. JDK 17 builds from 22.3 still need this, so skip 17.X.X
+    else if (isGraalVMforJDK17OrLater) {
+        return; // no longer required in GraalVM for JDK 17 and later.
     }
     core.startGroup('Updating Windows environment...');
     const vcvarsallPath = findVcvarsallPath();
