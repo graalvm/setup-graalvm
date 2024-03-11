@@ -30,9 +30,15 @@ async function run(): Promise<void> {
     const enableCheckForUpdates =
       core.getInput(c.INPUT_CHECK_FOR_UPDATES) === 'true'
     const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
+    const isGraalVMforJDK17OrLater =
+      distribution.length > 0 || graalVMVersion.length == 0
 
     if (c.IS_WINDOWS) {
-      setUpWindowsEnvironment(javaVersion, graalVMVersion)
+      setUpWindowsEnvironment(
+        javaVersion,
+        graalVMVersion,
+        isGraalVMforJDK17OrLater
+      )
     }
     await setUpDependencies(components)
     if (enableNativeImageMusl) {
@@ -40,8 +46,6 @@ async function run(): Promise<void> {
     }
 
     // Download GraalVM JDK
-    const isGraalVMforJDK17OrLater =
-      distribution.length > 0 || graalVMVersion.length == 0
     let graalVMHome
     if (isGraalVMforJDK17OrLater) {
       if (
