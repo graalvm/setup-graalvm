@@ -28,15 +28,32 @@ function findVcvarsallPath(): string {
   throw new Error('Failed to find vcvarsall.bat')
 }
 
+export function needsWindowsEnvironmentSetup(
+  javaVersion: string,
+  graalVMVersion: string,
+  isGraalVMforJDK17OrLater: boolean
+): boolean {
+  if (javaVersion === VERSION_DEV || graalVMVersion === VERSION_DEV) {
+    return false // no longer required in dev builds
+  } else if (isGraalVMforJDK17OrLater) {
+    return false // no longer required in GraalVM for JDK 17 and later.
+  }
+  return true
+}
+
 export function setUpWindowsEnvironment(
   javaVersion: string,
   graalVMVersion: string,
   isGraalVMforJDK17OrLater: boolean
 ): void {
-  if (javaVersion === javaVersion || graalVMVersion === VERSION_DEV) {
-    return // no longer required in dev builds
-  } else if (isGraalVMforJDK17OrLater) {
-    return // no longer required in GraalVM for JDK 17 and later.
+  if (
+    !needsWindowsEnvironmentSetup(
+      javaVersion,
+      graalVMVersion,
+      isGraalVMforJDK17OrLater
+    )
+  ) {
+    return
   }
 
   core.startGroup('Updating Windows environment...')
