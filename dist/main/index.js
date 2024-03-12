@@ -94570,7 +94570,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpWindowsEnvironment = void 0;
+exports.setUpWindowsEnvironment = exports.needsWindowsEnvironmentSetup = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 const fs_1 = __nccwpck_require__(7147);
@@ -94595,12 +94595,19 @@ function findVcvarsallPath() {
     }
     throw new Error('Failed to find vcvarsall.bat');
 }
-function setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater) {
-    if (javaVersion === javaVersion || graalVMVersion === constants_1.VERSION_DEV) {
-        return; // no longer required in dev builds
+function needsWindowsEnvironmentSetup(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater) {
+    if (javaVersion === constants_1.VERSION_DEV || graalVMVersion === constants_1.VERSION_DEV) {
+        return false; // no longer required in dev builds
     }
     else if (isGraalVMforJDK17OrLater) {
-        return; // no longer required in GraalVM for JDK 17 and later.
+        return false; // no longer required in GraalVM for JDK 17 and later.
+    }
+    return true;
+}
+exports.needsWindowsEnvironmentSetup = needsWindowsEnvironmentSetup;
+function setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater) {
+    if (!needsWindowsEnvironmentSetup(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater)) {
+        return;
     }
     core.startGroup('Updating Windows environment...');
     const vcvarsallPath = findVcvarsallPath();
