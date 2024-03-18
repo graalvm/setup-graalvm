@@ -82,14 +82,14 @@ export async function findLibericaURL(
     }
   }
   throw new Error(
-    `Unable to find asset for java-version: ${javaVersion}, java-package: ${javaPackage}, platform: ${platform}`
+    `Unable to find asset for java-version: ${javaVersion}, java-package: ${javaPackage}, platform: ${platform}. ${c.ERROR_REQUEST}`
   )
 }
 
 function determineToolName(javaVersion: string, javaPackage: string) {
   const variant = determineVariantPart(javaPackage)
   const platform = determinePlatformPart()
-  return `${LIBERICA_VM_PREFIX}${variant}openjdk${javaVersion}-${platform}`
+  return `${LIBERICA_VM_PREFIX}${variant}${platform}`
 }
 
 function determineVariantPart(javaPackage: string) {
@@ -107,7 +107,7 @@ function determinePlatformPart() {
 function isMuslBasedLinux() {
   if (c.IS_LINUX) {
     const output = spawnSync('ldd', ['--version']).stderr.toString('utf8')
-    if (output.indexOf('musl') > -1) {
+    if (output.includes('musl')) {
       return true
     }
   }

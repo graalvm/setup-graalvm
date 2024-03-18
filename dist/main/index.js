@@ -94300,14 +94300,14 @@ function findLibericaURL(javaVersion, javaPackage) {
                 return asset.browser_download_url;
             }
         }
-        throw new Error(`Unable to find asset for java-version: ${javaVersion}, java-package: ${javaPackage}, platform: ${platform}`);
+        throw new Error(`Unable to find asset for java-version: ${javaVersion}, java-package: ${javaPackage}, platform: ${platform}. ${c.ERROR_REQUEST}`);
     });
 }
 exports.findLibericaURL = findLibericaURL;
 function determineToolName(javaVersion, javaPackage) {
     const variant = determineVariantPart(javaPackage);
     const platform = determinePlatformPart();
-    return `${LIBERICA_VM_PREFIX}${variant}openjdk${javaVersion}-${platform}`;
+    return `${LIBERICA_VM_PREFIX}${variant}${platform}`;
 }
 function determineVariantPart(javaPackage) {
     return javaPackage !== null && javaPackage.includes('+fx') ? 'full-' : '';
@@ -94323,7 +94323,7 @@ function determinePlatformPart() {
 function isMuslBasedLinux() {
     if (c.IS_LINUX) {
         const output = (0, child_process_1.spawnSync)('ldd', ['--version']).stderr.toString('utf8');
-        if (output.indexOf('musl') > -1) {
+        if (output.includes('musl')) {
             return true;
         }
     }
@@ -94433,7 +94433,7 @@ function run() {
                         graalVMHome = yield (0, mandrel_1.setUpMandrel)(graalVMVersion, javaVersion);
                         break;
                     case c.DISTRIBUTION_LIBERICA:
-                        graalVMHome = yield (0, liberica_1.setUpLiberica)(javaVersion, graalVMVersion);
+                        graalVMHome = yield (0, liberica_1.setUpLiberica)(javaVersion, javaPackage);
                         break;
                     case '':
                         if (javaVersion === c.VERSION_DEV) {
