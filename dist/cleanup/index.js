@@ -90553,10 +90553,10 @@ const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
 const github = __importStar(__nccwpck_require__(5438));
+const semver = __importStar(__nccwpck_require__(1383));
 const path_1 = __nccwpck_require__(1017);
 const os_1 = __nccwpck_require__(2037);
 const utils_1 = __nccwpck_require__(1314);
-const semver_1 = __nccwpck_require__(1383);
 const BUILD_OUTPUT_JSON_PATH = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-build-output.json');
 const BYTES_TO_KiB = 1024;
 const BYTES_TO_MiB = 1024 * 1024;
@@ -90565,8 +90565,9 @@ const DOCS_BASE = 'https://github.com/oracle/graal/blob/master/docs/reference-ma
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
 const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
+const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS';
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
-function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion) {
+function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersionOrDev, graalVMVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const isRequired = areJobReportsEnabled() || arePRReportsEnabled();
         if (!isRequired) {
@@ -90576,12 +90577,12 @@ function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion) 
             graalVMVersion === c.VERSION_LATEST ||
             graalVMVersion === c.VERSION_DEV ||
             (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
-                (0, semver_1.gte)((0, utils_1.toSemVer)(graalVMVersion), '22.2.0'));
+                semver.gte((0, utils_1.toSemVer)(graalVMVersion), '22.2.0'));
         if (!isSupported) {
             core.warning(`Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`);
             return;
         }
-        setNativeImageOption(`-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`); // Escape backslashes for Windows
+        setNativeImageOption(javaVersionOrDev, `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`); // Escape backslashes for Windows
     });
 }
 exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
@@ -90611,6 +90612,30 @@ function areJobReportsEnabled() {
 function arePRReportsEnabled() {
     return (0, utils_1.isPREvent)() && core.getInput(INPUT_NI_PR_REPORTS) === 'true';
 }
+function setNativeImageOption(javaVersionOrDev, optionValue) {
+    const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev);
+    if ((coercedJavaVersionOrDev &&
+        semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
+        javaVersionOrDev === c.VERSION_DEV ||
+        javaVersionOrDev.endsWith('-ea')) {
+        /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
+        let newOptionValue = optionValue;
+        const existingOptions = process.env[NATIVE_IMAGE_OPTIONS_ENV];
+        if (existingOptions) {
+            newOptionValue = `${existingOptions} ${newOptionValue}`;
+        }
+        core.exportVariable(NATIVE_IMAGE_OPTIONS_ENV, newOptionValue);
+    }
+    else {
+        const optionsFile = getNativeImageOptionsFile();
+        if (fs.existsSync(optionsFile)) {
+            fs.appendFileSync(optionsFile, ` ${optionValue}`);
+        }
+        else {
+            fs.writeFileSync(optionsFile, `NativeImageArgs = ${optionValue}`);
+        }
+    }
+}
 function getNativeImageOptionsFile() {
     let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV];
     if (optionsFile === undefined) {
@@ -90618,15 +90643,6 @@ function getNativeImageOptionsFile() {
         core.exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile);
     }
     return optionsFile;
-}
-function setNativeImageOption(value) {
-    const optionsFile = getNativeImageOptionsFile();
-    if (fs.existsSync(optionsFile)) {
-        fs.appendFileSync(optionsFile, ` ${value}`);
-    }
-    else {
-        fs.writeFileSync(optionsFile, `NativeImageArgs = ${value}`);
-    }
 }
 function createReport(data) {
     const context = github.context;

@@ -160,7 +160,11 @@ async function run(): Promise<void> {
     if (cache && isCacheAvailable()) {
       await restore(cache)
     }
-    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, graalVMVersion)
+    setUpNativeImageBuildReports(
+      isGraalVMforJDK17OrLater,
+      javaVersion,
+      graalVMVersion
+    )
 
     core.startGroup(`Successfully set up '${basename(graalVMHome)}'`)
     await exec(join(graalVMHome, 'bin', `java${c.EXECUTABLE_SUFFIX}`), [

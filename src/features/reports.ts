@@ -2,10 +2,10 @@ import * as c from '../constants'
 import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as github from '@actions/github'
+import * as semver from 'semver'
 import {join} from 'path'
 import {tmpdir} from 'os'
 import {createPRComment, isPREvent, toSemVer} from '../utils'
-import {gte} from 'semver'
 
 const BUILD_OUTPUT_JSON_PATH = join(tmpdir(), 'native-image-build-output.json')
 const BYTES_TO_KiB = 1024
@@ -19,6 +19,7 @@ const NATIVE_IMAGE_CONFIG_FILE = join(
   tmpdir(),
   'native-image-options.properties'
 )
+const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS'
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
 
 interface AnalysisResult {
@@ -91,6 +92,7 @@ interface BuildOutput {
 
 export async function setUpNativeImageBuildReports(
   isGraalVMforJDK17OrLater: boolean,
+  javaVersionOrDev: string,
   graalVMVersion: string
 ): Promise<void> {
   const isRequired = areJobReportsEnabled() || arePRReportsEnabled()
@@ -102,7 +104,7 @@ export async function setUpNativeImageBuildReports(
     graalVMVersion === c.VERSION_LATEST ||
     graalVMVersion === c.VERSION_DEV ||
     (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
-      gte(toSemVer(graalVMVersion), '22.2.0'))
+      semver.gte(toSemVer(graalVMVersion), '22.2.0'))
   if (!isSupported) {
     core.warning(
       `Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`
@@ -110,6 +112,7 @@ export async function setUpNativeImageBuildReports(
     return
   }
   setNativeImageOption(
+    javaVersionOrDev,
     `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`
   ) // Escape backslashes for Windows
 }
@@ -144,6 +147,34 @@ function arePRReportsEnabled(): boolean {
   return isPREvent() && core.getInput(INPUT_NI_PR_REPORTS) === 'true'
 }
 
+function setNativeImageOption(
+  javaVersionOrDev: string,
+  optionValue: string
+): void {
+  const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev)
+  if (
+    (coercedJavaVersionOrDev &&
+      semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
+    javaVersionOrDev === c.VERSION_DEV ||
+    javaVersionOrDev.endsWith('-ea')
+  ) {
+    /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
+    let newOptionValue = optionValue
+    const existingOptions = process.env[NATIVE_IMAGE_OPTIONS_ENV]
+    if (existingOptions) {
+      newOptionValue = `${existingOptions} ${newOptionValue}`
+    }
+    core.exportVariable(NATIVE_IMAGE_OPTIONS_ENV, newOptionValue)
+  } else {
+    const optionsFile = getNativeImageOptionsFile()
+    if (fs.existsSync(optionsFile)) {
+      fs.appendFileSync(optionsFile, ` ${optionValue}`)
+    } else {
+      fs.writeFileSync(optionsFile, `NativeImageArgs = ${optionValue}`)
+    }
+  }
+}
+
 function getNativeImageOptionsFile(): string {
   let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV]
   if (optionsFile === undefined) {
@@ -151,15 +182,6 @@ function getNativeImageOptionsFile(): string {
     core.exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile)
   }
   return optionsFile
-}
-
-function setNativeImageOption(value: string): void {
-  const optionsFile = getNativeImageOptionsFile()
-  if (fs.existsSync(optionsFile)) {
-    fs.appendFileSync(optionsFile, ` ${value}`)
-  } else {
-    fs.writeFileSync(optionsFile, `NativeImageArgs = ${value}`)
-  }
 }
 
 function createReport(data: BuildOutput): string {
