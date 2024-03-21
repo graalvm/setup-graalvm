@@ -93,7 +93,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '22-ea' # or 'latest-ea' for the latest Java version available
+          java-version: '23-ea' # or 'latest-ea' for the latest Java version available
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
