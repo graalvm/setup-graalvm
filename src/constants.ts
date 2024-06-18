@@ -3,6 +3,7 @@ import * as otypes from '@octokit/types'
 export const INPUT_VERSION = 'version'
 export const INPUT_GDS_TOKEN = 'gds-token'
 export const INPUT_JAVA_VERSION = 'java-version'
+export const INPUT_JAVA_VERSION_FILE = 'java-version-file'
 export const INPUT_JAVA_PACKAGE = 'java-package'
 export const INPUT_DISTRIBUTION = 'distribution'
 export const INPUT_COMPONENTS = 'components'
@@ -11,6 +12,8 @@ export const INPUT_SET_JAVA_HOME = 'set-java-home'
 export const INPUT_CACHE = 'cache'
 export const INPUT_CHECK_FOR_UPDATES = 'check-for-updates'
 export const INPUT_NI_MUSL = 'native-image-musl'
+
+export const DISTRIBUTIONS_ONLY_MAJOR_VERSION = ['corretto']
 
 export const IS_LINUX = process.platform === 'linux'
 export const IS_MACOS = process.platform === 'darwin'

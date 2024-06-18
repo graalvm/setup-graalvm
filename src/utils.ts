@@ -8,7 +8,7 @@ import {ExecOptions, exec as e} from '@actions/exec'
 import {readFileSync, readdirSync} from 'fs'
 import {Octokit} from '@octokit/core'
 import {createHash} from 'crypto'
-import {join} from 'path'
+import {join, path} from 'path'
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
@@ -200,4 +200,59 @@ export async function createPRComment(content: string): Promise<void> {
       `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
     )
   }
+}
+
+// copied from https://github.com/actions/setup-java/blob/a1c6c9c8677803c9f4bd31e0f15ac0844258f955/src/util.ts#L116
+export function getVersionFromFileContent(
+  content: string,
+  distributionName: string,
+  versionFile: string
+): string | null {
+  let javaVersionRegExp: RegExp;
+
+  function getFileName(versionFile: string) {
+    return path.basename(versionFile);
+  }
+
+  const versionFileName = getFileName(versionFile);
+  if (versionFileName == '.tool-versions') {
+    javaVersionRegExp =
+      /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea(\.\d+)?)?)$/m;
+  } else {
+    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+  }
+
+  const fileContent = content.match(javaVersionRegExp)?.groups?.version
+    ? (content.match(javaVersionRegExp)?.groups?.version as string)
+    : '';
+  if (!fileContent) {
+    return null;
+  }
+
+  core.debug(`Version from file '${fileContent}'`);
+
+  const tentativeVersion = avoidOldNotation(fileContent);
+  const rawVersion = tentativeVersion.split('-')[0];
+
+  let version = semver.validRange(rawVersion)
+    ? tentativeVersion
+    : semver.coerce(tentativeVersion);
+
+  core.debug(`Range version from file is '${version}'`);
+
+  if (!version) {
+    return null;
+  }
+
+  if (c.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
+    const coerceVersion = semver.coerce(version) ?? version;
+    version = semver.major(coerceVersion).toString();
+  }
+
+  return version.toString();
+}
+
+// By convention, action expects version 8 in the format `8.*` instead of `1.8`
+function avoidOldNotation(content: string): string {
+  return content.startsWith('1.') ? content.substring(2) : content;
 }

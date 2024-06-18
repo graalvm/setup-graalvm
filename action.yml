@@ -6,8 +6,9 @@ branding:
   color: 'blue'
 inputs:
   java-version:
-    required: true
     description: 'Java version. See examples of supported syntax in the README file.'
+  java-version-file:
+    description: 'The path to the `.java-version` file. See examples of supported syntax in README file'
   java-package:
     description: 'The package type (jdk or jdk+fx). Currently applies to Liberica only.'
     required: false

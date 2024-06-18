@@ -1,6 +1,7 @@
 import * as c from './constants'
 import * as core from '@actions/core'
 import * as graalvm from './graalvm'
+import {getVersionFromFileContent} from './utils'
 import * as semver from 'semver'
 import {isFeatureAvailable as isCacheAvailable} from '@actions/cache'
 import {basename, join} from 'path'
@@ -14,10 +15,12 @@ import {setUpNativeImageMusl} from './features/musl'
 import {setUpWindowsEnvironment} from './msvc'
 import {setUpNativeImageBuildReports} from './features/reports'
 import {exec} from '@actions/exec'
+import fs from 'fs'
 
 async function run(): Promise<void> {
   try {
-    const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
+    const javaVersionInput = core.getInput(c.INPUT_JAVA_VERSION)
+    const javaVersionFile = core.getInput(c.INPUT_JAVA_VERSION_FILE)
     const javaPackage = core.getInput(c.INPUT_JAVA_PACKAGE)
     const distribution = core.getInput(c.INPUT_DISTRIBUTION)
     const graalVMVersion = core.getInput(c.INPUT_VERSION)
@@ -34,6 +37,32 @@ async function run(): Promise<void> {
     const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
     const isGraalVMforJDK17OrLater =
       distribution.length > 0 || graalVMVersion.length == 0
+
+    if (!javaVersionInput && !javaVersionFile) {
+      throw new Error('java-version or java-version-file input expected');
+    }
+
+    var javaVersion = javaVersionInput
+    if (!javaVersion) {
+      core.debug(
+        'java-version input is empty, looking for java-version-file input'
+      );
+      const content = fs.readFileSync(javaVersionFile).toString().trim();
+
+      javaVersion = getVersionFromFileContent(
+        content,
+        javaPackage,
+        javaVersionFile
+      )
+
+      core.debug(`Parsed version from file '${javaVersion}'`);
+
+      if (!javaVersion) {
+        throw new Error(
+          `No supported version was found in file ${javaVersionFile}`
+        );
+      }
+    }
 
     if (c.IS_WINDOWS) {
       setUpWindowsEnvironment(

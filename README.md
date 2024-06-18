@@ -187,7 +187,8 @@ can be replaced with:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.2'`, `'17.0.7'`</li><li>early access (EA) builds: `'22-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
+| `java-version`  | n/a | Java version <ul><li>major versions: `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.2'`, `'17.0.7'`</li><li>early access (EA) builds: `'22-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
+| `java-version-file`| n/a | The path to the `.java-version` file. See more details in [about `.java-version` file](#Java-version-file) |
 | `distribution`  | `'graalvm'` | GraalVM distribution <ul><li>Oracle GraalVM: `'graalvm'`</li><li>GraalVM Community Edition: `'graalvm-community'`</li><li>Mandrel: `'mandrel'`</li><li>Liberica: `'liberica'`</li></ul> |
 | `java-package`  | `'jdk'` | The package type (`'jdk'` or `'jdk+fx'`). Currently applies to Liberica only. |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
@@ -203,6 +204,20 @@ can be replaced with:
 
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*
 
+## Advanced Usage
+
+### Java-version file
+
+If the `java-version-file` input is specified, the action will try to extract the version from the file and install it.
+Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv).
+Valid entry options:
+```
+major versions: 8, 11, 16, 17
+more specific versions: 1.8.0.2, 17.0, 11.0, 11.0.4, 8.0.232, 8.0.282+8
+early access (EA) versions: 15-ea, 15.0.0-ea, 15.0.0-ea.2, 15.0.0+2-ea
+versions with specified distribution: openjdk64-11.0.2
+```
+If the file contains multiple versions, only the first one will be recognized.
 
 ## Contributing
 

@@ -407,3 +407,27 @@ jobs:
       #     popd > /dev/null
       - name: Remove components
         run: gu remove espresso llvm-toolchain nodejs python ruby wasm
+
+  test-java-version-file:
+    name: java-version-file on ubuntu-latest
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # for `native-image-pr-reports` option
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo '17' > .java-version
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          java-version-file: .java-version
+          distribution: 'graalvm'
+          native-image-job-reports: 'true'
+          native-image-pr-reports: 'true'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build HelloWorld executable with GraalVM Native Image on Windows
+        run: |
+          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
+          javac HelloWorld.java
+          native-image HelloWorld
+          ./helloworld
