@@ -35,7 +35,7 @@ test('errors when downloading artifacts', async () => {
   await expect(
     downloadGraalVMEELegacy('invalid', '22.1.0', '11')
   ).rejects.toThrow(
-    'The provided "gds-token" was rejected (reason: "Invalid download token", opc-request-id: /'
+    'The provided "gds-token" was rejected (reason: "Invalid download token", opc-request-id: '
   )
   await expect(
     downloadGraalVMEELegacy('invalid', '1.0.0', '11')
