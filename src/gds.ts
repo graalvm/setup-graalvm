@@ -31,7 +31,7 @@ export async function downloadGraalVMEELegacy(
   version: string,
   javaVersion: string
 ): Promise<string> {
-  const userAgent = `GraalVMGitHubAction/1.2.1 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
+  const userAgent = `GraalVMGitHubAction/1.2.2 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
   const baseArtifact = await fetchArtifact(
     userAgent,
     'isBase:True',
