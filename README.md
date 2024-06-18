@@ -187,7 +187,7 @@ can be replaced with:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.2'`, `'17.0.7'`</li><li>early access (EA) builds: `'22-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
+| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.3'`, `'17.0.11'`</li><li>early access (EA) builds: `'23-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
 | `distribution`  | `'graalvm'` | GraalVM distribution <ul><li>Oracle GraalVM: `'graalvm'`</li><li>GraalVM Community Edition: `'graalvm-community'`</li><li>Mandrel: `'mandrel'`</li><li>Liberica: `'liberica'`</li></ul> |
 | `java-package`  | `'jdk'` | The package type (`'jdk'` or `'jdk+fx'`). Currently applies to Liberica only. |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
