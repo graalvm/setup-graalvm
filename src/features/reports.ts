@@ -5,7 +5,13 @@ import * as github from '@actions/github'
 import * as semver from 'semver'
 import {join} from 'path'
 import {tmpdir} from 'os'
-import {createPRComment, isPREvent, toSemVer} from '../utils'
+import {
+  createPRComment,
+  findExistingPRCommentId,
+  isPREvent,
+  toSemVer,
+  updatePRComment
+} from '../utils'
 
 const BUILD_OUTPUT_JSON_PATH = join(tmpdir(), 'native-image-build-output.json')
 const BYTES_TO_KiB = 1024
@@ -15,12 +21,14 @@ const DOCS_BASE =
   'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md'
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports'
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports'
+const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update'
 const NATIVE_IMAGE_CONFIG_FILE = join(
   tmpdir(),
   'native-image-options.properties'
 )
 const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS'
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
+const PR_COMMENT_TITLE = '## GraalVM Native Image Build Report'
 
 interface AnalysisResult {
   total: number
@@ -134,7 +142,18 @@ export async function generateReports(): Promise<void> {
       core.summary.write()
     }
     if (arePRReportsEnabled()) {
-      createPRComment(report)
+      if (arePRReportsUpdateEnabled()) {
+        const commentId = await findExistingPRCommentId(PR_COMMENT_TITLE)
+        if (commentId) {
+          return updatePRComment(report, commentId)
+        }
+      }
+      return createPRComment(report)
+    } else if (arePRReportsUpdateEnabled()) {
+      core.error('Build report summary:')
+      throw new Error(
+        `'native-image-pr-reports-update' option requires 'native-image-pr-reports' to be set 'true'`
+      )
     }
   }
 }
@@ -145,6 +164,10 @@ function areJobReportsEnabled(): boolean {
 
 function arePRReportsEnabled(): boolean {
   return isPREvent() && core.getInput(INPUT_NI_PR_REPORTS) === 'true'
+}
+
+function arePRReportsUpdateEnabled(): boolean {
+  return isPREvent() && core.getInput(INPUT_NI_PR_REPORTS_UPDATE) === 'true'
 }
 
 function setNativeImageOption(
@@ -260,7 +283,7 @@ function createReport(data: BuildOutput): string {
     )} of total time)`
   }
 
-  return `## GraalVM Native Image Build Report
+  return `${PR_COMMENT_TITLE}
 
 \`${info.name}\` generated${totalTime} as part of the '${
     context.job

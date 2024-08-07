@@ -184,6 +184,52 @@ function getGitHubToken(): string {
   return core.getInput(c.INPUT_GITHUB_TOKEN)
 }
 
+export async function findExistingPRCommentId(
+  bodyStartsWith: string
+): Promise<number | undefined> {
+  if (!isPREvent()) {
+    throw new Error('Not a PR event.')
+  }
+
+  const context = github.context
+  const octokit = github.getOctokit(getGitHubToken())
+  try {
+    const comments = await octokit.paginate(octokit.rest.issues.listComments, {
+      ...context.repo,
+      issue_number: context.payload.pull_request?.number as number
+    })
+    const matchingComment = comments.reverse().find(comment => {
+      return comment.body && comment.body.startsWith(bodyStartsWith)
+    })
+    return matchingComment ? matchingComment.id : undefined
+  } catch (err) {
+    core.error(
+      `Failed to list pull request comments. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
+    )
+  }
+}
+
+export async function updatePRComment(
+  content: string,
+  commentId: number
+): Promise<void> {
+  if (!isPREvent()) {
+    throw new Error('Not a PR event.')
+  }
+
+  try {
+    await github.getOctokit(getGitHubToken()).rest.issues.updateComment({
+      ...github.context.repo,
+      comment_id: commentId,
+      body: content
+    })
+  } catch (err) {
+    core.error(
+      `Failed to update pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
+    )
+  }
+}
+
 export async function createPRComment(content: string): Promise<void> {
   if (!isPREvent()) {
     throw new Error('Not a PR event.')
