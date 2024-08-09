@@ -91559,9 +91559,11 @@ const BYTES_TO_GiB = 1024 * 1024 * 1024;
 const DOCS_BASE = 'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md';
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
+const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update-existing';
 const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
 const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS';
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
+const PR_COMMENT_TITLE = '## GraalVM Native Image Build Report';
 function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersionOrDev, graalVMVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const isRequired = areJobReportsEnabled() || arePRReportsEnabled();
@@ -91595,7 +91597,16 @@ function generateReports() {
                 core.summary.write();
             }
             if (arePRReportsEnabled()) {
-                (0, utils_1.createPRComment)(report);
+                if (arePRReportsUpdateEnabled()) {
+                    const commentId = yield (0, utils_1.findExistingPRCommentId)(PR_COMMENT_TITLE);
+                    if (commentId) {
+                        return (0, utils_1.updatePRComment)(report, commentId);
+                    }
+                }
+                return (0, utils_1.createPRComment)(report);
+            }
+            else if (arePRReportsUpdateEnabled()) {
+                throw new Error(`'${INPUT_NI_PR_REPORTS_UPDATE}' option requires '${INPUT_NI_PR_REPORTS}' to be set 'true'`);
             }
         }
     });
@@ -91606,6 +91617,9 @@ function areJobReportsEnabled() {
 }
 function arePRReportsEnabled() {
     return (0, utils_1.isPREvent)() && core.getInput(INPUT_NI_PR_REPORTS) === 'true';
+}
+function arePRReportsUpdateEnabled() {
+    return (0, utils_1.isPREvent)() && core.getInput(INPUT_NI_PR_REPORTS_UPDATE) === 'true';
 }
 function setNativeImageOption(javaVersionOrDev, optionValue) {
     const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev);
@@ -91708,7 +91722,7 @@ function createReport(data) {
         totalTime = ` in ${secondsToHuman(resources.total_secs)}`;
         gcTotalTimeRatio = ` (${toPercent(resources.garbage_collection.total_secs, resources.total_secs)} of total time)`;
     }
-    return `## GraalVM Native Image Build Report
+    return `${PR_COMMENT_TITLE}
 
 \`${info.name}\` generated${totalTime} as part of the '${context.job}' job in run <a href="${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}" target="_blank">#${context.runNumber}</a>.
 
@@ -93078,7 +93092,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getContents = exports.getLatestRelease = exports.exec = void 0;
+exports.createPRComment = exports.updatePRComment = exports.findExistingPRCommentId = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getContents = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
@@ -93235,6 +93249,41 @@ exports.isPREvent = isPREvent;
 function getGitHubToken() {
     return core.getInput(c.INPUT_GITHUB_TOKEN);
 }
+function findExistingPRCommentId(bodyStartsWith) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        if (!isPREvent()) {
+            throw new Error('Not a PR event.');
+        }
+        const context = github.context;
+        const octokit = github.getOctokit(getGitHubToken());
+        try {
+            const comments = yield octokit.paginate(octokit.rest.issues.listComments, Object.assign(Object.assign({}, context.repo), { issue_number: (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number }));
+            const matchingComment = comments.reverse().find(comment => {
+                return comment.body && comment.body.startsWith(bodyStartsWith);
+            });
+            return matchingComment ? matchingComment.id : undefined;
+        }
+        catch (err) {
+            core.error(`Failed to list pull request comments. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`);
+        }
+    });
+}
+exports.findExistingPRCommentId = findExistingPRCommentId;
+function updatePRComment(content, commentId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!isPREvent()) {
+            throw new Error('Not a PR event.');
+        }
+        try {
+            yield github.getOctokit(getGitHubToken()).rest.issues.updateComment(Object.assign(Object.assign({}, github.context.repo), { comment_id: commentId, body: content }));
+        }
+        catch (err) {
+            core.error(`Failed to update pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`);
+        }
+    });
+}
+exports.updatePRComment = updatePRComment;
 function createPRComment(content) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
