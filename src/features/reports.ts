@@ -21,7 +21,7 @@ const DOCS_BASE =
   'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md'
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports'
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports'
-const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update'
+const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update-existing'
 const NATIVE_IMAGE_CONFIG_FILE = join(
   tmpdir(),
   'native-image-options.properties'
@@ -150,9 +150,8 @@ export async function generateReports(): Promise<void> {
       }
       return createPRComment(report)
     } else if (arePRReportsUpdateEnabled()) {
-      core.error('Build report summary:')
       throw new Error(
-        `'native-image-pr-reports-update' option requires 'native-image-pr-reports' to be set 'true'`
+        `'${INPUT_NI_PR_REPORTS_UPDATE}' option requires '${INPUT_NI_PR_REPORTS}' to be set 'true'`
       )
     }
   }
