@@ -47,7 +47,7 @@ inputs:
     required: false
     description: 'Post a comment containing a Native Image build report on pull requests.'
     default: 'false'
-  native-image-pr-reports-update:
+  native-image-pr-reports-update-existing:
     required: false
     description: 'Instead of posting another comment, update an existing PR comment with the latest Native Image build report.'
     default: 'false'
