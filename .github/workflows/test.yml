@@ -29,8 +29,8 @@ jobs:
         distribution: ['graalvm', 'graalvm-community']
         os: [
           ubuntu-latest,
-          macos-14, # macOS on Apple silicon
-          macos-12, # macOS on Intel
+          macos-latest, # macOS on Apple silicon
+          macos-12,     # macOS on Intel
           windows-latest
         ]
         components: ['']
@@ -109,7 +109,7 @@ jobs:
           - version: '22.3.1'
             java-version: '11' # for JDK 11 notification
             components: 'native-image'
-            os: macos-11
+            os: macos-12
           - version: '22.3.1'
             java-version: '17'
             components: 'native-image'
