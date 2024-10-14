@@ -59,7 +59,7 @@ async function run(): Promise<void> {
       }
       switch (distribution) {
         case c.DISTRIBUTION_GRAALVM:
-          graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+          graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, gdsToken)
           break
         case c.DISTRIBUTION_GRAALVM_COMMUNITY:
           graalVMHome = await graalvm.setUpGraalVMJDKCE(javaVersion)
@@ -80,7 +80,7 @@ async function run(): Promise<void> {
             core.info(
               `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )
-            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, gdsToken)
           }
           break
         default:
@@ -98,7 +98,7 @@ async function run(): Promise<void> {
             core.info(
               `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )
-            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, gdsToken)
           } else {
             graalVMHome = await graalvm.setUpGraalVMLatest_22_X(
               gdsToken,
@@ -119,7 +119,7 @@ async function run(): Promise<void> {
             core.warning(
               `GraalVM dev builds are only available for JDK 21. This build is now using a stable release of GraalVM for JDK ${javaVersion}.`
             )
-            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion)
+            graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, gdsToken)
           } else {
             graalVMHome = await graalvm.setUpGraalVMJDKDevBuild()
           }

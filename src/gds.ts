@@ -6,6 +6,7 @@ import * as io from '@actions/io'
 import * as path from 'path'
 import * as stream from 'stream'
 import * as util from 'util'
+import * as semver from 'semver'
 import {IncomingHttpHeaders, OutgoingHttpHeaders} from 'http'
 import {RetryHelper} from '@actions/tool-cache/lib/retry-helper'
 import {calculateSHA256} from './utils'
@@ -26,13 +27,26 @@ interface GDSErrorResponse {
   readonly message: string
 }
 
+export async function downloadGraalVM(
+  gdsToken: string,
+  javaVersion: string
+): Promise<string> {
+  const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
+  const baseArtifact = await fetchArtifact(
+    userAgent,
+    'isBase:True',
+    javaVersion
+  )
+  return downloadArtifact(gdsToken, userAgent, baseArtifact)
+}
+
 export async function downloadGraalVMEELegacy(
   gdsToken: string,
   version: string,
   javaVersion: string
 ): Promise<string> {
-  const userAgent = `GraalVMGitHubAction/1.2.3 (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
-  const baseArtifact = await fetchArtifact(
+  const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
+  const baseArtifact = await fetchArtifactEE(
     userAgent,
     'isBase:True',
     version,
@@ -42,6 +56,49 @@ export async function downloadGraalVMEELegacy(
 }
 
 export async function fetchArtifact(
+  userAgent: string,
+  metadata: string,
+  javaVersion: string
+): Promise<GDSArtifact> {
+  const http = new httpClient.HttpClient(userAgent)
+
+  let filter
+  if (javaVersion.includes('.')) {
+    filter = `metadata=version:${javaVersion}`
+  } else {
+    filter = `sortBy=timeCreated&sortOrder=DESC&limit=1` // latest and only one item
+  }
+
+  let majorJavaVersion
+  if (semver.valid(javaVersion)) {
+    majorJavaVersion = semver.major(javaVersion)
+  } else {
+    majorJavaVersion = javaVersion
+  }
+
+  const catalogOS = c.IS_MACOS ? 'macos' : c.GRAALVM_PLATFORM
+  const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&${filter}&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`
+  core.debug(`Requesting ${requestUrl}`)
+  const response = await http.get(requestUrl, {accept: 'application/json'})
+  if (response.message.statusCode !== 200) {
+    throw new Error(
+      `Unable to find GraalVM for JDK ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct?`
+    )
+  }
+  const artifactResponse = JSON.parse(
+    await response.readBody()
+  ) as GDSArtifactsResponse
+  if (artifactResponse.items.length !== 1) {
+    throw new Error(
+      artifactResponse.items.length > 1
+        ? `Found more than one GDS artifact. ${c.ERROR_HINT}`
+        : `Unable to find GDS artifact. Are you sure java-version: '${javaVersion}' is correct?`
+    )
+  }
+  return artifactResponse.items[0]
+}
+
+export async function fetchArtifactEE(
   userAgent: string,
   metadata: string,
   version: string,
