@@ -33,6 +33,7 @@ jobs:
           macos-12,     # macOS on Intel
           windows-latest
         ]
+        set-gds-token: [false]
         components: ['']
         include:
           - java-version: 'latest-ea'
@@ -54,6 +55,14 @@ jobs:
           - java-version: '21.0.0' # test for GA version (see #63)
             distribution: 'graalvm'
             os: ubuntu-latest
+          - java-version: '17'
+            distribution: 'graalvm'
+            os: ubuntu-latest
+            set-gds-token: true
+          - java-version: '17.0.12' # Upgrade to '17.0.13' after Oct 2024
+            distribution: 'graalvm'
+            os: ubuntu-latest
+            set-gds-token: true
     steps:
       - uses: actions/checkout@v4
       - name: Run setup-graalvm action
@@ -63,6 +72,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: ${{ matrix.components }}
+          gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"

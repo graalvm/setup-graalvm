@@ -1,4 +1,5 @@
 import * as c from './constants'
+import * as core from '@actions/core'
 import * as semver from 'semver'
 import {
   downloadAndExtractJDK,
@@ -8,7 +9,7 @@ import {
   getMatchingTags,
   getTaggedRelease
 } from './utils'
-import {downloadGraalVMEELegacy} from './gds'
+import {downloadGraalVM, downloadGraalVMEELegacy} from './gds'
 import {downloadTool} from '@actions/tool-cache'
 import {basename} from 'path'
 
@@ -23,13 +24,27 @@ const GRAALVM_TAG_PREFIX = 'vm-'
 // Support for GraalVM for JDK 17 and later
 
 export async function setUpGraalVMJDK(
-  javaVersionOrDev: string
+  javaVersionOrDev: string,
+  gdsToken: string
 ): Promise<string> {
   if (javaVersionOrDev === c.VERSION_DEV) {
     return setUpGraalVMJDKDevBuild()
   }
+  const isTokenProvided = gdsToken.length > 0
   let javaVersion = javaVersionOrDev
   const toolName = determineToolName(javaVersion, false)
+  if (javaVersionOrDev === '17' && !isTokenProvided) {
+    core.warning(
+      'This build uses the last update of Oracle GraalVM for JDK 17 under the GFTC. More details: https://github.com/marketplace/actions/github-action-for-graalvm#notes-on-oracle-graalvm-for-jdk-17'
+    )
+    return setUpGraalVMJDK('17.0.12', gdsToken)
+  }
+  if (isTokenProvided) {
+    // Download from GDS
+    const downloader = async () => downloadGraalVM(gdsToken, javaVersion)
+    return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
+  }
+  // Download from oracle.com
   let downloadName = toolName
   let downloadUrl: string
   if (javaVersion.endsWith('-ea')) {
