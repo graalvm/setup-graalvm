@@ -1,6 +1,6 @@
 import * as otypes from '@octokit/types'
 
-export const ACTION_VERSION = '1.2.3'
+export const ACTION_VERSION = '1.2.4'
 
 export const INPUT_VERSION = 'version'
 export const INPUT_GDS_TOKEN = 'gds-token'
