@@ -29,8 +29,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '21'      # See 'Options' section below for all supported versions
-          distribution: 'graalvm' # See 'Options' section below for all available distributions
+          java-version: '21'      # See 'Options' for more details
+          distribution: 'graalvm' # See 'Supported distributions' for available options
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Example step
         run: |
@@ -176,12 +176,26 @@ jobs:
 </details>
 
 
+## Supported distributions
+
+Currently, the following distributions are supported:
+
+| Keyword | Distribution | Official site | License
+|-|-|-|-|
+| `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html)
+| `graalvm-community` | GraalVM Community Edition | [Link](https://www.graalvm.org/) | [Link](https://github.com/oracle/graal/blob/master/LICENSE)
+| `mandrel` | Mandrel | [Link](https://github.com/graalvm/mandrel) | [Link](https://github.com/graalvm/mandrel/blob/default/LICENSE) |
+| `liberica` | Liberica NIK | [Link](https://bell-sw.com/liberica-native-image-kit/) | [Link](https://bell-sw.com/liberica_nik_eula/) |
+
+
 ## Options
+
+This actions can be configured with the following options:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.3'`, `'17.0.11'`</li><li>early access (EA) builds: `'23-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
-| `distribution`  | `'graalvm'` | GraalVM distribution <ul><li>Oracle GraalVM: `'graalvm'`</li><li>GraalVM Community Edition: `'graalvm-community'`</li><li>Mandrel: `'mandrel'`</li><li>Liberica: `'liberica'`</li></ul> |
+| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'23'`, `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.3'`, `'17.0.11'`</li><li>early access (EA) builds: `'24-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
+| `distribution`  | `'graalvm'` | GraalVM distribution (see [supported distributions](#supported-distributions)) |
 | `java-package`  | `'jdk'` | The package type (`'jdk'` or `'jdk+fx'`). Currently applies to Liberica only. |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
 | `set-java-home` | `'true'` | If set to `'true'`, instructs the action to set `$JAVA_HOME` to the path of the GraalVM installation. Overrides any previous action or command that sets `$JAVA_HOME`. |
@@ -231,7 +245,7 @@ can be replaced with:
 # ...
 - uses: graalvm/setup-graalvm@v1
   with:
-    java-version: '17.0.7' # for a specific JDK 17; or '17' for the latest JDK 17
+    java-version: '17.0.12' # for a specific JDK 17; or '17' for the latest JDK 17
     distribution: 'graalvm' # New 'distribution' option
     # ...
 ```
