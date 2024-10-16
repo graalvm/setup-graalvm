@@ -74,7 +74,7 @@ jobs:
           ./helloworld
       
       - name: Upload binary
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: helloworld-${{ matrix.os }}
           path: helloworld*
