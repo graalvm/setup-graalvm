@@ -59,7 +59,7 @@ jobs:
             distribution: 'graalvm'
             os: ubuntu-latest
             set-gds-token: true
-          - java-version: '17.0.12' # Upgrade to '17.0.13' after Oct 2024
+          - java-version: '17.0.13'
             distribution: 'graalvm'
             os: ubuntu-latest
             set-gds-token: true
