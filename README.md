@@ -104,41 +104,41 @@ jobs:
 
 1. Obtain a token for the GraalVM Download Service. For this, replace `your@email.com` with your email address and run the following `curl` command:
 
-```bash
-curl -sS -X POST "https://gds.oracle.com/api/20220101/licenseAcceptance" \
-  -H "Content-Type: application/json" \
-  -d "{ \"email\": \"your@email.com\", \"licenseId\": \"D53FA58D12817B3CE0530F15000A74CA\", \"type\": \"GENERATE_TOKEN_AND_ACCEPT_LICENSE\"}"
-```
+    ```bash
+    curl -sS -X POST "https://gds.oracle.com/api/20220101/licenseAcceptance" \
+      -H "Content-Type: application/json" \
+      -d "{ \"email\": \"your@email.com\", \"licenseId\": \"D53FA58D12817B3CE0530F15000A74CA\", \"type\": \"GENERATE_TOKEN_AND_ACCEPT_LICENSE\"}"
+    ```
 
-The response should look like this:
+    The response should look like this:
 
-```json
-{"token":"<your-token>","status":"UNVERIFIED"}
-```
+    ```json
+    {"token":"<your-token>","status":"UNVERIFIED"}
+    ```
 
 2. Store the value of `<your-token>` as a [GitHub Action secret][gha-secrets]. For the following template, we use the name `GDS_TOKEN`.
 3. Check your emails and accept the license to activate the token.
 4. Use `java-version: '17'` (or a specific version such as `17.0.13`) and provide the `GDS_TOKEN` as shown in the following template:
 
-```yml
-name: Build with Oracle GraalVM for JDK 17 via GDS
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: graalvm/setup-graalvm@v1
-        with:
-          distribution: 'graalvm'
-          java-version: '17'
-          gds-token: ${{ secrets.GDS_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Example step
-        run: |
-          java --version
-          native-image --version
-```
+    ```yml
+    name: Build with Oracle GraalVM for JDK 17 via GDS
+    on: [push, pull_request]
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - uses: graalvm/setup-graalvm@v1
+            with:
+              distribution: 'graalvm'
+              java-version: '17'
+              gds-token: ${{ secrets.GDS_TOKEN }}
+              github-token: ${{ secrets.GITHUB_TOKEN }}
+          - name: Example step
+            run: |
+              java --version
+              native-image --version
+    ```
 
 </details>
 
@@ -150,28 +150,28 @@ jobs:
 1. Download the version of [GraalVM Enterprise Edition (EE)][graalvm-ee] you want to run on GitHub Actions.
 2. Use the [GraalVM Updater][gu] to install the GraalVM components you need on GitHub Actions and accept the corresponding licenses.
 3. Run `$GRAALVM_HOME/bin/gu --show-ee-token` to display your token for the GraalVM Download Service.
-4. Store this token as a [GitHub Action secret][gha-secrets]. In the following template, we use the name `GDS_TOKEN`.
+4. Store this token as a [GitHub Action secret][gha-secrets]. In the following template, we use the name `GDS_TOKEN`:
 
-```yml
-name: GraalVM Enterprise Edition build
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: graalvm/setup-graalvm@v1
-        with:
-          version: '22.3.0'
-          gds-token: ${{ secrets.GDS_TOKEN }}
-          java-version: '17'
-          components: 'native-image'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Example step
-        run: |
-          java --version
-          native-image --version
-```
+    ```yml
+    name: GraalVM Enterprise Edition build
+    on: [push, pull_request]
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - uses: graalvm/setup-graalvm@v1
+            with:
+              version: '22.3.0'
+              gds-token: ${{ secrets.GDS_TOKEN }}
+              java-version: '17'
+              components: 'native-image'
+              github-token: ${{ secrets.GITHUB_TOKEN }}
+          - name: Example step
+            run: |
+              java --version
+              native-image --version
+    ```
 
 </details>
 
@@ -180,10 +180,10 @@ jobs:
 
 Currently, the following distributions are supported:
 
-| Keyword | Distribution | Official site | License
+| Keyword | Distribution | Official site | License |
 |-|-|-|-|
-| `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html)
-| `graalvm-community` | GraalVM Community Edition | [Link](https://www.graalvm.org/) | [Link](https://github.com/oracle/graal/blob/master/LICENSE)
+| `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html) |
+| `graalvm-community` | GraalVM Community Edition | [Link](https://www.graalvm.org/) | [Link](https://github.com/oracle/graal/blob/master/LICENSE) |
 | `mandrel` | Mandrel | [Link](https://github.com/graalvm/mandrel) | [Link](https://github.com/graalvm/mandrel/blob/default/LICENSE) |
 | `liberica` | Liberica NIK | [Link](https://bell-sw.com/liberica-native-image-kit/) | [Link](https://bell-sw.com/liberica_nik_eula/) |
 
@@ -207,7 +207,8 @@ This actions can be configured with the following options:
 | `native-image-pr-reports-update-existing` *) | `'false'` | Instead of posting another comment, update an existing PR comment with the latest Native Image build report. Requires `native-image-pr-reports` to be `true`. |
 | `components`    | `''`     | Comma-separated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
 | `version` | `''` | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release. |
-| `gds-token`     | `''`     | Download token for the GraalVM Download Service. at <> Store this token as a [GitHub Action secret][gha-secrets]. For thie followingtemplate, we use the name `GDS_TOKEN`.. If a non-empty token is provided, the action will set up GraalVM Enterprise Edition (see [GraalVM EE template](#template-for-graalvm-enterprise-edition)). |
+| `gds-token`     | `''`     Download token for the GraalVM Download Service. If a non-empty token is provided, the action will set up Oracle GraalVM (see [Oracle GraalVM via GDS template](#template-for-oracle-graalvm-via-graalvm-download-service)) or GraalVM Enterprise Edition (see [GraalVM EE template](#template-for-graalvm-enterprise-edition)) via GDS. |
+
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*
 
 
