@@ -30,7 +30,7 @@ jobs:
         os: [
           ubuntu-latest,
           macos-latest, # macOS on Apple silicon
-          macos-12,     # macOS on Intel
+          macos-13,     # macOS on Intel
           windows-latest
         ]
         set-gds-token: [false]
@@ -119,7 +119,7 @@ jobs:
           - version: '22.3.1'
             java-version: '11' # for JDK 11 notification
             components: 'native-image'
-            os: macos-12
+            os: macos-13
           - version: '22.3.1'
             java-version: '17'
             components: 'native-image'
