@@ -25,7 +25,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java-version: ['22', '21', '17', '20', 'dev']
+        java-version: ['23', '21', '17', '20', 'dev']
         distribution: ['graalvm', 'graalvm-community']
         os: [
           ubuntu-latest,
@@ -39,7 +39,7 @@ jobs:
           - java-version: 'latest-ea'
             distribution: 'graalvm'
             os: ubuntu-latest
-          - java-version: '23-ea'
+          - java-version: '24-ea'
             distribution: 'graalvm'
             os: ubuntu-latest
           - java-version: '21'
