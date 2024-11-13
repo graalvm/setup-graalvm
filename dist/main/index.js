@@ -91466,12 +91466,8 @@ const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const utils_1 = __nccwpck_require__(1314);
 const path_1 = __nccwpck_require__(1017);
-const os_1 = __nccwpck_require__(2037);
-const fs_1 = __nccwpck_require__(7147);
-const MUSL_NAME = 'musl-gcc';
-const MUSL_VERSION = '1.2.4';
-const ZLIB_VERSION = '1.2.13';
-// Build instructions: https://github.com/oracle/graal/blob/6dab549194b85252f88bda4ee825762d8b02c687/docs/reference-manual/native-image/guides/build-static-and-mostly-static-executable.md?plain=1#L38-L67
+const MUSL_NAME = 'x86_64-linux-musl-native';
+const MUSL_VERSION = '10.2.1';
 function setUpNativeImageMusl() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!c.IS_LINUX) {
@@ -91480,35 +91476,26 @@ function setUpNativeImageMusl() {
         }
         let toolPath = tc.find(MUSL_NAME, MUSL_VERSION);
         if (toolPath) {
-            core.info(`Found musl ${MUSL_VERSION} in tool-cache @ ${toolPath}`);
+            core.info(`Found ${MUSL_NAME} ${MUSL_VERSION} in tool-cache @ ${toolPath}`);
         }
         else {
-            core.startGroup(`Building musl with zlib for GraalVM Native Image...`);
-            // Build musl
-            const muslHome = (0, path_1.join)((0, os_1.homedir)(), 'musl-toolchain');
-            const muslDownloadPath = yield tc.downloadTool(`https://musl.libc.org/releases/musl-${MUSL_VERSION}.tar.gz`);
+            core.startGroup(`Setting up musl for GraalVM Native Image...`);
+            const muslDownloadPath = yield tc.downloadTool(`https://github.com/graalvm/setup-graalvm/releases/download/x86_64-linux-musl-${MUSL_VERSION}/${MUSL_NAME}.tgz`);
             const muslExtractPath = yield tc.extractTar(muslDownloadPath);
-            const muslPath = (0, path_1.join)(muslExtractPath, `musl-${MUSL_VERSION}`);
-            const muslBuildOptions = { cwd: muslPath };
-            yield (0, utils_1.exec)('./configure', [`--prefix=${muslHome}`, '--static'], muslBuildOptions);
-            yield (0, utils_1.exec)('make', [], muslBuildOptions);
-            yield (0, utils_1.exec)('make', ['install'], muslBuildOptions);
-            const muslGCC = (0, path_1.join)(muslHome, 'bin', MUSL_NAME);
-            yield fs_1.promises.symlink(muslGCC, (0, path_1.join)(muslHome, 'bin', 'x86_64-linux-musl-gcc'), 'file');
-            // Build zlib
-            const zlibDownloadPath = yield tc.downloadTool(`https://zlib.net/fossils/zlib-${ZLIB_VERSION}.tar.gz`);
+            const muslPath = (0, path_1.join)(muslExtractPath, MUSL_NAME);
+            const zlibCommit = 'ec3df00224d4b396e2ac6586ab5d25f673caa4c2';
+            const zlibDownloadPath = yield tc.downloadTool(`https://github.com/madler/zlib/archive/${zlibCommit}.tar.gz`);
             const zlibExtractPath = yield tc.extractTar(zlibDownloadPath);
-            const zlibPath = (0, path_1.join)(zlibExtractPath, `zlib-${ZLIB_VERSION}`);
+            const zlibPath = (0, path_1.join)(zlibExtractPath, `zlib-${zlibCommit}`);
             const zlibBuildOptions = {
                 cwd: zlibPath,
-                env: Object.assign(Object.assign({}, process.env), { CC: muslGCC })
+                env: Object.assign(Object.assign({}, process.env), { CC: (0, path_1.join)(muslPath, 'bin', 'gcc') })
             };
-            yield (0, utils_1.exec)('./configure', [`--prefix=${muslHome}`, '--static'], zlibBuildOptions);
+            yield (0, utils_1.exec)('./configure', [`--prefix=${muslPath}`, '--static'], zlibBuildOptions);
             yield (0, utils_1.exec)('make', [], zlibBuildOptions);
             yield (0, utils_1.exec)('make', ['install'], { cwd: zlibPath });
-            // Store in cache
-            core.info(`Adding musl ${MUSL_VERSION} with zlib ${ZLIB_VERSION} to tool-cache ...`);
-            toolPath = yield tc.cacheDir(muslHome, MUSL_NAME, MUSL_VERSION);
+            core.info(`Adding ${MUSL_NAME} ${MUSL_VERSION} to tool-cache ...`);
+            toolPath = yield tc.cacheDir(muslPath, MUSL_NAME, MUSL_VERSION);
             core.endGroup();
         }
         core.addPath((0, path_1.join)(toolPath, 'bin'));
