@@ -12,16 +12,14 @@ permissions:
   contents: read
 
 jobs:
-  build: # make sure build/ci work properly
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          npm install
-      - run: |
-          npm run build && npm run package && npm test
-      # - run: |
-      #     npm run all
+  # build: # make sure build/ci work properly
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: |
+  #         npm install
+  #     - run: |
+  #         npm run build && npm run package && npm run test
   # test:
   #   name: GraalVM
   #   runs-on: ${{ matrix.os }}
@@ -419,12 +417,19 @@ jobs:
   #     - name: Remove components
   #       run: gu remove espresso llvm-toolchain nodejs python ruby wasm
   test-sbom:
-    needs: build
     name: test 'native-image-enable-sbom' option
     runs-on: macos-latest # TODO: use matrix vlaue 
+    permissions:
+      contents: read
+      pull-requests: write
     # TODO: use appropriate matrix
     steps:
       - uses: actions/checkout@v4
+      - name: Build action
+        run: |
+          npm install
+          npm run build
+          npm run package
       - uses: ./
         with:
           java-version: '23'

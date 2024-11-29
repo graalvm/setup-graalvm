@@ -18,11 +18,6 @@ import {setUpSBOMSupport} from './features/sbom'
 
 async function run(): Promise<void> {
   try {
-    core.info('')
-    core.info('Starting setup...')
-    const isSbomEnabled = core.getInput('native-image-enable-sbom') === 'true'
-    core.info(`SBOM generation is ${isSbomEnabled ? 'enabled' : 'disabled'}`)
-    core.info('')
     const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
     const javaPackage = core.getInput(c.INPUT_JAVA_PACKAGE)
     const distribution = core.getInput(c.INPUT_DISTRIBUTION)
