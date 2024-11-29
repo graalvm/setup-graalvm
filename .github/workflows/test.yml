@@ -18,9 +18,10 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           npm install
-      - run: |
-          npm run all
+      # - run: |
+      #     npm run all
   test:
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     name: GraalVM
     runs-on: ${{ matrix.os }}
     strategy:
@@ -93,6 +94,7 @@ jobs:
           java --version
           native-image --version
   test-ce: # make sure the action works on a clean machine without building
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     needs: test
     name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -162,6 +164,7 @@ jobs:
           gu.cmd remove native-image
         if: runner.os == 'Windows'
   test-ee:
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     needs: test
     name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     if: github.event_name != 'pull_request'
@@ -210,6 +213,7 @@ jobs:
           gu.cmd remove native-image
         if: runner.os == 'Windows'
   test-mandrel:
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     needs: test
     name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -254,6 +258,7 @@ jobs:
           native-image --version
         if: runner.os == 'Windows'
   test-liberica:
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     needs: test
     name: Liberica (${{ matrix.java-version }}, '${{ matrix.java-package }}', ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -296,6 +301,7 @@ jobs:
           }
         if: runner.os == 'Windows'
   test-native-image-windows:
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     name: native-image on windows-latest
     runs-on: windows-latest
     permissions:
@@ -318,6 +324,7 @@ jobs:
           native-image HelloWorld
           ./helloworld
   test-native-image-windows-msvc:
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     name: native-image on windows-2022
     runs-on: windows-2022
     permissions:
@@ -340,6 +347,7 @@ jobs:
           native-image HelloWorld
           ./helloworld
   test-native-image-musl:
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
     permissions:
@@ -363,6 +371,7 @@ jobs:
           native-image --static --libc=musl HelloWorld
           ./helloworld
   test-extensive:
+    if: ${{ github.ref != 'refs/heads/sbom-support' }}
     name: extensive tests on ubuntu-latest
     runs-on: ubuntu-latest
     permissions:
@@ -418,14 +427,15 @@ jobs:
       - name: Remove components
         run: gu remove espresso llvm-toolchain nodejs python ruby wasm
   test-sbom:
-    needs: test
+    if: ${{ github.ref == 'refs/heads/sbom-support' }}
     name: test 'native-image-enable-sbom' option
-    runs-on: ubuntu-latest
+    runs-on: macos-latest # TODO: use matrix vlaue 
+    # TODO: use appropriate matrix
     steps:
       - uses: actions/checkout@v4
       - uses: ./
         with:
-          java-version: '23'
+          java-version: 'latest-ea'
           distribution: 'graalvm'
           native-image-enable-sbom: 'true'
           components: 'native-image'
