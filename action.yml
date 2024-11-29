@@ -51,6 +51,10 @@ inputs:
     required: false
     description: 'Instead of posting another comment, update an existing PR comment with the latest Native Image build report.'
     default: 'false'
+  native-image-enable-sbom:
+    required: false
+    description: 'Automatically generate an SBOM and submit it to the GitHub dependency submission API for vulnerability and dependency tracking.'
+    default: 'false'
   version:
     required: false
     description: 'GraalVM version (release, latest, dev).'

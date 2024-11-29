@@ -90980,7 +90980,7 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = exports.ACTION_VERSION = void 0;
+exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.NATIVE_IMAGE_OPTIONS_ENV = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = exports.ACTION_VERSION = void 0;
 exports.ACTION_VERSION = '1.2.6';
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
@@ -90993,6 +90993,7 @@ exports.INPUT_SET_JAVA_HOME = 'set-java-home';
 exports.INPUT_CACHE = 'cache';
 exports.INPUT_CHECK_FOR_UPDATES = 'check-for-updates';
 exports.INPUT_NI_MUSL = 'native-image-musl';
+exports.NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS';
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
@@ -91085,13 +91086,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -91102,7 +91113,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpDependencies = void 0;
+exports.setUpDependencies = setUpDependencies;
 const core = __importStar(__nccwpck_require__(2186));
 const constants_1 = __nccwpck_require__(9042);
 const utils_1 = __nccwpck_require__(1314);
@@ -91136,7 +91147,6 @@ function setUpDependencies(components) {
         }
     });
 }
-exports.setUpDependencies = setUpDependencies;
 
 
 /***/ }),
@@ -91189,13 +91199,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -91209,7 +91229,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.save = exports.restore = void 0;
+exports.restore = restore;
+exports.save = save;
 const path_1 = __nccwpck_require__(1017);
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const cache = __importStar(__nccwpck_require__(7799));
@@ -91309,7 +91330,6 @@ function restore(id) {
         }
     });
 }
-exports.restore = restore;
 /**
  * Save the dependency cache
  * @param id ID of the package manager, should be "maven" or "gradle"
@@ -91350,7 +91370,6 @@ function save(id) {
         }
     });
 }
-exports.save = save;
 /**
  * @param packageManager the specified package manager by user
  * @param error the error thrown by the saveCache
@@ -91390,15 +91409,25 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.checkForUpdates = void 0;
+exports.checkForUpdates = checkForUpdates;
 const core = __importStar(__nccwpck_require__(2186));
 function checkForUpdates(graalVMVersion, javaVersion) {
     if (javaVersion === '20') {
@@ -91417,7 +91446,6 @@ function checkForUpdates(graalVMVersion, javaVersion) {
     }
     // TODO: add support for JDK-specific update checks (e.g., 17.0.X)
 }
-exports.checkForUpdates = checkForUpdates;
 
 
 /***/ }),
@@ -91443,13 +91471,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -91460,7 +91498,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpNativeImageMusl = void 0;
+exports.setUpNativeImageMusl = setUpNativeImageMusl;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
@@ -91501,7 +91539,6 @@ function setUpNativeImageMusl() {
         core.addPath((0, path_1.join)(toolPath, 'bin'));
     });
 }
-exports.setUpNativeImageMusl = setUpNativeImageMusl;
 
 
 /***/ }),
@@ -91527,13 +91564,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -91544,7 +91591,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.generateReports = exports.setUpNativeImageBuildReports = void 0;
+exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
+exports.generateReports = generateReports;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -91562,7 +91610,6 @@ const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
 const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update-existing';
 const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
-const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS';
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
 const PR_COMMENT_TITLE = '## GraalVM Native Image Build Report';
 function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersionOrDev, graalVMVersion) {
@@ -91583,7 +91630,6 @@ function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersionOrDev
         setNativeImageOption(javaVersionOrDev, `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`); // Escape backslashes for Windows
     });
 }
-exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
 function generateReports() {
     return __awaiter(this, void 0, void 0, function* () {
         if (areJobReportsEnabled() || arePRReportsEnabled()) {
@@ -91612,7 +91658,6 @@ function generateReports() {
         }
     });
 }
-exports.generateReports = generateReports;
 function areJobReportsEnabled() {
     return core.getInput(INPUT_NI_JOB_REPORTS) === 'true';
 }
@@ -91630,11 +91675,11 @@ function setNativeImageOption(javaVersionOrDev, optionValue) {
         javaVersionOrDev.endsWith('-ea')) {
         /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
         let newOptionValue = optionValue;
-        const existingOptions = process.env[NATIVE_IMAGE_OPTIONS_ENV];
+        const existingOptions = process.env[c.NATIVE_IMAGE_OPTIONS_ENV];
         if (existingOptions) {
             newOptionValue = `${existingOptions} ${newOptionValue}`;
         }
-        core.exportVariable(NATIVE_IMAGE_OPTIONS_ENV, newOptionValue);
+        core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, newOptionValue);
     }
     else {
         const optionsFile = getNativeImageOptionsFile();
@@ -91883,6 +91928,247 @@ function secondsToHuman(seconds) {
 
 /***/ }),
 
+/***/ 9181:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.setUpSBOMSupport = setUpSBOMSupport;
+exports.processSBOM = processSBOM;
+const c = __importStar(__nccwpck_require__(9042));
+const core = __importStar(__nccwpck_require__(2186));
+const fs = __importStar(__nccwpck_require__(7147));
+const github = __importStar(__nccwpck_require__(5438));
+const glob = __importStar(__nccwpck_require__(8090));
+const path_1 = __nccwpck_require__(1017);
+const semver = __importStar(__nccwpck_require__(1383));
+const INPUT_NI_SBOM = 'native-image-enable-sbom';
+const SBOM_FILE_SUFFIX = '.sbom.json';
+const MIN_JAVA_VERSION = '24.0.0';
+function setUpSBOMSupport(javaVersionOrDev, distribution) {
+    if (!isFeatureEnabled()) {
+        return;
+    }
+    validateJavaVersionAndDistribution(javaVersionOrDev, distribution);
+    let options = process.env[c.NATIVE_IMAGE_OPTIONS_ENV] || '';
+    if (options.length > 0) {
+        options += ' ';
+    }
+    options += '--enable-sbom=export';
+    core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, options);
+    core.info('Enabled SBOM generation for Native Image build');
+}
+function validateJavaVersionAndDistribution(javaVersionOrDev, distribution) {
+    if (distribution !== c.DISTRIBUTION_GRAALVM) {
+        throw new Error(`The '${INPUT_NI_SBOM}' option is only supported for Oracle GraalVM (distribution '${c.DISTRIBUTION_GRAALVM}'), but found distribution '${distribution}'.`);
+    }
+    if (javaVersionOrDev === 'dev') {
+        throw new Error(`The '${INPUT_NI_SBOM}' option is not supported for java-version 'dev'.`);
+    }
+    if (javaVersionOrDev === 'latest-ea') {
+        return;
+    }
+    const coercedJavaVersion = semver.coerce(javaVersionOrDev);
+    if (!coercedJavaVersion || semver.gt(MIN_JAVA_VERSION, coercedJavaVersion)) {
+        throw new Error(`The '${INPUT_NI_SBOM}' option is only supported for GraalVM for JDK ${MIN_JAVA_VERSION} or later, but found java-version '${javaVersionOrDev}'.`);
+    }
+}
+function processSBOM() {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!isFeatureEnabled()) {
+            return;
+        }
+        const sbomPath = yield findSBOMFilePath();
+        try {
+            const sbomContent = fs.readFileSync(sbomPath, 'utf8');
+            const sbomData = parseSBOM(sbomContent);
+            const components = mapToComponentsWithDependencies(sbomData);
+            printSBOMContent(components);
+            const snapshot = convertSBOMToSnapshot(sbomPath, components);
+            yield submitDependencySnapshot(snapshot);
+        }
+        catch (error) {
+            throw new Error(`Failed to process and submit SBOM to the GitHub dependency submission API: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    });
+}
+function isFeatureEnabled() {
+    return core.getInput(INPUT_NI_SBOM) === 'true';
+}
+function findSBOMFilePath() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const globber = yield glob.create(`**/*${SBOM_FILE_SUFFIX}`);
+        const sbomFiles = yield globber.glob();
+        if (sbomFiles.length === 0) {
+            throw new Error('No SBOM found. Make sure native-image build completed successfully.');
+        }
+        if (sbomFiles.length > 1) {
+            throw new Error(`Expected one SBOM but found multiple: ${sbomFiles.join(', ')}.`);
+        }
+        core.info(`Found SBOM: ${sbomFiles[0]}`);
+        return sbomFiles[0];
+    });
+}
+function parseSBOM(jsonString) {
+    try {
+        const sbomData = JSON.parse(jsonString);
+        return sbomData;
+    }
+    catch (error) {
+        throw new Error(`Failed to parse SBOM JSON: ${error instanceof Error ? error.message : String(error)}`);
+    }
+}
+// Maps the SBOM to a list of components with their dependencies
+function mapToComponentsWithDependencies(sbom) {
+    if (!sbom || sbom.components.length === 0) {
+        throw new Error('Invalid SBOM data or no components found.');
+    }
+    return sbom.components.map((component) => {
+        var _a, _b;
+        const dependencies = ((_b = (_a = sbom.dependencies) === null || _a === void 0 ? void 0 : _a.find((dep) => dep.ref === component['bom-ref'])) === null || _b === void 0 ? void 0 : _b.dependsOn) || [];
+        return {
+            name: component.name,
+            version: component.version,
+            purl: component.purl,
+            dependencies,
+            'bom-ref': component['bom-ref']
+        };
+    });
+}
+function printSBOMContent(components) {
+    core.info('=== SBOM Content ===');
+    for (const component of components) {
+        core.info(`- ${component['bom-ref']}`);
+        if (component.dependencies && component.dependencies.length > 0) {
+            core.info(`   depends on: ${component.dependencies.join(', ')}`);
+        }
+    }
+    core.info('==================');
+}
+function convertSBOMToSnapshot(sbomPath, components) {
+    const context = github.context;
+    const sbomFileName = (0, path_1.basename)(sbomPath);
+    if (!sbomFileName.endsWith(SBOM_FILE_SUFFIX)) {
+        throw new Error(`Invalid SBOM file name: ${sbomFileName}. Expected a file ending with ${SBOM_FILE_SUFFIX}.`);
+    }
+    return {
+        version: 0,
+        sha: context.sha,
+        ref: context.ref,
+        job: {
+            correlator: `${context.workflow}_${context.job}`,
+            id: context.runId.toString(),
+            html_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+        },
+        detector: {
+            name: 'setup-graalvm',
+            version: c.ACTION_VERSION,
+            url: 'https://github.com/graalvm/setup-graalvm'
+        },
+        scanned: new Date().toISOString(),
+        manifests: {
+            [sbomFileName]: {
+                name: sbomFileName,
+                resolved: mapComponentsToGithubAPIFormat(components),
+                metadata: {
+                    generated_by: 'SBOM generated by GraalVM Native Image',
+                    action_version: c.ACTION_VERSION
+                }
+            }
+        }
+    };
+}
+function mapComponentsToGithubAPIFormat(components) {
+    return Object.fromEntries(components
+        .filter(component => {
+        if (!component.purl) {
+            core.info(`Component ${component.name} does not have a valid package URL (purl). Skipping.`);
+        }
+        return component.purl;
+    })
+        .map(component => [
+        component.name,
+        {
+            package_url: component.purl,
+            dependencies: component.dependencies || []
+        }
+    ]));
+}
+function submitDependencySnapshot(snapshotData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const token = core.getInput(c.INPUT_GITHUB_TOKEN, { required: true });
+        const octokit = github.getOctokit(token);
+        const context = github.context;
+        try {
+            yield octokit.request('POST /repos/{owner}/{repo}/dependency-graph/snapshots', {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                version: snapshotData.version,
+                sha: snapshotData.sha,
+                ref: snapshotData.ref,
+                job: snapshotData.job,
+                detector: snapshotData.detector,
+                metadata: {},
+                scanned: snapshotData.scanned,
+                manifests: snapshotData.manifests,
+                headers: {
+                    'X-GitHub-Api-Version': '2022-11-28'
+                }
+            });
+            core.info('Dependency snapshot submitted successfully.');
+        }
+        catch (error) {
+            throw new Error(`Failed to submit dependency snapshot for SBOM: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    });
+}
+
+
+/***/ }),
+
 /***/ 9543:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -91904,13 +92190,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -91921,7 +92217,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.fetchArtifactEE = exports.fetchArtifact = exports.downloadGraalVMEELegacy = exports.downloadGraalVM = void 0;
+exports.downloadGraalVM = downloadGraalVM;
+exports.downloadGraalVMEELegacy = downloadGraalVMEELegacy;
+exports.fetchArtifact = fetchArtifact;
+exports.fetchArtifactEE = fetchArtifactEE;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -91942,7 +92241,6 @@ function downloadGraalVM(gdsToken, javaVersion) {
         return downloadArtifact(gdsToken, userAgent, baseArtifact);
     });
 }
-exports.downloadGraalVM = downloadGraalVM;
 function downloadGraalVMEELegacy(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`;
@@ -91950,7 +92248,6 @@ function downloadGraalVMEELegacy(gdsToken, version, javaVersion) {
         return downloadArtifact(gdsToken, userAgent, baseArtifact);
     });
 }
-exports.downloadGraalVMEELegacy = downloadGraalVMEELegacy;
 function fetchArtifact(userAgent, metadata, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const http = new httpClient.HttpClient(userAgent);
@@ -91984,7 +92281,6 @@ function fetchArtifact(userAgent, metadata, javaVersion) {
         return artifactResponse.items[0];
     });
 }
-exports.fetchArtifact = fetchArtifact;
 function fetchArtifactEE(userAgent, metadata, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const http = new httpClient.HttpClient(userAgent);
@@ -92011,7 +92307,6 @@ function fetchArtifactEE(userAgent, metadata, version, javaVersion) {
         return artifactResponse.items[0];
     });
 }
-exports.fetchArtifactEE = fetchArtifactEE;
 function downloadArtifact(gdsToken, userAgent, artifact) {
     return __awaiter(this, void 0, void 0, function* () {
         let downloadPath;
@@ -92144,13 +92439,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -92161,7 +92466,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpGraalVMRelease = exports.findGraalVMVersion = exports.setUpGraalVMLatest_22_X = exports.findHighestJavaVersion = exports.setUpGraalVMJDKDevBuild = exports.findLatestGraalVMJDKCEJavaVersion = exports.setUpGraalVMJDKCE = exports.findLatestEABuildDownloadUrl = exports.setUpGraalVMJDK = void 0;
+exports.setUpGraalVMJDK = setUpGraalVMJDK;
+exports.findLatestEABuildDownloadUrl = findLatestEABuildDownloadUrl;
+exports.setUpGraalVMJDKCE = setUpGraalVMJDKCE;
+exports.findLatestGraalVMJDKCEJavaVersion = findLatestGraalVMJDKCEJavaVersion;
+exports.setUpGraalVMJDKDevBuild = setUpGraalVMJDKDevBuild;
+exports.findHighestJavaVersion = findHighestJavaVersion;
+exports.setUpGraalVMLatest_22_X = setUpGraalVMLatest_22_X;
+exports.findGraalVMVersion = findGraalVMVersion;
+exports.setUpGraalVMRelease = setUpGraalVMRelease;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -92229,7 +92542,6 @@ function setUpGraalVMJDK(javaVersionOrDev, gdsToken) {
         return (0, utils_1.downloadExtractAndCacheJDK)(downloader, toolName, javaVersion);
     });
 }
-exports.setUpGraalVMJDK = setUpGraalVMJDK;
 function findLatestEABuildDownloadUrl(javaEaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const filePath = `versions/${javaEaVersion}.json`;
@@ -92263,7 +92575,6 @@ function findLatestEABuildDownloadUrl(javaEaVersion) {
         return `${latestVersion.download_base_url}${file.filename}`;
     });
 }
-exports.findLatestEABuildDownloadUrl = findLatestEABuildDownloadUrl;
 function setUpGraalVMJDKCE(javaVersionOrDev) {
     return __awaiter(this, void 0, void 0, function* () {
         if (javaVersionOrDev === c.VERSION_DEV) {
@@ -92282,7 +92593,6 @@ function setUpGraalVMJDKCE(javaVersionOrDev) {
         return (0, utils_1.downloadExtractAndCacheJDK)(downloader, toolName, javaVersion);
     });
 }
-exports.setUpGraalVMJDKCE = setUpGraalVMJDKCE;
 function findLatestGraalVMJDKCEJavaVersion(majorJavaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const matchingRefs = yield (0, utils_1.getMatchingTags)(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO, `${GRAALVM_JDK_TAG_PREFIX}${majorJavaVersion}`);
@@ -92302,7 +92612,6 @@ function findLatestGraalVMJDKCEJavaVersion(majorJavaVersion) {
         return highestVersion;
     });
 }
-exports.findLatestGraalVMJDKCEJavaVersion = findLatestGraalVMJDKCEJavaVersion;
 function determineToolName(javaVersion, isCommunity) {
     return `graalvm${isCommunity ? '-community' : ''}-jdk-${javaVersion}_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin`;
 }
@@ -92329,7 +92638,6 @@ function setUpGraalVMJDKDevBuild() {
         return (0, utils_1.downloadAndExtractJDK)(downloadUrl);
     });
 }
-exports.setUpGraalVMJDKDevBuild = setUpGraalVMJDKDevBuild;
 function findHighestJavaVersion(release, version) {
     const graalVMIdentifierPattern = determineGraalVMLegacyIdentifier(false, version, '(\\d+)');
     const expectedFileNameRegExp = new RegExp(`^${graalVMIdentifierPattern}${c.GRAALVM_FILE_EXTENSION.replace(/\./g, '\\.')}$`);
@@ -92350,7 +92658,6 @@ function findHighestJavaVersion(release, version) {
         throw new Error('Could not find highest Java version. Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.');
     }
 }
-exports.findHighestJavaVersion = findHighestJavaVersion;
 // Support for GraalVM 22.X releases and earlier
 function setUpGraalVMLatest_22_X(gdsToken, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -92363,7 +92670,6 @@ function setUpGraalVMLatest_22_X(gdsToken, javaVersion) {
         return setUpGraalVMRelease(gdsToken, version, javaVersion);
     });
 }
-exports.setUpGraalVMLatest_22_X = setUpGraalVMLatest_22_X;
 function findGraalVMVersion(release) {
     const tag_name = release.tag_name;
     if (!tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
@@ -92371,7 +92677,6 @@ function findGraalVMVersion(release) {
     }
     return tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length);
 }
-exports.findGraalVMVersion = findGraalVMVersion;
 function setUpGraalVMRelease(gdsToken, version, javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const isEE = gdsToken.length > 0;
@@ -92386,7 +92691,6 @@ function setUpGraalVMRelease(gdsToken, version, javaVersion) {
         return (0, utils_1.downloadExtractAndCacheJDK)(downloader, toolName, version);
     });
 }
-exports.setUpGraalVMRelease = setUpGraalVMRelease;
 function findDownloadUrl(release, javaVersion) {
     const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, c.VERSION_DEV, javaVersion);
     const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`;
@@ -92445,13 +92749,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -92462,7 +92776,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpGUComponents = void 0;
+exports.setUpGUComponents = setUpGUComponents;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -92511,7 +92825,6 @@ function setUpGUComponents(javaVersion, graalVMVersion, graalVMHome, components,
         }
     });
 }
-exports.setUpGUComponents = setUpGUComponents;
 function installGUComponents(gdsToken, graalVMHome, components) {
     return __awaiter(this, void 0, void 0, function* () {
         yield (0, utils_1.exec)('gu', BASE_FLAGS.concat(components), {
@@ -92553,13 +92866,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -92570,7 +92893,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findLibericaURL = exports.findLatestLibericaJavaVersion = exports.setUpLiberica = void 0;
+exports.setUpLiberica = setUpLiberica;
+exports.findLatestLibericaJavaVersion = findLatestLibericaJavaVersion;
+exports.findLibericaURL = findLibericaURL;
 const c = __importStar(__nccwpck_require__(9042));
 const semver = __importStar(__nccwpck_require__(1383));
 const utils_1 = __nccwpck_require__(1314);
@@ -92588,7 +92913,6 @@ function setUpLiberica(javaVersion, javaPackage) {
         return (0, utils_1.downloadExtractAndCacheJDK)(() => __awaiter(this, void 0, void 0, function* () { return (0, tool_cache_1.downloadTool)(downloadUrl); }), toolName, javaVersion);
     });
 }
-exports.setUpLiberica = setUpLiberica;
 function findLatestLibericaJavaVersion(javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const matchingRefs = yield (0, utils_1.getMatchingTags)(LIBERICA_GH_USER, LIBERICA_RELEASES_REPO, `${LIBERICA_JDK_TAG_PREFIX}${javaVersion}`);
@@ -92612,7 +92936,6 @@ function findLatestLibericaJavaVersion(javaVersion) {
         return bestMatch;
     });
 }
-exports.findLatestLibericaJavaVersion = findLatestLibericaJavaVersion;
 function findLibericaURL(javaVersion, javaPackage) {
     return __awaiter(this, void 0, void 0, function* () {
         const release = yield (0, utils_1.getTaggedRelease)(LIBERICA_GH_USER, LIBERICA_RELEASES_REPO, LIBERICA_JDK_TAG_PREFIX + javaVersion);
@@ -92628,7 +92951,6 @@ function findLibericaURL(javaVersion, javaPackage) {
         throw new Error(`Unable to find asset for java-version: ${javaVersion}, java-package: ${javaPackage}, platform: ${platform}. ${c.ERROR_REQUEST}`);
     });
 }
-exports.findLibericaURL = findLibericaURL;
 function determineToolName(javaVersion, javaPackage) {
     const variant = determineVariantPart(javaPackage);
     const platform = determinePlatformPart();
@@ -92682,13 +93004,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -92715,6 +93047,7 @@ const musl_1 = __nccwpck_require__(316);
 const msvc_1 = __nccwpck_require__(1165);
 const reports_1 = __nccwpck_require__(2046);
 const exec_1 = __nccwpck_require__(1514);
+const sbom_1 = __nccwpck_require__(9181);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -92826,6 +93159,7 @@ function run() {
                 yield (0, cache_2.restore)(cache);
             }
             (0, reports_1.setUpNativeImageBuildReports)(isGraalVMforJDK17OrLater, javaVersion, graalVMVersion);
+            (0, sbom_1.setUpSBOMSupport)(javaVersion, distribution);
             core.startGroup(`Successfully set up '${(0, path_1.basename)(graalVMHome)}'`);
             yield (0, exec_1.exec)((0, path_1.join)(graalVMHome, 'bin', `java${c.EXECUTABLE_SUFFIX}`), [
                 javaVersion.startsWith('8') ? '-version' : '--version'
@@ -92864,13 +93198,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -92881,7 +93225,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.stripMandrelNamespace = exports.getLatestMandrelReleaseUrl = exports.setUpMandrel = exports.MANDREL_TAG_PREFIX = exports.MANDREL_REPO = void 0;
+exports.MANDREL_TAG_PREFIX = exports.MANDREL_REPO = void 0;
+exports.setUpMandrel = setUpMandrel;
+exports.getLatestMandrelReleaseUrl = getLatestMandrelReleaseUrl;
+exports.stripMandrelNamespace = stripMandrelNamespace;
 const c = __importStar(__nccwpck_require__(9042));
 const httpClient = __importStar(__nccwpck_require__(6255));
 const utils_1 = __nccwpck_require__(1314);
@@ -92908,7 +93255,6 @@ function setUpMandrel(mandrelVersion, javaVersion) {
         return mandrelHome;
     });
 }
-exports.setUpMandrel = setUpMandrel;
 function setUpMandrelLatest(javaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         const latest_release_url = yield getLatestMandrelReleaseUrl(javaVersion);
@@ -92947,7 +93293,6 @@ function getLatestMandrelReleaseUrl(javaVersion) {
         }
     });
 }
-exports.getLatestMandrelReleaseUrl = getLatestMandrelReleaseUrl;
 function getLatestMandrelReleaseUrlHelper(_http, java_version, pkg_info_uri) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
@@ -93000,7 +93345,6 @@ function stripMandrelNamespace(graalVMVersion) {
         return graalVMVersion;
     }
 }
-exports.stripMandrelNamespace = stripMandrelNamespace;
 
 
 /***/ }),
@@ -93026,15 +93370,26 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setUpWindowsEnvironment = exports.needsWindowsEnvironmentSetup = void 0;
+exports.needsWindowsEnvironmentSetup = needsWindowsEnvironmentSetup;
+exports.setUpWindowsEnvironment = setUpWindowsEnvironment;
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 const fs_1 = __nccwpck_require__(7147);
@@ -93068,7 +93423,6 @@ function needsWindowsEnvironmentSetup(javaVersion, graalVMVersion, isGraalVMforJ
     }
     return true;
 }
-exports.needsWindowsEnvironmentSetup = needsWindowsEnvironmentSetup;
 function setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater) {
     if (!needsWindowsEnvironmentSetup(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater)) {
         return;
@@ -93105,7 +93459,6 @@ function setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17O
     }
     core.endGroup();
 }
-exports.setUpWindowsEnvironment = setUpWindowsEnvironment;
 
 
 /***/ }),
@@ -93131,13 +93484,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -93148,7 +93511,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.updatePRComment = exports.findExistingPRCommentId = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getContents = exports.getLatestRelease = exports.exec = void 0;
+exports.exec = exec;
+exports.getLatestRelease = getLatestRelease;
+exports.getContents = getContents;
+exports.getTaggedRelease = getTaggedRelease;
+exports.getMatchingTags = getMatchingTags;
+exports.downloadAndExtractJDK = downloadAndExtractJDK;
+exports.downloadExtractAndCacheJDK = downloadExtractAndCacheJDK;
+exports.calculateSHA256 = calculateSHA256;
+exports.toSemVer = toSemVer;
+exports.isPREvent = isPREvent;
+exports.findExistingPRCommentId = findExistingPRCommentId;
+exports.updatePRComment = updatePRComment;
+exports.createPRComment = createPRComment;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
@@ -93178,7 +93553,6 @@ function exec(commandLine, args, options) {
         }
     });
 }
-exports.exec = exec;
 function getLatestRelease(repo) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
@@ -93190,7 +93564,6 @@ function getLatestRelease(repo) {
         })).data;
     });
 }
-exports.getLatestRelease = getLatestRelease;
 function getContents(repo, path) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
@@ -93203,7 +93576,6 @@ function getContents(repo, path) {
         })).data;
     });
 }
-exports.getContents = getContents;
 function getTaggedRelease(owner, repo, tag) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
@@ -93216,7 +93588,6 @@ function getTaggedRelease(owner, repo, tag) {
         })).data;
     });
 }
-exports.getTaggedRelease = getTaggedRelease;
 function getMatchingTags(owner, repo, tagPrefix) {
     return __awaiter(this, void 0, void 0, function* () {
         const githubToken = getGitHubToken();
@@ -93229,13 +93600,11 @@ function getMatchingTags(owner, repo, tagPrefix) {
         })).data;
     });
 }
-exports.getMatchingTags = getMatchingTags;
 function downloadAndExtractJDK(downloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         return findJavaHomeInSubfolder(yield extract(yield tc.downloadTool(downloadUrl)));
     });
 }
-exports.downloadAndExtractJDK = downloadAndExtractJDK;
 function downloadExtractAndCacheJDK(downloader, toolName, version) {
     return __awaiter(this, void 0, void 0, function* () {
         const semVersion = toSemVer(version);
@@ -93251,13 +93620,11 @@ function downloadExtractAndCacheJDK(downloader, toolName, version) {
         return findJavaHomeInSubfolder(toolPath);
     });
 }
-exports.downloadExtractAndCacheJDK = downloadExtractAndCacheJDK;
 function calculateSHA256(filePath) {
     const hashSum = (0, crypto_1.createHash)('sha256');
     hashSum.update((0, fs_1.readFileSync)(filePath));
     return hashSum.digest('hex');
 }
-exports.calculateSHA256 = calculateSHA256;
 function extract(downloadPath) {
     return __awaiter(this, void 0, void 0, function* () {
         if (c.GRAALVM_FILE_EXTENSION === '.tar.gz') {
@@ -93297,11 +93664,9 @@ function toSemVer(version) {
     }
     return validVersion;
 }
-exports.toSemVer = toSemVer;
 function isPREvent() {
     return process.env[c.ENV_GITHUB_EVENT_NAME] === c.EVENT_NAME_PULL_REQUEST;
 }
-exports.isPREvent = isPREvent;
 function getGitHubToken() {
     return core.getInput(c.INPUT_GITHUB_TOKEN);
 }
@@ -93325,7 +93690,6 @@ function findExistingPRCommentId(bodyStartsWith) {
         }
     });
 }
-exports.findExistingPRCommentId = findExistingPRCommentId;
 function updatePRComment(content, commentId) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!isPREvent()) {
@@ -93339,7 +93703,6 @@ function updatePRComment(content, commentId) {
         }
     });
 }
-exports.updatePRComment = updatePRComment;
 function createPRComment(content) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
@@ -93355,7 +93718,6 @@ function createPRComment(content) {
         }
     });
 }
-exports.createPRComment = createPRComment;
 
 
 /***/ }),
