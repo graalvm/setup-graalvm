@@ -5,8 +5,16 @@ import {join} from 'path'
 import {tmpdir} from 'os'
 import {mkdtempSync, writeFileSync, rmSync} from 'fs'
 
-// Module level mock
 jest.mock('@actions/glob')
+
+// sbom.ts uses glob to find the SBOM file
+// This helper function mocks the glob module to return 'files'
+function mockGlobResult(files: string[]) {
+    const mockCreate = jest.fn().mockResolvedValue({
+      glob: jest.fn().mockResolvedValue(files)
+    })
+    ;(glob.create as jest.Mock).mockImplementation(mockCreate)
+}
 
 describe('sbom feature', () => {
   let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>
@@ -101,10 +109,7 @@ describe('sbom feature', () => {
       const sbomPath = join(workspace, 'test.sbom.json')
       writeFileSync(sbomPath, JSON.stringify(sampleSBOM, null, 2))
       
-      const mockCreate = jest.fn().mockResolvedValue({
-        glob: jest.fn().mockResolvedValue([sbomPath])
-      })
-      ;(glob.create as jest.Mock).mockImplementation(mockCreate)
+      mockGlobResult([sbomPath])
 
       await processSBOM()
 
@@ -120,11 +125,7 @@ describe('sbom feature', () => {
       setUpSBOMSupport()
       spyInfo.mockClear()
 
-      // Mock glob to return empty array (no files found)
-      const mockCreate = jest.fn().mockResolvedValue({
-        glob: jest.fn().mockResolvedValue([])
-      })
-      ;(glob.create as jest.Mock).mockImplementation(mockCreate)
+      mockGlobResult([])
 
       await processSBOM()
       expect(spyWarning).toHaveBeenCalledWith(
