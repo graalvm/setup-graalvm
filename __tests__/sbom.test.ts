@@ -115,7 +115,7 @@ describe('sbom feature', () => {
 
       expect(spyInfo).toHaveBeenCalledWith('Found SBOM file: ' + sbomPath)
       expect(spyInfo).toHaveBeenCalledWith('=== SBOM Content ===')
-      expect(spyInfo).toHaveBeenCalledWith('Found 2 dependencies:')
+      expect(spyInfo).toHaveBeenCalledWith('Found 2 components:')
       expect(spyInfo).toHaveBeenCalledWith('- json@20211205')
       expect(spyInfo).toHaveBeenCalledWith('- main-test-app@1.0-SNAPSHOT')
       expect(spyWarning).not.toHaveBeenCalled()

@@ -50,7 +50,7 @@ function displaySBOMContent(sbomData: any): void {
   core.info('=== SBOM Content ===')
   
   if (sbomData.components) {
-    core.info(`Found ${sbomData.components.length} dependencies:`)
+    core.info(`Found ${sbomData.components.length} components:`)
     for (const component of sbomData.components) {
       core.info(`- ${component.name}@${component.version || 'unknown'}`)
       if (component.dependencies?.length > 0) {
