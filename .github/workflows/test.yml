@@ -417,3 +417,24 @@ jobs:
       #     popd > /dev/null
       - name: Remove components
         run: gu remove espresso llvm-toolchain nodejs python ruby wasm
+  test-sbom:
+    needs: test
+    name: test 'native-image-enable-sbom' option
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          java-version: '23'
+          distribution: 'graalvm'
+          native-image-enable-sbom: 'true'
+          components: 'native-image'
+      - name: Verify SBOM was generated
+        run: |
+          # Create a simple native image that will generate SBOM
+          echo 'public class Hello { public static void main(String[] args) { System.out.println("Hello"); } }' > Hello.java
+          javac Hello.java
+          # '--enable-sbom=export' should get injected into the native-image command
+          native-image Hello
+          # Verify SBOM file exists
+          find . -name "*.sbom.json" | grep . || exit 1

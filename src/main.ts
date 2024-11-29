@@ -14,6 +14,7 @@ import {setUpNativeImageMusl} from './features/musl'
 import {setUpWindowsEnvironment} from './msvc'
 import {setUpNativeImageBuildReports} from './features/reports'
 import {exec} from '@actions/exec'
+import {setUpSBOMSupport} from './features/sbom'
 
 async function run(): Promise<void> {
   try {
@@ -165,6 +166,8 @@ async function run(): Promise<void> {
       javaVersion,
       graalVMVersion
     )
+
+    setUpSBOMSupport()
 
     core.startGroup(`Successfully set up '${basename(graalVMHome)}'`)
     await exec(join(graalVMHome, 'bin', `java${c.EXECUTABLE_SUFFIX}`), [

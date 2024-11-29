@@ -28,6 +28,7 @@ import * as core from '@actions/core'
 import * as constants from './constants'
 import {save} from './features/cache'
 import {generateReports} from './features/reports'
+import { processSBOM } from './features/sbom'
 
 /**
  * Check given input and run a save process for the specified package manager
@@ -58,6 +59,7 @@ async function ignoreErrors(promise: Promise<void>): Promise<unknown> {
 
 export async function run(): Promise<void> {
   await ignoreErrors(generateReports())
+  await ignoreErrors(processSBOM())
   await ignoreErrors(saveCache())
 }
 
