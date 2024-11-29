@@ -3,17 +3,17 @@ import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as github from '@actions/github'
 import * as semver from 'semver'
-import {join} from 'path'
-import {tmpdir} from 'os'
 import {
   createPRComment,
   findExistingPRCommentId,
   isPREvent,
   toSemVer,
-  updatePRComment
+  updatePRComment,
+  tmpfile,
+  setNativeImageOption
 } from '../utils'
 
-const BUILD_OUTPUT_JSON_PATH = join(tmpdir(), 'native-image-build-output.json')
+const BUILD_OUTPUT_JSON_PATH = tmpfile('native-image-build-output.json')
 const BYTES_TO_KiB = 1024
 const BYTES_TO_MiB = 1024 * 1024
 const BYTES_TO_GiB = 1024 * 1024 * 1024
@@ -22,12 +22,6 @@ const DOCS_BASE =
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports'
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports'
 const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update-existing'
-const NATIVE_IMAGE_CONFIG_FILE = join(
-  tmpdir(),
-  'native-image-options.properties'
-)
-const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS'
-const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
 const PR_COMMENT_TITLE = '## GraalVM Native Image Build Report'
 
 interface AnalysisResult {
@@ -167,43 +161,6 @@ function arePRReportsEnabled(): boolean {
 
 function arePRReportsUpdateEnabled(): boolean {
   return isPREvent() && core.getInput(INPUT_NI_PR_REPORTS_UPDATE) === 'true'
-}
-
-function setNativeImageOption(
-  javaVersionOrDev: string,
-  optionValue: string
-): void {
-  const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev)
-  if (
-    (coercedJavaVersionOrDev &&
-      semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
-    javaVersionOrDev === c.VERSION_DEV ||
-    javaVersionOrDev.endsWith('-ea')
-  ) {
-    /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
-    let newOptionValue = optionValue
-    const existingOptions = process.env[NATIVE_IMAGE_OPTIONS_ENV]
-    if (existingOptions) {
-      newOptionValue = `${existingOptions} ${newOptionValue}`
-    }
-    core.exportVariable(NATIVE_IMAGE_OPTIONS_ENV, newOptionValue)
-  } else {
-    const optionsFile = getNativeImageOptionsFile()
-    if (fs.existsSync(optionsFile)) {
-      fs.appendFileSync(optionsFile, ` ${optionValue}`)
-    } else {
-      fs.writeFileSync(optionsFile, `NativeImageArgs = ${optionValue}`)
-    }
-  }
-}
-
-function getNativeImageOptionsFile(): string {
-  let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV]
-  if (optionsFile === undefined) {
-    optionsFile = NATIVE_IMAGE_CONFIG_FILE
-    core.exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile)
-  }
-  return optionsFile
 }
 
 function createReport(data: BuildOutput): string {

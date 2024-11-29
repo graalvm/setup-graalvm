@@ -37,6 +37,7 @@
     "@actions/tool-cache": "^2.0.2",
     "@octokit/core": "^5.2.0",
     "@octokit/types": "^12.6.0",
+    "@github/dependency-submission-toolkit": "^2.0.4",
     "semver": "^7.6.3",
     "uuid": "^11.0.5"
   },
