@@ -26,7 +26,6 @@ const NATIVE_IMAGE_CONFIG_FILE = join(
   tmpdir(),
   'native-image-options.properties'
 )
-const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS'
 const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
 const PR_COMMENT_TITLE = '## GraalVM Native Image Build Report'
 
@@ -182,11 +181,11 @@ function setNativeImageOption(
   ) {
     /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
     let newOptionValue = optionValue
-    const existingOptions = process.env[NATIVE_IMAGE_OPTIONS_ENV]
+    const existingOptions = process.env[c.NATIVE_IMAGE_OPTIONS_ENV]
     if (existingOptions) {
       newOptionValue = `${existingOptions} ${newOptionValue}`
     }
-    core.exportVariable(NATIVE_IMAGE_OPTIONS_ENV, newOptionValue)
+    core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, newOptionValue)
   } else {
     const optionsFile = getNativeImageOptionsFile()
     if (fs.existsSync(optionsFile)) {
