@@ -11,6 +11,8 @@ const INPUT_NI_SBOM = 'native-image-enable-sbom'
 const SBOM_FILE_SUFFIX = '.sbom.json'
 const MIN_JAVA_VERSION = '24.0.0'
 
+let javaVersionOrLatestEA: string | null = null
+
 interface SBOM {
   components: Component[]
   dependencies: Dependency[]
@@ -74,7 +76,8 @@ export function setUpSBOMSupport(
   }
 
   validateJavaVersionAndDistribution(javaVersionOrDev, distribution)
-  setNativeImageOption(javaVersionOrDev, '--enable-sbom=export')
+  javaVersionOrLatestEA = javaVersionOrDev
+  setNativeImageOption(javaVersionOrLatestEA, '--enable-sbom=export')
   core.info('Enabled SBOM generation for Native Image build')
 }
 
@@ -109,6 +112,10 @@ function validateJavaVersionAndDistribution(
 export async function processSBOM(): Promise<void> {
   if (!isFeatureEnabled()) {
     return
+  }
+
+  if (javaVersionOrLatestEA === null) {
+    throw new Error('setUpSBOMSupport must be called before processSBOM')
   }
 
   const sbomPath = await findSBOMFilePath()
@@ -217,9 +224,9 @@ function convertSBOMToSnapshot(
       html_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
     },
     detector: {
-      name: 'setup-graalvm',
-      version: c.ACTION_VERSION,
-      url: 'https://github.com/graalvm/setup-graalvm'
+      name: 'Oracle GraalVM',
+      version: javaVersionOrLatestEA ?? '',
+      url: 'https://www.graalvm.org/'
     },
     scanned: new Date().toISOString(),
     manifests: {
