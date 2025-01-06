@@ -5,6 +5,7 @@ import * as github from '@actions/github'
 import * as glob from '@actions/glob'
 import {basename} from 'path'
 import * as semver from 'semver'
+import {setNativeImageOption} from '../utils'
 
 const INPUT_NI_SBOM = 'native-image-enable-sbom'
 const SBOM_FILE_SUFFIX = '.sbom.json'
@@ -73,13 +74,7 @@ export function setUpSBOMSupport(
   }
 
   validateJavaVersionAndDistribution(javaVersionOrDev, distribution)
-
-  let options = process.env[c.NATIVE_IMAGE_OPTIONS_ENV] || ''
-  if (options.length > 0) {
-    options += ' '
-  }
-  options += '--enable-sbom=export'
-  core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, options)
+  setNativeImageOption(javaVersionOrDev, '--enable-sbom=export')
   core.info('Enabled SBOM generation for Native Image build')
 }
 
