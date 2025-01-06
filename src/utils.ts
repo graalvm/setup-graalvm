@@ -251,7 +251,7 @@ export async function createPRComment(content: string): Promise<void> {
 }
 
 export function tmpfile(fileName: string) {
-  return join(tmpdir(), fileName) 
+  return join(tmpdir(), fileName)
 }
 
 export function setNativeImageOption(

@@ -90802,10 +90802,8 @@ const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
 const github = __importStar(__nccwpck_require__(5438));
 const semver = __importStar(__nccwpck_require__(1383));
-const path_1 = __nccwpck_require__(1017);
-const os_1 = __nccwpck_require__(2037);
 const utils_1 = __nccwpck_require__(1314);
-const BUILD_OUTPUT_JSON_PATH = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-build-output.json');
+const BUILD_OUTPUT_JSON_PATH = (0, utils_1.tmpfile)('native-image-build-output.json');
 const BYTES_TO_KiB = 1024;
 const BYTES_TO_MiB = 1024 * 1024;
 const BYTES_TO_GiB = 1024 * 1024 * 1024;
@@ -90813,8 +90811,6 @@ const DOCS_BASE = 'https://github.com/oracle/graal/blob/master/docs/reference-ma
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
 const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update-existing';
-const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
-const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
 const PR_COMMENT_TITLE = '## GraalVM Native Image Build Report';
 function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersionOrDev, graalVMVersion) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -90831,7 +90827,7 @@ function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersionOrDev
             core.warning(`Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`);
             return;
         }
-        setNativeImageOption(javaVersionOrDev, `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`); // Escape backslashes for Windows
+        (0, utils_1.setNativeImageOption)(javaVersionOrDev, `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`); // Escape backslashes for Windows
     });
 }
 function generateReports() {
@@ -90870,38 +90866,6 @@ function arePRReportsEnabled() {
 }
 function arePRReportsUpdateEnabled() {
     return (0, utils_1.isPREvent)() && core.getInput(INPUT_NI_PR_REPORTS_UPDATE) === 'true';
-}
-function setNativeImageOption(javaVersionOrDev, optionValue) {
-    const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev);
-    if ((coercedJavaVersionOrDev &&
-        semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
-        javaVersionOrDev === c.VERSION_DEV ||
-        javaVersionOrDev.endsWith('-ea')) {
-        /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
-        let newOptionValue = optionValue;
-        const existingOptions = process.env[c.NATIVE_IMAGE_OPTIONS_ENV];
-        if (existingOptions) {
-            newOptionValue = `${existingOptions} ${newOptionValue}`;
-        }
-        core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, newOptionValue);
-    }
-    else {
-        const optionsFile = getNativeImageOptionsFile();
-        if (fs.existsSync(optionsFile)) {
-            fs.appendFileSync(optionsFile, ` ${optionValue}`);
-        }
-        else {
-            fs.writeFileSync(optionsFile, `NativeImageArgs = ${optionValue}`);
-        }
-    }
-}
-function getNativeImageOptionsFile() {
-    let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV];
-    if (optionsFile === undefined) {
-        optionsFile = NATIVE_IMAGE_CONFIG_FILE;
-        core.exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile);
-    }
-    return optionsFile;
 }
 function createReport(data) {
     const context = github.context;
@@ -91189,20 +91153,18 @@ const github = __importStar(__nccwpck_require__(5438));
 const glob = __importStar(__nccwpck_require__(8090));
 const path_1 = __nccwpck_require__(1017);
 const semver = __importStar(__nccwpck_require__(1383));
+const utils_1 = __nccwpck_require__(1314);
 const INPUT_NI_SBOM = 'native-image-enable-sbom';
 const SBOM_FILE_SUFFIX = '.sbom.json';
 const MIN_JAVA_VERSION = '24.0.0';
+let javaVersionOrLatestEA = null;
 function setUpSBOMSupport(javaVersionOrDev, distribution) {
     if (!isFeatureEnabled()) {
         return;
     }
     validateJavaVersionAndDistribution(javaVersionOrDev, distribution);
-    let options = process.env[c.NATIVE_IMAGE_OPTIONS_ENV] || '';
-    if (options.length > 0) {
-        options += ' ';
-    }
-    options += '--enable-sbom=export';
-    core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, options);
+    javaVersionOrLatestEA = javaVersionOrDev;
+    (0, utils_1.setNativeImageOption)(javaVersionOrLatestEA, '--enable-sbom=export');
     core.info('Enabled SBOM generation for Native Image build');
 }
 function validateJavaVersionAndDistribution(javaVersionOrDev, distribution) {
@@ -91224,6 +91186,9 @@ function processSBOM() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!isFeatureEnabled()) {
             return;
+        }
+        if (javaVersionOrLatestEA === null) {
+            throw new Error('setUpSBOMSupport must be called before processSBOM');
         }
         const sbomPath = yield findSBOMFilePath();
         try {
@@ -91308,9 +91273,9 @@ function convertSBOMToSnapshot(sbomPath, components) {
             html_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
         },
         detector: {
-            name: 'setup-graalvm',
-            version: c.ACTION_VERSION,
-            url: 'https://github.com/graalvm/setup-graalvm'
+            name: 'Oracle GraalVM',
+            version: javaVersionOrLatestEA !== null && javaVersionOrLatestEA !== void 0 ? javaVersionOrLatestEA : '',
+            url: 'https://www.graalvm.org/'
         },
         scanned: new Date().toISOString(),
         manifests: {
@@ -91434,17 +91399,21 @@ exports.isPREvent = isPREvent;
 exports.findExistingPRCommentId = findExistingPRCommentId;
 exports.updatePRComment = updatePRComment;
 exports.createPRComment = createPRComment;
+exports.tmpfile = tmpfile;
+exports.setNativeImageOption = setNativeImageOption;
 const c = __importStar(__nccwpck_require__(9042));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const httpClient = __importStar(__nccwpck_require__(6255));
 const semver = __importStar(__nccwpck_require__(1383));
 const tc = __importStar(__nccwpck_require__(7784));
+const fs = __importStar(__nccwpck_require__(7147));
 const exec_1 = __nccwpck_require__(1514);
 const fs_1 = __nccwpck_require__(7147);
 const core_1 = __nccwpck_require__(6762);
 const crypto_1 = __nccwpck_require__(6113);
 const path_1 = __nccwpck_require__(1017);
+const os_1 = __nccwpck_require__(2037);
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com';
 const GitHubDotCom = core_1.Octokit.defaults({
@@ -91627,6 +91596,43 @@ function createPRComment(content) {
             core.error(`Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`);
         }
     });
+}
+function tmpfile(fileName) {
+    return (0, path_1.join)((0, os_1.tmpdir)(), fileName);
+}
+function setNativeImageOption(javaVersionOrDev, optionValue) {
+    const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev);
+    if ((coercedJavaVersionOrDev &&
+        semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
+        javaVersionOrDev === c.VERSION_DEV ||
+        javaVersionOrDev.endsWith('-ea')) {
+        /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
+        let newOptionValue = optionValue;
+        const existingOptions = process.env[c.NATIVE_IMAGE_OPTIONS_ENV];
+        if (existingOptions) {
+            newOptionValue = `${existingOptions} ${newOptionValue}`;
+        }
+        core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, newOptionValue);
+    }
+    else {
+        const optionsFile = getNativeImageOptionsFile();
+        if (fs.existsSync(optionsFile)) {
+            fs.appendFileSync(optionsFile, ` ${optionValue}`);
+        }
+        else {
+            fs.writeFileSync(optionsFile, `NativeImageArgs = ${optionValue}`);
+        }
+    }
+}
+const NATIVE_IMAGE_CONFIG_FILE = tmpfile('native-image-options.properties');
+const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
+function getNativeImageOptionsFile() {
+    let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV];
+    if (optionsFile === undefined) {
+        optionsFile = NATIVE_IMAGE_CONFIG_FILE;
+        core.exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile);
+    }
+    return optionsFile;
 }
 
 
