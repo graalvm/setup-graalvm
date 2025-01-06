@@ -4,11 +4,13 @@ import * as github from '@actions/github'
 import * as httpClient from '@actions/http-client'
 import * as semver from 'semver'
 import * as tc from '@actions/tool-cache'
+import * as fs from 'fs'
 import {ExecOptions, exec as e} from '@actions/exec'
 import {readFileSync, readdirSync} from 'fs'
 import {Octokit} from '@octokit/core'
 import {createHash} from 'crypto'
 import {join} from 'path'
+import {tmpdir} from 'os'
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
@@ -246,4 +248,48 @@ export async function createPRComment(content: string): Promise<void> {
       `Failed to create pull request comment. Please make sure this job has 'write' permissions for the 'pull-requests' scope (see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)? Internal error: ${err}`
     )
   }
+}
+
+export function tmpfile(fileName: string) {
+  return join(tmpdir(), fileName)
+}
+
+export function setNativeImageOption(
+  javaVersionOrDev: string,
+  optionValue: string
+): void {
+  const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev)
+  if (
+    (coercedJavaVersionOrDev &&
+      semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
+    javaVersionOrDev === c.VERSION_DEV ||
+    javaVersionOrDev.endsWith('-ea')
+  ) {
+    /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
+    let newOptionValue = optionValue
+    const existingOptions = process.env[c.NATIVE_IMAGE_OPTIONS_ENV]
+    if (existingOptions) {
+      newOptionValue = `${existingOptions} ${newOptionValue}`
+    }
+    core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, newOptionValue)
+  } else {
+    const optionsFile = getNativeImageOptionsFile()
+    if (fs.existsSync(optionsFile)) {
+      fs.appendFileSync(optionsFile, ` ${optionValue}`)
+    } else {
+      fs.writeFileSync(optionsFile, `NativeImageArgs = ${optionValue}`)
+    }
+  }
+}
+
+const NATIVE_IMAGE_CONFIG_FILE = tmpfile('native-image-options.properties')
+const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE'
+
+function getNativeImageOptionsFile(): string {
+  let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV]
+  if (optionsFile === undefined) {
+    optionsFile = NATIVE_IMAGE_CONFIG_FILE
+    core.exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile)
+  }
+  return optionsFile
 }
