@@ -2,7 +2,7 @@ name: 'GitHub Action for GraalVM'
 description: 'Set up a specific version of the GraalVM JDK and add the command-line tools to the PATH'
 author: 'GraalVM Community'
 branding:
-  icon: 'terminal'  
+  icon: 'terminal'
   color: 'blue'
 inputs:
   java-version:
