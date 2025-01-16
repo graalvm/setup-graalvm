@@ -73,6 +73,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: ${{ matrix.components }}
           gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
+        # Skip in PR builds that require a GDS token (secrets are not available in PR runs)
+        if: github.event_name != 'pull_request' || !matrix.set-gds-token
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
@@ -85,13 +87,14 @@ jobs:
           java --version
           java --version | grep "GraalVM" || exit 34
           native-image --version
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows' && (github.event_name != 'pull_request' || !matrix.set-gds-token)
       - name: Check Windows environment
         run: |
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
           native-image --version
+        if: runner.os == 'Windows'
   test-ce: # make sure the action works on a clean machine without building
     needs: test
     name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
