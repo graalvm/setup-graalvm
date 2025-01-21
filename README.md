@@ -1,4 +1,4 @@
-# GitHub Action for GraalVM [![build-test](https://github.com/graalvm/setup-graalvm/actions/workflows/test.yml/badge.svg)](https://github.com/graalvm/setup-graalvm/actions/workflows/test.yml)
+# GitHub Action for GraalVM [![CI](https://github.com/graalvm/setup-graalvm/actions/workflows/ci.yml/badge.svg)](https://github.com/graalvm/setup-graalvm/actions/workflows/ci.yml)
 This GitHub action sets up [Oracle GraalVM][graalvm-medium], GraalVM [Community Edition (CE)][repo], [Enterprise Edition (EE)][graalvm-ee], [Mandrel][mandrel], or [Liberica Native Image Kit][liberica] as well as [Native Image][native-image] and GraalVM components such as [Truffle languages][truffle-languages].
 
 ## Key Features
