@@ -97949,7 +97949,7 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = exports.ACTION_VERSION = void 0;
+exports.ERROR_HINT = exports.ERROR_REQUEST = exports.EVENT_NAME_PULL_REQUEST = exports.ENV_GITHUB_EVENT_NAME = exports.GDS_GRAALVM_PRODUCT_ID = exports.GDS_BASE = exports.MANDREL_NAMESPACE = exports.GRAALVM_RELEASES_REPO = exports.GRAALVM_PLATFORM = exports.GRAALVM_GH_USER = exports.GRAALVM_FILE_EXTENSION = exports.GRAALVM_ARCH = exports.JDK_HOME_SUFFIX = exports.JDK_PLATFORM = exports.JDK_ARCH = exports.VERSION_LATEST = exports.VERSION_DEV = exports.DISTRIBUTION_LIBERICA = exports.DISTRIBUTION_MANDREL = exports.DISTRIBUTION_GRAALVM_COMMUNITY = exports.DISTRIBUTION_GRAALVM = exports.EXECUTABLE_SUFFIX = exports.IS_WINDOWS = exports.IS_MACOS = exports.IS_LINUX = exports.NATIVE_IMAGE_OPTIONS_ENV = exports.INPUT_NI_MUSL = exports.INPUT_CHECK_FOR_UPDATES = exports.INPUT_CACHE = exports.INPUT_SET_JAVA_HOME = exports.INPUT_GITHUB_TOKEN = exports.INPUT_COMPONENTS = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_JAVA_VERSION = exports.INPUT_GDS_TOKEN = exports.INPUT_VERSION = exports.ACTION_VERSION = void 0;
 exports.ACTION_VERSION = '1.2.7';
 exports.INPUT_VERSION = 'version';
 exports.INPUT_GDS_TOKEN = 'gds-token';
@@ -97962,6 +97962,7 @@ exports.INPUT_SET_JAVA_HOME = 'set-java-home';
 exports.INPUT_CACHE = 'cache';
 exports.INPUT_CHECK_FOR_UPDATES = 'check-for-updates';
 exports.INPUT_NI_MUSL = 'native-image-musl';
+exports.NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS';
 exports.IS_LINUX = process.platform === 'linux';
 exports.IS_MACOS = process.platform === 'darwin';
 exports.IS_WINDOWS = process.platform === 'win32';
@@ -98519,10 +98520,8 @@ const core = __importStar(__nccwpck_require__(42186));
 const fs = __importStar(__nccwpck_require__(57147));
 const github = __importStar(__nccwpck_require__(95438));
 const semver = __importStar(__nccwpck_require__(11383));
-const path_1 = __nccwpck_require__(71017);
-const os_1 = __nccwpck_require__(22037);
 const utils_1 = __nccwpck_require__(71314);
-const BUILD_OUTPUT_JSON_PATH = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-build-output.json');
+const BUILD_OUTPUT_JSON_PATH = (0, utils_1.tmpfile)('native-image-build-output.json');
 const BYTES_TO_KiB = 1024;
 const BYTES_TO_MiB = 1024 * 1024;
 const BYTES_TO_GiB = 1024 * 1024 * 1024;
@@ -98530,9 +98529,6 @@ const DOCS_BASE = 'https://github.com/oracle/graal/blob/master/docs/reference-ma
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports';
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports';
 const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update-existing';
-const NATIVE_IMAGE_CONFIG_FILE = (0, path_1.join)((0, os_1.tmpdir)(), 'native-image-options.properties');
-const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS';
-const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
 const PR_COMMENT_TITLE = '## GraalVM Native Image Build Report';
 function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersionOrDev, graalVMVersion) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -98549,7 +98545,7 @@ function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersionOrDev
             core.warning(`Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`);
             return;
         }
-        setNativeImageOption(javaVersionOrDev, `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`); // Escape backslashes for Windows
+        (0, utils_1.setNativeImageOption)(javaVersionOrDev, `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`); // Escape backslashes for Windows
     });
 }
 exports.setUpNativeImageBuildReports = setUpNativeImageBuildReports;
@@ -98590,38 +98586,6 @@ function arePRReportsEnabled() {
 }
 function arePRReportsUpdateEnabled() {
     return (0, utils_1.isPREvent)() && core.getInput(INPUT_NI_PR_REPORTS_UPDATE) === 'true';
-}
-function setNativeImageOption(javaVersionOrDev, optionValue) {
-    const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev);
-    if ((coercedJavaVersionOrDev &&
-        semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
-        javaVersionOrDev === c.VERSION_DEV ||
-        javaVersionOrDev.endsWith('-ea')) {
-        /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
-        let newOptionValue = optionValue;
-        const existingOptions = process.env[NATIVE_IMAGE_OPTIONS_ENV];
-        if (existingOptions) {
-            newOptionValue = `${existingOptions} ${newOptionValue}`;
-        }
-        core.exportVariable(NATIVE_IMAGE_OPTIONS_ENV, newOptionValue);
-    }
-    else {
-        const optionsFile = getNativeImageOptionsFile();
-        if (fs.existsSync(optionsFile)) {
-            fs.appendFileSync(optionsFile, ` ${optionValue}`);
-        }
-        else {
-            fs.writeFileSync(optionsFile, `NativeImageArgs = ${optionValue}`);
-        }
-    }
-}
-function getNativeImageOptionsFile() {
-    let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV];
-    if (optionsFile === undefined) {
-        optionsFile = NATIVE_IMAGE_CONFIG_FILE;
-        core.exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile);
-    }
-    return optionsFile;
 }
 function createReport(data) {
     const context = github.context;
@@ -98847,6 +98811,239 @@ function secondsToHuman(seconds) {
     else {
         return `${Math.trunc(seconds / 60)}m ${Math.trunc(seconds % 60)}s`;
     }
+}
+
+
+/***/ }),
+
+/***/ 69181:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.processSBOM = exports.setUpSBOMSupport = void 0;
+const c = __importStar(__nccwpck_require__(69042));
+const core = __importStar(__nccwpck_require__(42186));
+const fs = __importStar(__nccwpck_require__(57147));
+const github = __importStar(__nccwpck_require__(95438));
+const glob = __importStar(__nccwpck_require__(28090));
+const path_1 = __nccwpck_require__(71017);
+const semver = __importStar(__nccwpck_require__(11383));
+const utils_1 = __nccwpck_require__(71314);
+const INPUT_NI_SBOM = 'native-image-enable-sbom';
+const SBOM_FILE_SUFFIX = '.sbom.json';
+const MIN_JAVA_VERSION = '24.0.0';
+let javaVersionOrLatestEA = null;
+function setUpSBOMSupport(javaVersionOrDev, distribution) {
+    if (!isFeatureEnabled()) {
+        return;
+    }
+    validateJavaVersionAndDistribution(javaVersionOrDev, distribution);
+    javaVersionOrLatestEA = javaVersionOrDev;
+    (0, utils_1.setNativeImageOption)(javaVersionOrLatestEA, '--enable-sbom=export');
+    core.info('Enabled SBOM generation for Native Image build');
+}
+exports.setUpSBOMSupport = setUpSBOMSupport;
+function validateJavaVersionAndDistribution(javaVersionOrDev, distribution) {
+    if (distribution !== c.DISTRIBUTION_GRAALVM) {
+        throw new Error(`The '${INPUT_NI_SBOM}' option is only supported for Oracle GraalVM (distribution '${c.DISTRIBUTION_GRAALVM}'), but found distribution '${distribution}'.`);
+    }
+    if (javaVersionOrDev === 'dev') {
+        throw new Error(`The '${INPUT_NI_SBOM}' option is not supported for java-version 'dev'.`);
+    }
+    if (javaVersionOrDev === 'latest-ea') {
+        return;
+    }
+    const coercedJavaVersion = semver.coerce(javaVersionOrDev);
+    if (!coercedJavaVersion || semver.gt(MIN_JAVA_VERSION, coercedJavaVersion)) {
+        throw new Error(`The '${INPUT_NI_SBOM}' option is only supported for GraalVM for JDK ${MIN_JAVA_VERSION} or later, but found java-version '${javaVersionOrDev}'.`);
+    }
+}
+function processSBOM() {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!isFeatureEnabled()) {
+            return;
+        }
+        if (javaVersionOrLatestEA === null) {
+            throw new Error('setUpSBOMSupport must be called before processSBOM');
+        }
+        const sbomPath = yield findSBOMFilePath();
+        try {
+            const sbomContent = fs.readFileSync(sbomPath, 'utf8');
+            const sbomData = parseSBOM(sbomContent);
+            const components = mapToComponentsWithDependencies(sbomData);
+            printSBOMContent(components);
+            const snapshot = convertSBOMToSnapshot(sbomPath, components);
+            yield submitDependencySnapshot(snapshot);
+        }
+        catch (error) {
+            throw new Error(`Failed to process and submit SBOM to the GitHub dependency submission API: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    });
+}
+exports.processSBOM = processSBOM;
+function isFeatureEnabled() {
+    return core.getInput(INPUT_NI_SBOM) === 'true';
+}
+function findSBOMFilePath() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const globber = yield glob.create(`**/*${SBOM_FILE_SUFFIX}`);
+        const sbomFiles = yield globber.glob();
+        if (sbomFiles.length === 0) {
+            throw new Error('No SBOM found. Make sure native-image build completed successfully.');
+        }
+        if (sbomFiles.length > 1) {
+            throw new Error(`Expected one SBOM but found multiple: ${sbomFiles.join(', ')}.`);
+        }
+        core.info(`Found SBOM: ${sbomFiles[0]}`);
+        return sbomFiles[0];
+    });
+}
+function parseSBOM(jsonString) {
+    try {
+        const sbomData = JSON.parse(jsonString);
+        return sbomData;
+    }
+    catch (error) {
+        throw new Error(`Failed to parse SBOM JSON: ${error instanceof Error ? error.message : String(error)}`);
+    }
+}
+// Maps the SBOM to a list of components with their dependencies
+function mapToComponentsWithDependencies(sbom) {
+    if (!sbom || sbom.components.length === 0) {
+        throw new Error('Invalid SBOM data or no components found.');
+    }
+    return sbom.components.map((component) => {
+        var _a, _b;
+        const dependencies = ((_b = (_a = sbom.dependencies) === null || _a === void 0 ? void 0 : _a.find((dep) => dep.ref === component['bom-ref'])) === null || _b === void 0 ? void 0 : _b.dependsOn) || [];
+        return {
+            name: component.name,
+            version: component.version,
+            purl: component.purl,
+            dependencies,
+            'bom-ref': component['bom-ref']
+        };
+    });
+}
+function printSBOMContent(components) {
+    core.info('=== SBOM Content ===');
+    for (const component of components) {
+        core.info(`- ${component['bom-ref']}`);
+        if (component.dependencies && component.dependencies.length > 0) {
+            core.info(`   depends on: ${component.dependencies.join(', ')}`);
+        }
+    }
+    core.info('==================');
+}
+function convertSBOMToSnapshot(sbomPath, components) {
+    const context = github.context;
+    const sbomFileName = (0, path_1.basename)(sbomPath);
+    if (!sbomFileName.endsWith(SBOM_FILE_SUFFIX)) {
+        throw new Error(`Invalid SBOM file name: ${sbomFileName}. Expected a file ending with ${SBOM_FILE_SUFFIX}.`);
+    }
+    return {
+        version: 0,
+        sha: context.sha,
+        ref: context.ref,
+        job: {
+            correlator: `${context.workflow}_${context.job}`,
+            id: context.runId.toString(),
+            html_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+        },
+        detector: {
+            name: 'Oracle GraalVM',
+            version: javaVersionOrLatestEA !== null && javaVersionOrLatestEA !== void 0 ? javaVersionOrLatestEA : '',
+            url: 'https://www.graalvm.org/'
+        },
+        scanned: new Date().toISOString(),
+        manifests: {
+            [sbomFileName]: {
+                name: sbomFileName,
+                resolved: mapComponentsToGithubAPIFormat(components),
+                metadata: {
+                    generated_by: 'SBOM generated by GraalVM Native Image',
+                    action_version: c.ACTION_VERSION
+                }
+            }
+        }
+    };
+}
+function mapComponentsToGithubAPIFormat(components) {
+    return Object.fromEntries(components
+        .filter(component => {
+        if (!component.purl) {
+            core.info(`Component ${component.name} does not have a valid package URL (purl). Skipping.`);
+        }
+        return component.purl;
+    })
+        .map(component => [
+        component.name,
+        {
+            package_url: component.purl,
+            dependencies: component.dependencies || []
+        }
+    ]));
+}
+function submitDependencySnapshot(snapshotData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const token = core.getInput(c.INPUT_GITHUB_TOKEN, { required: true });
+        const octokit = github.getOctokit(token);
+        const context = github.context;
+        try {
+            yield octokit.request('POST /repos/{owner}/{repo}/dependency-graph/snapshots', {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                version: snapshotData.version,
+                sha: snapshotData.sha,
+                ref: snapshotData.ref,
+                job: snapshotData.job,
+                detector: snapshotData.detector,
+                metadata: {},
+                scanned: snapshotData.scanned,
+                manifests: snapshotData.manifests,
+                headers: {
+                    'X-GitHub-Api-Version': '2022-11-28'
+                }
+            });
+            core.info('Dependency snapshot submitted successfully.');
+        }
+        catch (error) {
+            throw new Error(`Failed to submit dependency snapshot for SBOM: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    });
 }
 
 
@@ -99684,6 +99881,7 @@ const musl_1 = __nccwpck_require__(10316);
 const msvc_1 = __nccwpck_require__(31165);
 const reports_1 = __nccwpck_require__(92046);
 const exec_1 = __nccwpck_require__(71514);
+const sbom_1 = __nccwpck_require__(69181);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -99795,6 +99993,7 @@ function run() {
                 yield (0, cache_2.restore)(cache);
             }
             (0, reports_1.setUpNativeImageBuildReports)(isGraalVMforJDK17OrLater, javaVersion, graalVMVersion);
+            (0, sbom_1.setUpSBOMSupport)(javaVersion, distribution);
             core.startGroup(`Successfully set up '${(0, path_1.basename)(graalVMHome)}'`);
             yield (0, exec_1.exec)((0, path_1.join)(graalVMHome, 'bin', `java${c.EXECUTABLE_SUFFIX}`), [
                 javaVersion.startsWith('8') ? '-version' : '--version'
@@ -100117,18 +100316,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPRComment = exports.updatePRComment = exports.findExistingPRCommentId = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getContents = exports.getLatestRelease = exports.exec = void 0;
+exports.setNativeImageOption = exports.tmpfile = exports.createPRComment = exports.updatePRComment = exports.findExistingPRCommentId = exports.isPREvent = exports.toSemVer = exports.calculateSHA256 = exports.downloadExtractAndCacheJDK = exports.downloadAndExtractJDK = exports.getMatchingTags = exports.getTaggedRelease = exports.getContents = exports.getLatestRelease = exports.exec = void 0;
 const c = __importStar(__nccwpck_require__(69042));
 const core = __importStar(__nccwpck_require__(42186));
 const github = __importStar(__nccwpck_require__(95438));
 const httpClient = __importStar(__nccwpck_require__(96255));
 const semver = __importStar(__nccwpck_require__(11383));
 const tc = __importStar(__nccwpck_require__(27784));
+const fs = __importStar(__nccwpck_require__(57147));
 const exec_1 = __nccwpck_require__(71514);
 const fs_1 = __nccwpck_require__(57147);
 const core_1 = __nccwpck_require__(76762);
 const crypto_1 = __nccwpck_require__(6113);
 const path_1 = __nccwpck_require__(71017);
+const os_1 = __nccwpck_require__(22037);
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com';
 const GitHubDotCom = core_1.Octokit.defaults({
@@ -100325,6 +100526,45 @@ function createPRComment(content) {
     });
 }
 exports.createPRComment = createPRComment;
+function tmpfile(fileName) {
+    return (0, path_1.join)((0, os_1.tmpdir)(), fileName);
+}
+exports.tmpfile = tmpfile;
+function setNativeImageOption(javaVersionOrDev, optionValue) {
+    const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev);
+    if ((coercedJavaVersionOrDev &&
+        semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
+        javaVersionOrDev === c.VERSION_DEV ||
+        javaVersionOrDev.endsWith('-ea')) {
+        /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
+        let newOptionValue = optionValue;
+        const existingOptions = process.env[c.NATIVE_IMAGE_OPTIONS_ENV];
+        if (existingOptions) {
+            newOptionValue = `${existingOptions} ${newOptionValue}`;
+        }
+        core.exportVariable(c.NATIVE_IMAGE_OPTIONS_ENV, newOptionValue);
+    }
+    else {
+        const optionsFile = getNativeImageOptionsFile();
+        if (fs.existsSync(optionsFile)) {
+            fs.appendFileSync(optionsFile, ` ${optionValue}`);
+        }
+        else {
+            fs.writeFileSync(optionsFile, `NativeImageArgs = ${optionValue}`);
+        }
+    }
+}
+exports.setNativeImageOption = setNativeImageOption;
+const NATIVE_IMAGE_CONFIG_FILE = tmpfile('native-image-options.properties');
+const NATIVE_IMAGE_CONFIG_FILE_ENV = 'NATIVE_IMAGE_CONFIG_FILE';
+function getNativeImageOptionsFile() {
+    let optionsFile = process.env[NATIVE_IMAGE_CONFIG_FILE_ENV];
+    if (optionsFile === undefined) {
+        optionsFile = NATIVE_IMAGE_CONFIG_FILE;
+        core.exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile);
+    }
+    return optionsFile;
+}
 
 
 /***/ }),

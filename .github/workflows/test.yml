@@ -420,3 +420,40 @@ jobs:
       #     popd > /dev/null
       - name: Remove components
         run: gu remove espresso llvm-toolchain nodejs python ruby wasm
+  test-sbom:
+    name: test 'native-image-enable-sbom' option
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        java-version: ['24-ea', 'latest-ea']
+        distribution: ['graalvm']
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        set-gds-token: [false]
+        components: ['']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: ${{ matrix.distribution }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          components: ${{ matrix.components }}
+          gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
+          native-image-enable-sbom: 'true'
+      - name: Build Maven project and verify that SBOM was generated and its contents
+        run: |
+          cd __tests__/sbom/main-test-app
+          mvn --no-transfer-progress -Pnative package
+          bash verify-sbom.sh
+        shell: bash
+        if: runner.os != 'Windows'
+      - name: Build Maven project and verify that SBOM was generated and its contents (Windows)
+        run: |
+          cd __tests__\sbom\main-test-app
+          mvn --no-transfer-progress -Pnative package
+          cmd /c verify-sbom.cmd
+        shell: cmd
+        if: runner.os == 'Windows'

@@ -14,6 +14,8 @@ export const INPUT_CACHE = 'cache'
 export const INPUT_CHECK_FOR_UPDATES = 'check-for-updates'
 export const INPUT_NI_MUSL = 'native-image-musl'
 
+export const NATIVE_IMAGE_OPTIONS_ENV = 'NATIVE_IMAGE_OPTIONS'
+
 export const IS_LINUX = process.platform === 'linux'
 export const IS_MACOS = process.platform === 'darwin'
 export const IS_WINDOWS = process.platform === 'win32'
