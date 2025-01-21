@@ -1,4 +1,4 @@
-name: 'build-test'
+name: Continuous Integration
 
 on:
   push:
@@ -8,19 +8,32 @@ on:
     paths-ignore:
       - '**.md'
   workflow_dispatch:
+
 permissions:
   contents: read
 
 jobs:
-  build: # make sure build/ci work properly
+  test-typescript:
+    name: TypeScript Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: |
-          npm install
-      - run: |
-          npm run all
-  test:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install Dependencies
+        run: npm clean-install
+      - name: Check Format
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm run test
+
+  test-action:
     name: GraalVM
     runs-on: ${{ matrix.os }}
     strategy:
@@ -95,8 +108,9 @@ jobs:
           java --version
           native-image --version
         if: runner.os == 'Windows'
-  test-ce: # make sure the action works on a clean machine without building
-    needs: test
+
+  test-action-ce: # make sure the action works on a clean machine without building
+    needs: test-action
     name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -164,8 +178,9 @@ jobs:
           native-image --version
           gu.cmd remove native-image
         if: runner.os == 'Windows'
-  test-ee:
-    needs: test
+
+  test-action-ee:
+    needs: test-action
     name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.os }}
@@ -212,8 +227,9 @@ jobs:
           native-image --version
           gu.cmd remove native-image
         if: runner.os == 'Windows'
-  test-mandrel:
-    needs: test
+
+  test-action-mandrel:
+    needs: test-action
     name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -256,8 +272,9 @@ jobs:
           java --version
           native-image --version
         if: runner.os == 'Windows'
-  test-liberica:
-    needs: test
+
+  test-action-liberica:
+    needs: test-action
     name: Liberica (${{ matrix.java-version }}, '${{ matrix.java-package }}', ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -298,7 +315,8 @@ jobs:
             exit 24
           }
         if: runner.os == 'Windows'
-  test-native-image-windows:
+
+  test-action-native-image-windows:
     name: native-image on windows-latest
     runs-on: windows-latest
     permissions:
@@ -320,7 +338,8 @@ jobs:
           javac HelloWorld.java
           native-image HelloWorld
           ./helloworld
-  test-native-image-windows-msvc:
+
+  test-action-native-image-windows-msvc:
     name: native-image on windows-2022
     runs-on: windows-2022
     permissions:
@@ -342,7 +361,8 @@ jobs:
           javac HelloWorld.java
           native-image HelloWorld
           ./helloworld
-  test-native-image-musl:
+
+  test-action-native-image-musl:
     name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
     permissions:
@@ -365,7 +385,8 @@ jobs:
           javac HelloWorld.java
           native-image --static --libc=musl HelloWorld
           ./helloworld
-  test-extensive:
+
+  test-action-extensive:
     name: extensive tests on ubuntu-latest
     runs-on: ubuntu-latest
     permissions:
@@ -420,7 +441,8 @@ jobs:
       #     popd > /dev/null
       - name: Remove components
         run: gu remove espresso llvm-toolchain nodejs python ruby wasm
-  test-sbom:
+
+  test-action-sbom:
     name: test 'native-image-enable-sbom' option
     runs-on: ${{ matrix.os }}
     permissions:
