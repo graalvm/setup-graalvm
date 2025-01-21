@@ -7,6 +7,8 @@ import {expect, test} from '@jest/globals'
 process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
 process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
 
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectLatestToBe", "expectURL"] }] */
+
 test('find latest JDK version', async () => {
   // Make sure the action can find the latest Java version for known major versions
   await expectLatestToBe('11', atLeast('11.0.22+12'))
@@ -61,8 +63,8 @@ function atLeast(expectedMinVersion: string): verifier {
   return function (
     version: string,
     major: number,
-    minor: number,
-    patch: number
+    _minor: number,
+    _patch: number
   ) {
     expect(major).toBe(expectedMajor)
     if (semver.compareBuild(version, expectedMinVersion) < 0) {
@@ -90,9 +92,9 @@ function upToBuild(expectedMinVersion: string): verifier {
 function exactly(expectedVersion: string): verifier {
   return function (
     version: string,
-    major: number,
-    minor: number,
-    patch: number
+    _major: number,
+    _minor: number,
+    _patch: number
   ) {
     if (semver.compareBuild(version, expectedVersion) != 0) {
       throw new Error(`Expected version ${expectedVersion} but got ${version}`)

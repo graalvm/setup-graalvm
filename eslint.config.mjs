@@ -70,6 +70,7 @@ export default [
       camelcase: 'off',
       'eslint-comments/no-use': 'off',
       'eslint-comments/no-unused-disable': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
       'i18n-text/no-en': 'off',
       'import/no-namespace': 'off',
       'no-console': 'off',

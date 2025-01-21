@@ -35,7 +35,6 @@ describe('cleanup', () => {
     ReturnType<typeof cache.saveCache>,
     Parameters<typeof cache.saveCache>
   >
-  let spyJobStatusSuccess: jest.SpyInstance
 
   beforeEach(() => {
     spyWarning = jest.spyOn(core, 'warning')
@@ -50,7 +49,7 @@ describe('cleanup', () => {
   })
 
   it('does not fail nor warn even when the save process throws a ReserveCacheError', async () => {
-    spyCacheSave.mockImplementation((paths: string[], key: string) =>
+    spyCacheSave.mockImplementation((_paths: string[], _key: string) =>
       Promise.reject(
         new cache.ReserveCacheError(
           'Unable to reserve cache with key, another job may be creating this cache.'
@@ -66,7 +65,7 @@ describe('cleanup', () => {
   })
 
   it('does not fail even though the save process throws error', async () => {
-    spyCacheSave.mockImplementation((paths: string[], key: string) =>
+    spyCacheSave.mockImplementation((_paths: string[], _key: string) =>
       Promise.reject(new Error('Unexpected error'))
     )
     jest.spyOn(core, 'getInput').mockImplementation((name: string) => {

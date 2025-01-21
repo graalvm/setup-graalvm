@@ -13,7 +13,7 @@ process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
 process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
 
 test('request invalid version/javaVersion', async () => {
-  for (var combination of [
+  for (const combination of [
     ['22.3.0', '7'],
     ['22.3', '17'],
     ['22.3', '7']
@@ -23,7 +23,7 @@ test('request invalid version/javaVersion', async () => {
       await graalvm.setUpGraalVMRelease('', combination[0], combination[1])
     } catch (err) {
       if (!(err instanceof Error)) {
-        fail(`Unexpected non-Error: ${err}`)
+        throw new Error(`Unexpected non-Error: ${err}`)
       }
       error = err
     }
@@ -36,17 +36,17 @@ test('request invalid version/javaVersion', async () => {
 
 test('find version/javaVersion', async () => {
   // Make sure the action can find the latest Java version for known major versions
-  for (var majorJavaVersion of ['17', '20']) {
+  for (const majorJavaVersion of ['17', '20']) {
     await graalvm.findLatestGraalVMJDKCEJavaVersion(majorJavaVersion)
   }
 
   let error = new Error('unexpected')
   try {
     await graalvm.findLatestGraalVMJDKCEJavaVersion('11')
-    fail('Should not find Java version for 11')
+    throw new Error('Should not find Java version for 11')
   } catch (err) {
     if (!(err instanceof Error)) {
-      fail(`Unexpected non-Error: ${err}`)
+      throw new Error(`Unexpected non-Error: ${err}`)
     }
     error = err
   }
@@ -68,7 +68,7 @@ test('find version/javaVersion', async () => {
     findGraalVMVersion(invalidRelease)
   } catch (err) {
     if (!(err instanceof Error)) {
-      fail(`Unexpected non-Error: ${err}`)
+      throw new Error(`Unexpected non-Error: ${err}`)
     }
     error = err
   }
@@ -78,17 +78,17 @@ test('find version/javaVersion', async () => {
     findHighestJavaVersion(latestRelease, 'invalid')
   } catch (err) {
     if (!(err instanceof Error)) {
-      fail(`Unexpected non-Error: ${err}`)
+      throw new Error(`Unexpected non-Error: ${err}`)
     }
     error = err
   }
   expect(error.message).toContain('Could not find highest Java version.')
 })
 
-test('find version/javaVersion', async () => {
-  let url22EA = await findLatestEABuildDownloadUrl('22-ea')
+test('find EA version/javaVersion', async () => {
+  const url22EA = await findLatestEABuildDownloadUrl('22-ea')
   expect(url22EA).not.toBe('')
-  let urlLatestEA = await findLatestEABuildDownloadUrl('latest-ea')
+  const urlLatestEA = await findLatestEABuildDownloadUrl('latest-ea')
   expect(urlLatestEA).not.toBe('')
 
   let error = new Error('unexpected')
@@ -96,7 +96,7 @@ test('find version/javaVersion', async () => {
     await findLatestEABuildDownloadUrl('8-ea')
   } catch (err) {
     if (!(err instanceof Error)) {
-      fail(`Unexpected non-Error: ${err}`)
+      throw new Error(`Unexpected non-Error: ${err}`)
     }
     error = err
   }

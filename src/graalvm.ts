@@ -89,7 +89,7 @@ export async function findLatestEABuildDownloadUrl(
     response = await getContents(ORACLE_GRAALVM_REPO_EA_BUILDS, filePath)
   } catch (error) {
     throw new Error(
-      `Unable to resolve download URL for '${javaEaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
+      `Unable to resolve download URL for '${javaEaVersion}' (reason: ${error}). Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
     )
   }
   if (

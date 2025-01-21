@@ -94,7 +94,7 @@ describe('dependency cache', () => {
     beforeEach(() => {
       spyCacheRestore = jest
         .spyOn(cache, 'restoreCache')
-        .mockImplementation((paths: string[], primaryKey: string) =>
+        .mockImplementation((_paths: string[], _primaryKey: string) =>
           Promise.resolve(undefined)
         )
       spyWarning.mockImplementation(() => null)
@@ -184,7 +184,7 @@ describe('dependency cache', () => {
     beforeEach(() => {
       spyCacheSave = jest
         .spyOn(cache, 'saveCache')
-        .mockImplementation((paths: string[], key: string) =>
+        .mockImplementation((_paths: string[], _key: string) =>
           Promise.resolve(0)
         )
       spyWarning.mockImplementation(() => null)

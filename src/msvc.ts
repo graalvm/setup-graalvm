@@ -1,5 +1,4 @@
 import * as core from '@actions/core'
-import * as semver from 'semver'
 import {execSync} from 'child_process'
 import {existsSync} from 'fs'
 import {VERSION_DEV} from './constants'
