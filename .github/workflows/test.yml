@@ -28,11 +28,11 @@ jobs:
         java-version: ['23', '21', '17', '20', 'dev']
         distribution: ['graalvm', 'graalvm-community']
         os: [
-          ubuntu-latest,
-          macos-latest, # macOS on Apple silicon
-          macos-13,     # macOS on Intel
-          windows-latest
-        ]
+            ubuntu-latest,
+            macos-latest, # macOS on Apple silicon
+            macos-13, # macOS on Intel
+            windows-latest
+          ]
         set-gds-token: [false]
         components: ['']
         include:

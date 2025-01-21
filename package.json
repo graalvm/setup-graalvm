@@ -5,14 +5,13 @@
   "description": "GitHub Action for GraalVM",
   "main": "lib/main.js",
   "scripts": {
-    "build": "tsc",
-    "format": "prettier --write '**/*.ts'",
-    "format-check": "prettier --check '**/*.ts'",
-    "lint": "eslint src/**/*.ts",
+    "bundle": "npm run format:write && npm run package",
+    "format:write": "npx prettier --write .",
+    "format:check": "npx prettier --check .",
+    "lint": "npx eslint .",
     "package": "ncc build -o dist/main src/main.ts && ncc build -o dist/cleanup src/cleanup.ts",
-    "test": "jest",
-    "all-but-test": "npm run build && npm run format && npm run lint && npm run package",
-    "all": "npm run all-but-test && npm test"
+    "test": "npx jest",
+    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
   },
   "repository": {
     "type": "git",
@@ -42,6 +41,7 @@
     "uuid": "^11.0.5"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.2.5",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.17.12",
     "@types/semver": "^7.5.8",
@@ -49,9 +49,11 @@
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vercel/ncc": "^0.38.3",
-    "eslint": "^8.57.0",
-    "eslint-plugin-github": "^4.10.2",
-    "eslint-plugin-jest": "^27.9.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jest": "^28.10.0",
     "eslint-plugin-jsonc": "^2.18.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.3",
