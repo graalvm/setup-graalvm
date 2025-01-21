@@ -1,9 +1,8 @@
-import * as path from 'path'
 import {expect, test} from '@jest/globals'
 import {toSemVer} from '../src/utils'
 
 test('convert version', async () => {
-  for (var inputAndExpectedOutput of [
+  for (const inputAndExpectedOutput of [
     ['22', '22.0.0'],
     ['22.0', '22.0.0'],
     ['22.0.0', '22.0.0'],
@@ -17,13 +16,13 @@ test('convert version', async () => {
 })
 
 test('convert invalid version', async () => {
-  for (var input of ['dev', 'abc', 'a.b.c']) {
+  for (const input of ['dev', 'abc', 'a.b.c']) {
     let error = new Error('unexpected')
     try {
       toSemVer(input)
     } catch (err) {
       if (!(err instanceof Error)) {
-        fail(`Unexpected non-Error: ${err}`)
+        throw new Error(`Unexpected non-Error: ${err}`)
       }
       error = err
     }

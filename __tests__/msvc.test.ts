@@ -7,7 +7,7 @@ process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
 process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
 
 test('decide whether Window env must be set up for GraalVM for JDK', async () => {
-  for (var javaVersion of [
+  for (const javaVersion of [
     '17',
     '17.0.8',
     '17.0',
@@ -22,7 +22,7 @@ test('decide whether Window env must be set up for GraalVM for JDK', async () =>
 })
 
 test('decide whether Window env must be set up for legacy GraalVM', async () => {
-  for (var combination of [
+  for (const combination of [
     ['7', '22.3.0'],
     ['17', '22.3'],
     ['7', '22.3'],

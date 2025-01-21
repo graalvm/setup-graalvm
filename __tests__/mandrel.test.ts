@@ -7,7 +7,7 @@ process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
 process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
 
 test('request invalid version/javaVersion combination', async () => {
-  for (var combination of [
+  for (const combination of [
     ['mandrel-23.1.1.0-Final', '17'],
     ['mandrel-23.0.2.1-Final', '21']
   ]) {
@@ -16,7 +16,7 @@ test('request invalid version/javaVersion combination', async () => {
       await mandrel.setUpMandrel(combination[0], combination[1])
     } catch (err) {
       if (!(err instanceof Error)) {
-        fail(`Unexpected non-Error: ${err}`)
+        throw new Error(`Unexpected non-Error: ${err}`)
       }
       error = err
     }
@@ -27,7 +27,7 @@ test('request invalid version/javaVersion combination', async () => {
   }
 })
 test('request invalid version', async () => {
-  for (var combination of [
+  for (const combination of [
     ['mandrel-23.1.1.0', '21'],
     ['mandrel-23.0.2.1', '17']
   ]) {
@@ -36,7 +36,7 @@ test('request invalid version', async () => {
       await mandrel.setUpMandrel(combination[0], combination[1])
     } catch (err) {
       if (!(err instanceof Error)) {
-        fail(`Unexpected non-Error: ${err}`)
+        throw new Error(`Unexpected non-Error: ${err}`)
       }
       error = err
     }
@@ -56,7 +56,7 @@ test('find latest', async () => {
 
 test('get known latest Mandrel for specific JDK', async () => {
   // Test deprecated versions that won't get updates anymore
-  for (var combination of [
+  for (const combination of [
     ['11', '22.2.0.0-Final'],
     ['20', '23.0.1.2-Final']
   ]) {
@@ -68,7 +68,7 @@ test('get known latest Mandrel for specific JDK', async () => {
 
 test('get latest Mandrel for specific JDK', async () => {
   // Test supported versions
-  for (var javaVersion of ['17', '21']) {
+  for (const javaVersion of ['17', '21']) {
     const latest = await mandrel.getLatestMandrelReleaseUrl(javaVersion)
     expect(latest).toContain(`mandrel-java${javaVersion}`)
   }

@@ -248,10 +248,13 @@ describe('sbom feature', () => {
       const invalidSBOM = {
         'out-of-spec-field': {}
       }
+      let error
       try {
         await setUpAndProcessSBOM(invalidSBOM)
-        fail('Expected an error since invalid JSON was passed')
-      } catch (error) {
+        throw new Error('Expected an error since invalid JSON was passed')
+      } catch (e) {
+        error = e
+      } finally {
         expect(error).toBeInstanceOf(Error)
       }
     })

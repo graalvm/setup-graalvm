@@ -11,7 +11,7 @@
     "lint": "npx eslint .",
     "package": "ncc build -o dist/main src/main.ts && ncc build -o dist/cleanup src/cleanup.ts",
     "test": "npx jest",
-    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
+    "all": "npm run format:write && npm run lint && npm run test && npm run package"
   },
   "repository": {
     "type": "git",

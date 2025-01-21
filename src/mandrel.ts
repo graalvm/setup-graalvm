@@ -1,6 +1,6 @@
 import * as c from './constants'
 import * as httpClient from '@actions/http-client'
-import {downloadExtractAndCacheJDK, getLatestRelease} from './utils'
+import {downloadExtractAndCacheJDK} from './utils'
 import {downloadTool} from '@actions/tool-cache'
 import {basename} from 'path'
 
@@ -11,7 +11,9 @@ const DISCO_API_BASE = 'https://api.foojay.io/disco/v3.0/packages/jdks'
 
 interface JdkData {
   message: string
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   result: any
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
 export async function setUpMandrel(
@@ -22,7 +24,9 @@ export async function setUpMandrel(
   let mandrelHome
   switch (version) {
     case '':
-    // fetch latest if no version is specified
+      // fetch latest if no version is specified
+      mandrelHome = await setUpMandrelLatest(javaVersion)
+      break
     case 'latest':
       mandrelHome = await setUpMandrelLatest(javaVersion)
       break
