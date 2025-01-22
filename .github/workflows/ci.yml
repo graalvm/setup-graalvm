@@ -41,7 +41,8 @@ jobs:
         java-version: ['23', '21', '17', '20', 'dev']
         distribution: ['graalvm', 'graalvm-community']
         os: [
-            ubuntu-latest,
+            ubuntu-latest, # Linux on Intel
+            ubuntu-22.04-arm, # Linux on arm64
             macos-latest, # macOS on Apple silicon
             macos-13, # macOS on Intel
             windows-latest
