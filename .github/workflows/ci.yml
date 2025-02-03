@@ -36,6 +36,9 @@ jobs:
   test-action:
     name: GraalVM
     runs-on: ${{ matrix.os }}
+    env:
+      # Skip builds that require a GDS token but have no access to one (e.g., secrets are unavailable in PR runs)
+      PASSES_GDS_TOKEN_CHECK: ${{ !matrix.set-gds-token || secrets.GDS_TOKEN != '' }}
     strategy:
       matrix:
         java-version: ['23', '21', '17', '20', 'dev']
@@ -87,8 +90,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: ${{ matrix.components }}
           gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
-        # Skip in PR builds that require a GDS token (secrets are not available in PR runs)
-        if: github.event_name != 'pull_request' || !matrix.set-gds-token
+        if: env.PASSES_GDS_TOKEN_CHECK
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
@@ -101,14 +103,14 @@ jobs:
           java --version
           java --version | grep "GraalVM" || exit 34
           native-image --version
-        if: runner.os != 'Windows' && (github.event_name != 'pull_request' || !matrix.set-gds-token)
+        if: runner.os != 'Windows' && env.PASSES_GDS_TOKEN_CHECK
       - name: Check Windows environment
         run: |
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
           native-image --version
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && env.PASSES_GDS_TOKEN_CHECK
 
   test-action-ce: # make sure the action works on a clean machine without building
     needs: test-action
@@ -453,7 +455,6 @@ jobs:
         java-version: ['24-ea', 'latest-ea']
         distribution: ['graalvm']
         os: [macos-latest, windows-latest, ubuntu-latest]
-        set-gds-token: [false]
         components: ['']
     steps:
       - uses: actions/checkout@v4
@@ -464,7 +465,6 @@ jobs:
           distribution: ${{ matrix.distribution }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: ${{ matrix.components }}
-          gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
           native-image-enable-sbom: 'true'
       - name: Build Maven project and verify that SBOM was generated and its contents
         run: |
