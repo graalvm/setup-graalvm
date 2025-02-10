@@ -1,11 +1,11 @@
-import * as c from '../constants'
+import * as c from '../constants.js'
 import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as github from '@actions/github'
 import * as glob from '@actions/glob'
 import {basename} from 'path'
 import * as semver from 'semver'
-import {setNativeImageOption} from '../utils'
+import {setNativeImageOption} from '../utils.js'
 
 const INPUT_NI_SBOM = 'native-image-enable-sbom'
 const SBOM_FILE_SUFFIX = '.sbom.json'
