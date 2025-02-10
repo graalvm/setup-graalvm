@@ -88230,13 +88230,7 @@ async function run() {
     await ignoreErrors(processSBOM());
     await ignoreErrors(saveCache());
 }
-if (require.main === module) {
-    run();
-}
-else {
-    // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
-    coreExports.info('the script is loaded as a module, so skipping the execution');
-}
+run();
 
 export { run };
 //# sourceMappingURL=cleanup.js.map
