@@ -1,5 +1,5 @@
-import {expect, test} from '@jest/globals'
-import {toSemVer} from '../src/utils'
+import { expect, test } from '@jest/globals'
+import { toSemVer } from '../src/utils'
 
 test('convert version', async () => {
   for (const inputAndExpectedOutput of [

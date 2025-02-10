@@ -1,8 +1,8 @@
 import * as c from './constants.js'
 import * as httpClient from '@actions/http-client'
-import {downloadExtractAndCacheJDK} from './utils.js'
-import {downloadTool} from '@actions/tool-cache'
-import {basename} from 'path'
+import { downloadExtractAndCacheJDK } from './utils.js'
+import { downloadTool } from '@actions/tool-cache'
+import { basename } from 'path'
 
 export const MANDREL_REPO = 'mandrel'
 export const MANDREL_TAG_PREFIX = c.MANDREL_NAMESPACE
@@ -16,10 +16,7 @@ interface JdkData {
   /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
-export async function setUpMandrel(
-  mandrelVersion: string,
-  javaVersion: string
-): Promise<string> {
+export async function setUpMandrel(mandrelVersion: string, javaVersion: string): Promise<string> {
   const version = stripMandrelNamespace(mandrelVersion)
   let mandrelHome
   switch (version) {
@@ -44,11 +41,7 @@ async function setUpMandrelLatest(javaVersion: string): Promise<string> {
   const version = stripMandrelNamespace(version_tag)
 
   const toolName = determineToolName(javaVersion)
-  return downloadExtractAndCacheJDK(
-    async () => downloadTool(latest_release_url),
-    toolName,
-    version
-  )
+  return downloadExtractAndCacheJDK(async () => downloadTool(latest_release_url), toolName, version)
 }
 
 // Download URIs are of the form https://github.com/graalvm/mandrel/releases/download/<tag>/<archive-name>
@@ -61,29 +54,19 @@ function getTagFromURI(uri: string): string {
   }
 }
 
-export async function getLatestMandrelReleaseUrl(
-  javaVersion: string
-): Promise<string> {
+export async function getLatestMandrelReleaseUrl(javaVersion: string): Promise<string> {
   const url = `${DISCO_API_BASE}?jdk_version=${javaVersion}&distribution=${c.DISTRIBUTION_MANDREL}&architecture=${c.JDK_ARCH}&operating_system=${c.JDK_PLATFORM}&latest=per_distro`
   const _http = new httpClient.HttpClient()
   const response = await _http.getJson<JdkData>(url)
   if (response.statusCode !== 200) {
-    throw new Error(
-      `Failed to fetch latest Mandrel release for Java ${javaVersion} from DISCO API: ${response.result}`
-    )
+    throw new Error(`Failed to fetch latest Mandrel release for Java ${javaVersion} from DISCO API: ${response.result}`)
   }
   const result = response.result?.result[0]
   try {
     const pkg_info_uri = result.links.pkg_info_uri
-    return await getLatestMandrelReleaseUrlHelper(
-      _http,
-      javaVersion,
-      pkg_info_uri
-    )
+    return await getLatestMandrelReleaseUrlHelper(_http, javaVersion, pkg_info_uri)
   } catch (error) {
-    throw new Error(
-      `Failed to get latest Mandrel release for Java ${javaVersion} from DISCO API: ${error}`
-    )
+    throw new Error(`Failed to get latest Mandrel release for Java ${javaVersion} from DISCO API: ${error}`)
   }
 }
 
@@ -108,22 +91,12 @@ async function getLatestMandrelReleaseUrlHelper(
   }
 }
 
-async function setUpMandrelRelease(
-  version: string,
-  javaVersion: string
-): Promise<string> {
+async function setUpMandrelRelease(version: string, javaVersion: string): Promise<string> {
   const toolName = determineToolName(javaVersion)
-  return downloadExtractAndCacheJDK(
-    async () => downloadMandrelJDK(version, javaVersion),
-    toolName,
-    version
-  )
+  return downloadExtractAndCacheJDK(async () => downloadMandrelJDK(version, javaVersion), toolName, version)
 }
 
-async function downloadMandrelJDK(
-  version: string,
-  javaVersion: string
-): Promise<string> {
+async function downloadMandrelJDK(version: string, javaVersion: string): Promise<string> {
   const identifier = determineMandrelIdentifier(version, javaVersion)
   const downloadUrl = `${MANDREL_DL_BASE}/${MANDREL_TAG_PREFIX}${version}/${identifier}${c.GRAALVM_FILE_EXTENSION}`
   try {
@@ -137,16 +110,11 @@ async function downloadMandrelJDK(
         )}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`
       )
     }
-    throw new Error(
-      `Failed to download ${basename(downloadUrl)} (error: ${error}).`
-    )
+    throw new Error(`Failed to download ${basename(downloadUrl)} (error: ${error}).`)
   }
 }
 
-function determineMandrelIdentifier(
-  version: string,
-  javaVersion: string
-): string {
+function determineMandrelIdentifier(version: string, javaVersion: string): string {
   return `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-${version}`
 }
 
@@ -156,10 +124,7 @@ function determineToolName(javaVersion: string): string {
 
 export function stripMandrelNamespace(graalVMVersion: string) {
   if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
-    return graalVMVersion.substring(
-      c.MANDREL_NAMESPACE.length,
-      graalVMVersion.length
-    )
+    return graalVMVersion.substring(c.MANDREL_NAMESPACE.length, graalVMVersion.length)
   } else {
     return graalVMVersion
   }

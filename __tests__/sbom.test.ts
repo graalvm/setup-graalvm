@@ -1,11 +1,11 @@
 import * as c from '../src/constants'
-import {setUpSBOMSupport, processSBOM} from '../src/features/sbom'
+import { setUpSBOMSupport, processSBOM } from '../src/features/sbom'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as glob from '@actions/glob'
-import {join} from 'path'
-import {tmpdir} from 'os'
-import {mkdtempSync, writeFileSync, rmSync} from 'fs'
+import { join } from 'path'
+import { tmpdir } from 'os'
+import { mkdtempSync, writeFileSync, rmSync } from 'fs'
 
 jest.mock('@actions/glob')
 jest.mock('@actions/github', () => ({
@@ -37,9 +37,7 @@ function mockFindSBOM(files: string[]) {
 function mockGithubAPIReturnValue(returnValue: Error | undefined = undefined) {
   const mockOctokit = {
     request:
-      returnValue === undefined
-        ? jest.fn().mockResolvedValue(returnValue)
-        : jest.fn().mockRejectedValue(returnValue)
+      returnValue === undefined ? jest.fn().mockResolvedValue(returnValue) : jest.fn().mockRejectedValue(returnValue)
   }
   ;(github.getOctokit as jest.Mock).mockReturnValue(mockOctokit)
   return mockOctokit
@@ -48,10 +46,7 @@ function mockGithubAPIReturnValue(returnValue: Error | undefined = undefined) {
 describe('sbom feature', () => {
   let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>
-  let spyExportVariable: jest.SpyInstance<
-    void,
-    Parameters<typeof core.exportVariable>
-  >
+  let spyExportVariable: jest.SpyInstance<void, Parameters<typeof core.exportVariable>>
   let workspace: string
   let originalEnv: NodeJS.ProcessEnv
   const javaVersion = '24.0.0'
@@ -71,9 +66,7 @@ describe('sbom feature', () => {
 
     spyInfo = jest.spyOn(core, 'info').mockImplementation(() => null)
     spyWarning = jest.spyOn(core, 'warning').mockImplementation(() => null)
-    spyExportVariable = jest
-      .spyOn(core, 'exportVariable')
-      .mockImplementation(() => null)
+    spyExportVariable = jest.spyOn(core, 'exportVariable').mockImplementation(() => null)
     jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
       if (name === 'native-image-enable-sbom') {
         return 'true'
@@ -91,7 +84,7 @@ describe('sbom feature', () => {
     spyInfo.mockRestore()
     spyWarning.mockRestore()
     spyExportVariable.mockRestore()
-    rmSync(workspace, {recursive: true, force: true})
+    rmSync(workspace, { recursive: true, force: true })
   })
 
   describe('setup', () => {
@@ -128,9 +121,7 @@ describe('sbom feature', () => {
         c.NATIVE_IMAGE_OPTIONS_ENV,
         expect.stringContaining('--enable-sbom=export')
       )
-      expect(spyInfo).toHaveBeenCalledWith(
-        'Enabled SBOM generation for Native Image build'
-      )
+      expect(spyInfo).toHaveBeenCalledWith('Enabled SBOM generation for Native Image build')
       expect(spyWarning).not.toHaveBeenCalled()
     })
 
@@ -202,17 +193,11 @@ describe('sbom feature', () => {
     it('should process SBOM and display components', async () => {
       await setUpAndProcessSBOM(sampleSBOM)
 
-      expect(spyInfo).toHaveBeenCalledWith(
-        'Found SBOM: ' + join(workspace, 'test.sbom.json')
-      )
+      expect(spyInfo).toHaveBeenCalledWith('Found SBOM: ' + join(workspace, 'test.sbom.json'))
       expect(spyInfo).toHaveBeenCalledWith('=== SBOM Content ===')
       expect(spyInfo).toHaveBeenCalledWith('- pkg:maven/org.json/json@20241224')
-      expect(spyInfo).toHaveBeenCalledWith(
-        '- pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT'
-      )
-      expect(spyInfo).toHaveBeenCalledWith(
-        '   depends on: pkg:maven/org.json/json@20241224'
-      )
+      expect(spyInfo).toHaveBeenCalledWith('- pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT')
+      expect(spyInfo).toHaveBeenCalledWith('   depends on: pkg:maven/org.json/json@20241224')
       expect(spyWarning).not.toHaveBeenCalled()
     })
 
@@ -284,8 +269,7 @@ describe('sbom feature', () => {
                   dependencies: []
                 }),
                 'main-test-app': expect.objectContaining({
-                  package_url:
-                    'pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT',
+                  package_url: 'pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT',
                   dependencies: ['pkg:maven/org.json/json@20241224']
                 })
               })
@@ -293,17 +277,13 @@ describe('sbom feature', () => {
           })
         })
       )
-      expect(spyInfo).toHaveBeenCalledWith(
-        'Dependency snapshot submitted successfully.'
-      )
+      expect(spyInfo).toHaveBeenCalledWith('Dependency snapshot submitted successfully.')
     })
 
     it('should handle GitHub API submission errors gracefully', async () => {
       mockGithubAPIReturnValue(new Error('API submission failed'))
 
-      await expect(setUpAndProcessSBOM(sampleSBOM)).rejects.toBeInstanceOf(
-        Error
-      )
+      await expect(setUpAndProcessSBOM(sampleSBOM)).rejects.toBeInstanceOf(Error)
     })
   })
 })

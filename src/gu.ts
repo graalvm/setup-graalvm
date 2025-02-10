@@ -1,9 +1,9 @@
 import * as c from './constants.js'
 import * as core from '@actions/core'
 import * as semver from 'semver'
-import {GRAALVM_PLATFORM} from './constants.js'
-import {exec} from './utils.js'
-import {join} from 'path'
+import { GRAALVM_PLATFORM } from './constants.js'
+import { exec } from './utils.js'
+import { join } from 'path'
 
 const BASE_FLAGS = ['--non-interactive', 'install', '--no-progress']
 const COMPONENT_TO_POST_INSTALL_HOOK = new Map<string, Map<string, string>>([
@@ -52,19 +52,13 @@ export async function setUpGUComponents(
       )
     }
   } else if (graalVMVersion.startsWith(c.MANDREL_NAMESPACE)) {
-    core.warning(
-      `Mandrel does not support GraalVM component(s): '${components.join(',')}'`
-    )
+    core.warning(`Mandrel does not support GraalVM component(s): '${components.join(',')}'`)
   } else {
     await installGUComponents(gdsToken, graalVMHome, components)
   }
 }
 
-async function installGUComponents(
-  gdsToken: string,
-  graalVMHome: string,
-  components: string[]
-): Promise<void> {
+async function installGUComponents(gdsToken: string, graalVMHome: string, components: string[]): Promise<void> {
   await exec('gu', BASE_FLAGS.concat(components), {
     env: {
       ...process.env,

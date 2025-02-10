@@ -22,7 +22,8 @@ inputs:
     default: ''
   github-token:
     required: false
-    description: 'Set it to secrets.GITHUB_TOKEN to increase rate limits when accessing the GitHub API. Defaults to github.token.'
+    description:
+      'Set it to secrets.GITHUB_TOKEN to increase rate limits when accessing the GitHub API. Defaults to github.token.'
     default: ${{ github.token }}
   set-java-home:
     required: false
@@ -49,11 +50,14 @@ inputs:
     default: 'false'
   native-image-pr-reports-update-existing:
     required: false
-    description: 'Instead of posting another comment, update an existing PR comment with the latest Native Image build report.'
+    description:
+      'Instead of posting another comment, update an existing PR comment with the latest Native Image build report.'
     default: 'false'
   native-image-enable-sbom:
     required: false
-    description: 'Automatically generate an SBOM and submit it to the GitHub dependency submission API for vulnerability and dependency tracking.'
+    description:
+      'Automatically generate an SBOM and submit it to the GitHub dependency submission API for vulnerability and
+      dependency tracking.'
     default: 'false'
   version:
     required: false
@@ -61,7 +65,8 @@ inputs:
     default: ''
   gds-token:
     required: false
-    description: 'Download token for the GraalVM Download Service. If provided, the action will set up GraalVM Enterprise Edition.'
+    description:
+      'Download token for the GraalVM Download Service. If provided, the action will set up GraalVM Enterprise Edition.'
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'

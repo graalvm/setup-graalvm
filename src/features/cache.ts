@@ -26,7 +26,7 @@
  * @fileoverview this file provides methods handling dependency cache
  */
 
-import {join} from 'path'
+import { join } from 'path'
 import os from 'os'
 import * as cache from '@actions/cache'
 import * as core from '@actions/core'
@@ -53,17 +53,9 @@ const supportedPackageManager: PackageManager[] = [
   },
   {
     id: 'gradle',
-    path: [
-      join(os.homedir(), '.gradle', 'caches'),
-      join(os.homedir(), '.gradle', 'wrapper')
-    ],
+    path: [join(os.homedir(), '.gradle', 'caches'), join(os.homedir(), '.gradle', 'wrapper')],
     // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
-    pattern: [
-      '**/*.gradle*',
-      '**/gradle-wrapper.properties',
-      'buildSrc/**/Versions.kt',
-      'buildSrc/**/Dependencies.kt'
-    ]
+    pattern: ['**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt', 'buildSrc/**/Dependencies.kt']
   },
   {
     id: 'sbt',
@@ -76,23 +68,18 @@ const supportedPackageManager: PackageManager[] = [
       `!${join(os.homedir(), '.sbt', '*.lock')}`,
       `!${join(os.homedir(), '**', 'ivydata-*.properties')}`
     ],
-    pattern: [
-      '**/*.sbt',
-      '**/project/build.properties',
-      '**/project/**.{scala,sbt}'
-    ]
+    pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
   }
 ]
 
 function getCoursierCachePath(): string {
   if (os.type() === 'Linux') return join(os.homedir(), '.cache', 'coursier')
-  if (os.type() === 'Darwin')
-    return join(os.homedir(), 'Library', 'Caches', 'Coursier')
+  if (os.type() === 'Darwin') return join(os.homedir(), 'Library', 'Caches', 'Coursier')
   return join(os.homedir(), 'AppData', 'Local', 'Coursier', 'Cache')
 }
 
 function findPackageManager(id: string): PackageManager {
-  const packageManager = supportedPackageManager.find(pm => pm.id === id)
+  const packageManager = supportedPackageManager.find((pm) => pm.id === id)
   if (packageManager === undefined) {
     throw new Error(`unknown package manager specified: ${id}`)
   }
@@ -105,9 +92,7 @@ function findPackageManager(id: string): PackageManager {
  * If there is no file matched to {@link PackageManager.path}, the generated key ends with a dash (-).
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
  */
-async function computeCacheKey(
-  packageManager: PackageManager
-): Promise<string> {
+async function computeCacheKey(packageManager: PackageManager): Promise<string> {
   const hash = await glob.hashFiles(packageManager.pattern.join('\n'))
   return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`
 }
@@ -158,9 +143,7 @@ export async function save(id: string): Promise<void> {
     return
   } else if (matchedKey === primaryKey) {
     // no change in target directories
-    core.info(
-      `Cache hit occurred on the primary key ${primaryKey}, not saving cache.`
-    )
+    core.info(`Cache hit occurred on the primary key ${primaryKey}, not saving cache.`)
     return
   }
   try {
@@ -190,14 +173,8 @@ export async function save(id: string): Promise<void> {
  * @returns true if the given error seems related to the {@link https://github.com/actions/cache/issues/454|running Gradle Daemon issue}.
  * @see {@link https://github.com/actions/cache/issues/454#issuecomment-840493935|why --no-daemon is necessary}
  */
-function isProbablyGradleDaemonProblem(
-  packageManager: PackageManager,
-  error: Error
-): boolean {
-  if (
-    packageManager.id !== 'gradle' ||
-    process.env['RUNNER_OS'] !== 'Windows'
-  ) {
+function isProbablyGradleDaemonProblem(packageManager: PackageManager, error: Error): boolean {
+  if (packageManager.id !== 'gradle' || process.env['RUNNER_OS'] !== 'Windows') {
     return false
   }
   const message = error.message || ''

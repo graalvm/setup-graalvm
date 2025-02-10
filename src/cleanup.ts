@@ -26,9 +26,9 @@
 
 import * as core from '@actions/core'
 import * as constants from './constants.js'
-import {save} from './features/cache.js'
-import {generateReports} from './features/reports.js'
-import {processSBOM} from './features/sbom.js'
+import { save } from './features/cache.js'
+import { generateReports } from './features/reports.js'
+import { processSBOM } from './features/sbom.js'
 
 /**
  * Check given input and run a save process for the specified package manager
@@ -46,9 +46,9 @@ async function saveCache(): Promise<void> {
  * @returns Promise that will ignore error reported by the given promise
  */
 async function ignoreErrors(promise: Promise<void>): Promise<unknown> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     promise
-      .catch(error => {
+      .catch((error) => {
         core.warning(error)
         resolve(void 0)
       })

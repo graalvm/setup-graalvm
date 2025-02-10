@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
-import {GRAALVM_PLATFORM} from './constants.js'
-import {exec} from './utils.js'
+import { GRAALVM_PLATFORM } from './constants.js'
+import { exec } from './utils.js'
 
 const APT_GET_INSTALL_BASE = 'sudo apt-get -y --no-upgrade install'
 const COMPONENT_TO_DEPS = new Map<string, Map<string, string>>([
@@ -9,10 +9,7 @@ const COMPONENT_TO_DEPS = new Map<string, Map<string, string>>([
     new Map<string, string>([
       ['nodejs', `${APT_GET_INSTALL_BASE} g++ make`],
       ['ruby', `${APT_GET_INSTALL_BASE} make gcc libssl-dev libz-dev`],
-      [
-        'R',
-        `${APT_GET_INSTALL_BASE} libgomp1 build-essential gfortran libxml2 libc++-dev`
-      ]
+      ['R', `${APT_GET_INSTALL_BASE} libgomp1 build-essential gfortran libxml2 libc++-dev`]
     ])
   ],
   ['darwin', new Map<string, string>([['ruby', 'brew install openssl']])]

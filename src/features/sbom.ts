@@ -3,9 +3,9 @@ import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as github from '@actions/github'
 import * as glob from '@actions/glob'
-import {basename} from 'path'
+import { basename } from 'path'
 import * as semver from 'semver'
-import {setNativeImageOption} from '../utils.js'
+import { setNativeImageOption } from '../utils.js'
 
 const INPUT_NI_SBOM = 'native-image-enable-sbom'
 const SBOM_FILE_SUFFIX = '.sbom.json'
@@ -67,10 +67,7 @@ interface DependencySnapshot {
   >
 }
 
-export function setUpSBOMSupport(
-  javaVersionOrDev: string,
-  distribution: string
-): void {
+export function setUpSBOMSupport(javaVersionOrDev: string, distribution: string): void {
   if (!isFeatureEnabled()) {
     return
   }
@@ -81,10 +78,7 @@ export function setUpSBOMSupport(
   core.info('Enabled SBOM generation for Native Image build')
 }
 
-function validateJavaVersionAndDistribution(
-  javaVersionOrDev: string,
-  distribution: string
-): void {
+function validateJavaVersionAndDistribution(javaVersionOrDev: string, distribution: string): void {
   if (distribution !== c.DISTRIBUTION_GRAALVM) {
     throw new Error(
       `The '${INPUT_NI_SBOM}' option is only supported for Oracle GraalVM (distribution '${c.DISTRIBUTION_GRAALVM}'), but found distribution '${distribution}'.`
@@ -92,9 +86,7 @@ function validateJavaVersionAndDistribution(
   }
 
   if (javaVersionOrDev === 'dev') {
-    throw new Error(
-      `The '${INPUT_NI_SBOM}' option is not supported for java-version 'dev'.`
-    )
+    throw new Error(`The '${INPUT_NI_SBOM}' option is not supported for java-version 'dev'.`)
   }
 
   if (javaVersionOrDev === 'latest-ea') {
@@ -142,15 +134,11 @@ async function findSBOMFilePath(): Promise<string> {
   const sbomFiles = await globber.glob()
 
   if (sbomFiles.length === 0) {
-    throw new Error(
-      'No SBOM found. Make sure native-image build completed successfully.'
-    )
+    throw new Error('No SBOM found. Make sure native-image build completed successfully.')
   }
 
   if (sbomFiles.length > 1) {
-    throw new Error(
-      `Expected one SBOM but found multiple: ${sbomFiles.join(', ')}.`
-    )
+    throw new Error(`Expected one SBOM but found multiple: ${sbomFiles.join(', ')}.`)
   }
 
   core.info(`Found SBOM: ${sbomFiles[0]}`)
@@ -162,9 +150,7 @@ function parseSBOM(jsonString: string): SBOM {
     const sbomData: SBOM = JSON.parse(jsonString)
     return sbomData
   } catch (error) {
-    throw new Error(
-      `Failed to parse SBOM JSON: ${error instanceof Error ? error.message : String(error)}`
-    )
+    throw new Error(`Failed to parse SBOM JSON: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -175,10 +161,7 @@ function mapToComponentsWithDependencies(sbom: SBOM): Component[] {
   }
 
   return sbom.components.map((component: Component) => {
-    const dependencies =
-      sbom.dependencies?.find(
-        (dep: Dependency) => dep.ref === component['bom-ref']
-      )?.dependsOn || []
+    const dependencies = sbom.dependencies?.find((dep: Dependency) => dep.ref === component['bom-ref'])?.dependsOn || []
 
     return {
       name: component.name,
@@ -201,17 +184,12 @@ function printSBOMContent(components: Component[]): void {
   core.info('==================')
 }
 
-function convertSBOMToSnapshot(
-  sbomPath: string,
-  components: Component[]
-): DependencySnapshot {
+function convertSBOMToSnapshot(sbomPath: string, components: Component[]): DependencySnapshot {
   const context = github.context
   const sbomFileName = basename(sbomPath)
 
   if (!sbomFileName.endsWith(SBOM_FILE_SUFFIX)) {
-    throw new Error(
-      `Invalid SBOM file name: ${sbomFileName}. Expected a file ending with ${SBOM_FILE_SUFFIX}.`
-    )
+    throw new Error(`Invalid SBOM file name: ${sbomFileName}. Expected a file ending with ${SBOM_FILE_SUFFIX}.`)
   }
 
   return {
@@ -244,18 +222,16 @@ function convertSBOMToSnapshot(
 
 function mapComponentsToGithubAPIFormat(
   components: Component[]
-): Record<string, {package_url: string; dependencies?: string[]}> {
+): Record<string, { package_url: string; dependencies?: string[] }> {
   return Object.fromEntries(
     components
-      .filter(component => {
+      .filter((component) => {
         if (!component.purl) {
-          core.info(
-            `Component ${component.name} does not have a valid package URL (purl). Skipping.`
-          )
+          core.info(`Component ${component.name} does not have a valid package URL (purl). Skipping.`)
         }
         return component.purl
       })
-      .map(component => [
+      .map((component) => [
         component.name,
         {
           package_url: component.purl as string,
@@ -265,32 +241,27 @@ function mapComponentsToGithubAPIFormat(
   )
 }
 
-async function submitDependencySnapshot(
-  snapshotData: DependencySnapshot
-): Promise<void> {
-  const token = core.getInput(c.INPUT_GITHUB_TOKEN, {required: true})
+async function submitDependencySnapshot(snapshotData: DependencySnapshot): Promise<void> {
+  const token = core.getInput(c.INPUT_GITHUB_TOKEN, { required: true })
   const octokit = github.getOctokit(token)
   const context = github.context
 
   try {
-    await octokit.request(
-      'POST /repos/{owner}/{repo}/dependency-graph/snapshots',
-      {
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        version: snapshotData.version,
-        sha: snapshotData.sha,
-        ref: snapshotData.ref,
-        job: snapshotData.job,
-        detector: snapshotData.detector,
-        metadata: {},
-        scanned: snapshotData.scanned,
-        manifests: snapshotData.manifests,
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28'
-        }
+    await octokit.request('POST /repos/{owner}/{repo}/dependency-graph/snapshots', {
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      version: snapshotData.version,
+      sha: snapshotData.sha,
+      ref: snapshotData.ref,
+      job: snapshotData.job,
+      detector: snapshotData.detector,
+      metadata: {},
+      scanned: snapshotData.scanned,
+      manifests: snapshotData.manifests,
+      headers: {
+        'X-GitHub-Api-Version': '2022-11-28'
       }
-    )
+    })
     core.info('Dependency snapshot submitted successfully.')
   } catch (error) {
     throw new Error(

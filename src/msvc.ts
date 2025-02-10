@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
-import {execSync} from 'child_process'
-import {existsSync} from 'fs'
-import {VERSION_DEV} from './constants.js'
+import { execSync } from 'child_process'
+import { existsSync } from 'fs'
+import { VERSION_DEV } from './constants.js'
 
 // Keep in sync with https://github.com/actions/virtual-environments
 const KNOWN_VISUAL_STUDIO_INSTALLATIONS = [
@@ -11,9 +11,7 @@ const KNOWN_VISUAL_STUDIO_INSTALLATIONS = [
 ]
 if (process.env['VSINSTALLDIR']) {
   // if VSINSTALLDIR is set, make it the first known installation
-  KNOWN_VISUAL_STUDIO_INSTALLATIONS.unshift(
-    process.env['VSINSTALLDIR'].replace(/\\$/, '')
-  )
+  KNOWN_VISUAL_STUDIO_INSTALLATIONS.unshift(process.env['VSINSTALLDIR'].replace(/\\$/, ''))
 }
 const VCVARSALL_SUBPATH = 'VC\\Auxiliary\\Build\\vcvarsall.bat'
 
@@ -45,13 +43,7 @@ export function setUpWindowsEnvironment(
   graalVMVersion: string,
   isGraalVMforJDK17OrLater: boolean
 ): void {
-  if (
-    !needsWindowsEnvironmentSetup(
-      javaVersion,
-      graalVMVersion,
-      isGraalVMforJDK17OrLater
-    )
-  ) {
+  if (!needsWindowsEnvironmentSetup(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater)) {
     return
   }
 
@@ -59,10 +51,9 @@ export function setUpWindowsEnvironment(
 
   const vcvarsallPath = findVcvarsallPath()
   core.debug(`Calling "${vcvarsallPath}"...`)
-  const [originalEnv, vcvarsallOutput, updatedEnv] = execSync(
-    `set && cls && "${vcvarsallPath}" x64 && cls && set`,
-    {shell: 'cmd'}
-  )
+  const [originalEnv, vcvarsallOutput, updatedEnv] = execSync(`set && cls && "${vcvarsallPath}" x64 && cls && set`, {
+    shell: 'cmd'
+  })
     .toString()
     .split('\f') // form feed page break (printed by `cls`)
   core.debug(vcvarsallOutput)

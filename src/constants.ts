@@ -48,23 +48,18 @@ export const GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6'
 export const ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME'
 export const EVENT_NAME_PULL_REQUEST = 'pull_request'
 
-export const ERROR_REQUEST =
-  'Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
+export const ERROR_REQUEST = 'Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
 
 export const ERROR_HINT =
   'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
 
-export type LatestReleaseResponse =
-  otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']
+export type LatestReleaseResponse = otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']
 
-export type MatchingRefsResponse =
-  otypes.Endpoints['GET /repos/{owner}/{repo}/git/matching-refs/{ref}']['response']
+export type MatchingRefsResponse = otypes.Endpoints['GET /repos/{owner}/{repo}/git/matching-refs/{ref}']['response']
 
-export type ReleasesResponse =
-  otypes.Endpoints['GET /repos/{owner}/{repo}/releases']['response']
+export type ReleasesResponse = otypes.Endpoints['GET /repos/{owner}/{repo}/releases']['response']
 
-export type ContentsResponse =
-  otypes.Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['response']
+export type ContentsResponse = otypes.Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['response']
 
 export interface OracleGraalVMEAFile {
   filename: string
