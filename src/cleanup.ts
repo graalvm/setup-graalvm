@@ -25,10 +25,10 @@
  */
 
 import * as core from '@actions/core'
-import * as constants from './constants'
-import {save} from './features/cache'
-import {generateReports} from './features/reports'
-import {processSBOM} from './features/sbom'
+import * as constants from './constants.js'
+import {save} from './features/cache.js'
+import {generateReports} from './features/reports.js'
+import {processSBOM} from './features/sbom.js'
 
 /**
  * Check given input and run a save process for the specified package manager

@@ -1,7 +1,7 @@
-import * as c from '../constants'
+import * as c from '../constants.js'
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import {exec} from '../utils'
+import {exec} from '../utils.js'
 import {join} from 'path'
 
 const MUSL_NAME = 'x86_64-linux-musl-native'

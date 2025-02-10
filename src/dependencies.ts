@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
-import {GRAALVM_PLATFORM} from './constants'
-import {exec} from './utils'
+import {GRAALVM_PLATFORM} from './constants.js'
+import {exec} from './utils.js'
 
 const APT_GET_INSTALL_BASE = 'sudo apt-get -y --no-upgrade install'
 const COMPONENT_TO_DEPS = new Map<string, Map<string, string>>([
