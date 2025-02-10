@@ -7,10 +7,11 @@
   },
   "exclude": ["dist", "node_modules"],
   "include": [
-    "__fixtures__",
     "__tests__",
     "src",
     "eslint.config.mjs",
-    "jest.config.js"
+    "jest.config.js",
+    "rollup.cleanup.config.ts",
+    "rollup.main.config.ts"
   ]
 }
