@@ -62,9 +62,4 @@ export async function run(): Promise<void> {
   await ignoreErrors(saveCache())
 }
 
-if (require.main === module) {
-  run()
-} else {
-  // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
-  core.info('the script is loaded as a module, so skipping the execution')
-}
+run()
