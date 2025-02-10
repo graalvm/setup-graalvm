@@ -17,8 +17,7 @@ const BUILD_OUTPUT_JSON_PATH = tmpfile('native-image-build-output.json')
 const BYTES_TO_KiB = 1024
 const BYTES_TO_MiB = 1024 * 1024
 const BYTES_TO_GiB = 1024 * 1024 * 1024
-const DOCS_BASE =
-  'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md'
+const DOCS_BASE = 'https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/BuildOutput.md'
 const INPUT_NI_JOB_REPORTS = 'native-image-job-reports'
 const INPUT_NI_PR_REPORTS = 'native-image-pr-reports'
 const INPUT_NI_PR_REPORTS_UPDATE = 'native-image-pr-reports-update-existing'
@@ -105,18 +104,14 @@ export async function setUpNativeImageBuildReports(
     isGraalVMforJDK17OrLater ||
     graalVMVersion === c.VERSION_LATEST ||
     graalVMVersion === c.VERSION_DEV ||
-    (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) &&
-      semver.gte(toSemVer(graalVMVersion), '22.2.0'))
+    (!graalVMVersion.startsWith(c.MANDREL_NAMESPACE) && semver.gte(toSemVer(graalVMVersion), '22.2.0'))
   if (!isSupported) {
     core.warning(
       `Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`
     )
     return
   }
-  setNativeImageOption(
-    javaVersionOrDev,
-    `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`
-  ) // Escape backslashes for Windows
+  setNativeImageOption(javaVersionOrDev, `-H:BuildOutputJSONFile=${BUILD_OUTPUT_JSON_PATH.replace(/\\/g, '\\\\')}`) // Escape backslashes for Windows
 }
 
 export async function generateReports(): Promise<void> {
@@ -127,9 +122,7 @@ export async function generateReports(): Promise<void> {
       )
       return
     }
-    const buildOutput: BuildOutput = JSON.parse(
-      fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8')
-    )
+    const buildOutput: BuildOutput = JSON.parse(fs.readFileSync(BUILD_OUTPUT_JSON_PATH, 'utf8'))
     const report = createReport(buildOutput)
     if (areJobReportsEnabled()) {
       core.summary.addRaw(report)
@@ -144,9 +137,7 @@ export async function generateReports(): Promise<void> {
       }
       return createPRComment(report)
     } else if (arePRReportsUpdateEnabled()) {
-      throw new Error(
-        `'${INPUT_NI_PR_REPORTS_UPDATE}' option requires '${INPUT_NI_PR_REPORTS}' to be set 'true'`
-      )
+      throw new Error(`'${INPUT_NI_PR_REPORTS_UPDATE}' option requires '${INPUT_NI_PR_REPORTS}' to be set 'true'`)
     }
   }
 }
@@ -174,11 +165,7 @@ function createReport(data: BuildOutput): string {
     objectCount = `${details.image_heap.objects.count.toLocaleString()} objects, `
   }
   const debugInfoBytes = details.debug_info ? details.debug_info.bytes : 0
-  const otherBytes =
-    details.total_bytes -
-    details.code_area.bytes -
-    details.image_heap.bytes -
-    debugInfoBytes
+  const otherBytes = details.total_bytes - details.code_area.bytes - details.image_heap.bytes - debugInfoBytes
   let debugInfoLine = ''
   if (details.debug_info) {
     debugInfoLine = `
@@ -210,8 +197,7 @@ function createReport(data: BuildOutput): string {
   let graalLine
   if (info.graal_compiler) {
     let pgoSuffix = ''
-    const isOracleGraalVM =
-      info.vendor_version && info.vendor_version.includes('Oracle GraalVM')
+    const isOracleGraalVM = info.vendor_version && info.vendor_version.includes('Oracle GraalVM')
     if (isOracleGraalVM) {
       const pgo = info.graal_compiler.pgo
       const pgoText = pgo ? pgo.join('+') : 'off'
@@ -233,10 +219,7 @@ function createReport(data: BuildOutput): string {
   let gcTotalTimeRatio = ''
   if (resources.total_secs) {
     totalTime = ` in ${secondsToHuman(resources.total_secs)}`
-    gcTotalTimeRatio = ` (${toPercent(
-      resources.garbage_collection.total_secs,
-      resources.total_secs
-    )} of total time)`
+    gcTotalTimeRatio = ` (${toPercent(resources.garbage_collection.total_secs, resources.total_secs)} of total time)`
   }
 
   return `${PR_COMMENT_TITLE}
@@ -278,56 +261,29 @@ function createReport(data: BuildOutput): string {
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reachability" target="_blank">Reachable</a></td>
       <td align="right">${analysisTypes.reachable.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysisTypes.reachable,
-        analysisTypes.total
-      )}</td>
+      <td align="right">${toPercent(analysisTypes.reachable, analysisTypes.total)}</td>
       <td align="right">${analysis.fields.reachable.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysis.fields.reachable,
-        analysis.fields.total
-      )}</td>
+      <td align="right">${toPercent(analysis.fields.reachable, analysis.fields.total)}</td>
       <td align="right">${analysis.methods.reachable.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysis.methods.reachable,
-        analysis.methods.total
-      )}</td>
+      <td align="right">${toPercent(analysis.methods.reachable, analysis.methods.total)}</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reflection-registrations" target="_blank">Reflection</a></td>
       <td align="right">${analysisTypes.reflection.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysisTypes.reflection,
-        analysisTypes.total
-      )}</td>
+      <td align="right">${toPercent(analysisTypes.reflection, analysisTypes.total)}</td>
       <td align="right">${analysis.fields.reflection.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysis.fields.reflection,
-        analysis.fields.total
-      )}</td>
+      <td align="right">${toPercent(analysis.fields.reflection, analysis.fields.total)}</td>
       <td align="right">${analysis.methods.reflection.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysis.methods.reflection,
-        analysis.methods.total
-      )}</td>
+      <td align="right">${toPercent(analysis.methods.reflection, analysis.methods.total)}</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-jni-access-registrations" target="_blank">JNI</a></td>
       <td align="right">${analysisTypes.jni.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysisTypes.jni,
-        analysisTypes.total
-      )}</td>
+      <td align="right">${toPercent(analysisTypes.jni, analysisTypes.total)}</td>
       <td align="right">${analysis.fields.jni.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysis.fields.jni,
-        analysis.fields.total
-      )}</td>
+      <td align="right">${toPercent(analysis.fields.jni, analysis.fields.total)}</td>
       <td align="right">${analysis.methods.jni.toLocaleString()}</td>
-      <td align="right">${toPercent(
-        analysis.methods.jni,
-        analysis.methods.total
-      )}</td>
+      <td align="right">${toPercent(analysis.methods.jni, analysis.methods.total)}</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-reachability" target="_blank">Loaded</a></td>
@@ -356,19 +312,13 @@ function createReport(data: BuildOutput): string {
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-code-area" target="_blank">Code area</a></td>
       <td align="right">${bytesToHuman(details.code_area.bytes)}</td>
-      <td align="right">${toPercent(
-        details.code_area.bytes,
-        details.total_bytes
-      )}</td>
+      <td align="right">${toPercent(details.code_area.bytes, details.total_bytes)}</td>
       <td align="left">${details.code_area.compilation_units.toLocaleString()} compilation units</td>
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-image-heap" target="_blank">Image heap</a></td>
       <td align="right">${bytesToHuman(details.image_heap.bytes)}</td>
-      <td align="right">${toPercent(
-        details.image_heap.bytes,
-        details.total_bytes
-      )}</td>
+      <td align="right">${toPercent(details.image_heap.bytes, details.total_bytes)}</td>
       <td align="left">${objectCount}${bytesToHuman(
         details.image_heap.resources.bytes
       )} for ${details.image_heap.resources.count.toLocaleString()} resources</td>
@@ -381,9 +331,7 @@ function createReport(data: BuildOutput): string {
     </tr>
     <tr>
       <td align="left">Total</td>
-      <td align="right"><strong>${bytesToHuman(
-        details.total_bytes
-      )}</strong></td>
+      <td align="right"><strong>${bytesToHuman(details.total_bytes)}</strong></td>
       <td align="right">100.000%</td>
       <td align="left"></td>
     </tr>
@@ -402,9 +350,7 @@ function createReport(data: BuildOutput): string {
     </tr>
     <tr>
       <td align="left"><a href="${DOCS_BASE}#glossary-peak-rss" target="_blank">Peak RSS</a></td>
-      <td align="left">${bytesToHuman(
-        resources.memory.peak_rss_bytes
-      )} (${toPercent(
+      <td align="left">${bytesToHuman(resources.memory.peak_rss_bytes)} (${toPercent(
         resources.memory.peak_rss_bytes,
         resources.memory.system_total
       )} of ${bytesToHuman(resources.memory.system_total)} system memory)</td>

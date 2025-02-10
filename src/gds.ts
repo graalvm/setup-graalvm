@@ -7,11 +7,11 @@ import * as path from 'path'
 import * as stream from 'stream'
 import * as util from 'util'
 import * as semver from 'semver'
-import {IncomingHttpHeaders, OutgoingHttpHeaders} from 'http'
-import {RetryHelper} from '@actions/tool-cache/lib/retry-helper.js'
-import {calculateSHA256} from './utils.js'
-import {ok} from 'assert'
-import {v4 as uuidv4} from 'uuid'
+import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http'
+import { RetryHelper } from '@actions/tool-cache/lib/retry-helper.js'
+import { calculateSHA256 } from './utils.js'
+import { ok } from 'assert'
+import { v4 as uuidv4 } from 'uuid'
 
 interface GDSArtifactsResponse {
   readonly items: GDSArtifact[]
@@ -27,39 +27,19 @@ interface GDSErrorResponse {
   readonly message: string
 }
 
-export async function downloadGraalVM(
-  gdsToken: string,
-  javaVersion: string
-): Promise<string> {
+export async function downloadGraalVM(gdsToken: string, javaVersion: string): Promise<string> {
   const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
-  const baseArtifact = await fetchArtifact(
-    userAgent,
-    'isBase:True',
-    javaVersion
-  )
+  const baseArtifact = await fetchArtifact(userAgent, 'isBase:True', javaVersion)
   return downloadArtifact(gdsToken, userAgent, baseArtifact)
 }
 
-export async function downloadGraalVMEELegacy(
-  gdsToken: string,
-  version: string,
-  javaVersion: string
-): Promise<string> {
+export async function downloadGraalVMEELegacy(gdsToken: string, version: string, javaVersion: string): Promise<string> {
   const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
-  const baseArtifact = await fetchArtifactEE(
-    userAgent,
-    'isBase:True',
-    version,
-    javaVersion
-  )
+  const baseArtifact = await fetchArtifactEE(userAgent, 'isBase:True', version, javaVersion)
   return downloadArtifact(gdsToken, userAgent, baseArtifact)
 }
 
-export async function fetchArtifact(
-  userAgent: string,
-  metadata: string,
-  javaVersion: string
-): Promise<GDSArtifact> {
+export async function fetchArtifact(userAgent: string, metadata: string, javaVersion: string): Promise<GDSArtifact> {
   const http = new httpClient.HttpClient(userAgent)
 
   let filter
@@ -79,15 +59,13 @@ export async function fetchArtifact(
   const catalogOS = c.IS_MACOS ? 'macos' : c.GRAALVM_PLATFORM
   const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&${filter}&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`
   core.debug(`Requesting ${requestUrl}`)
-  const response = await http.get(requestUrl, {accept: 'application/json'})
+  const response = await http.get(requestUrl, { accept: 'application/json' })
   if (response.message.statusCode !== 200) {
     throw new Error(
       `Unable to find GraalVM for JDK ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct?`
     )
   }
-  const artifactResponse = JSON.parse(
-    await response.readBody()
-  ) as GDSArtifactsResponse
+  const artifactResponse = JSON.parse(await response.readBody()) as GDSArtifactsResponse
   if (artifactResponse.items.length !== 1) {
     throw new Error(
       artifactResponse.items.length > 1
@@ -116,15 +94,11 @@ export async function fetchArtifactEE(
   const catalogOS = c.IS_MACOS ? 'macos' : c.GRAALVM_PLATFORM
   const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&${filter}&metadata=java:jdk${javaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`
   core.debug(`Requesting ${requestUrl}`)
-  const response = await http.get(requestUrl, {accept: 'application/json'})
+  const response = await http.get(requestUrl, { accept: 'application/json' })
   if (response.message.statusCode !== 200) {
-    throw new Error(
-      `Unable to find JDK${javaVersion}-based GraalVM EE ${version}`
-    )
+    throw new Error(`Unable to find JDK${javaVersion}-based GraalVM EE ${version}`)
   }
-  const artifactResponse = JSON.parse(
-    await response.readBody()
-  ) as GDSArtifactsResponse
+  const artifactResponse = JSON.parse(await response.readBody()) as GDSArtifactsResponse
   if (artifactResponse.items.length !== 1) {
     throw new Error(
       artifactResponse.items.length > 1
@@ -135,21 +109,13 @@ export async function fetchArtifactEE(
   return artifactResponse.items[0]
 }
 
-async function downloadArtifact(
-  gdsToken: string,
-  userAgent: string,
-  artifact: GDSArtifact
-): Promise<string> {
+async function downloadArtifact(gdsToken: string, userAgent: string, artifact: GDSArtifact): Promise<string> {
   let downloadPath
   try {
-    downloadPath = await downloadTool(
-      `${c.GDS_BASE}/artifacts/${artifact.id}/content`,
-      userAgent,
-      {
-        accept: 'application/x-yaml',
-        'x-download-token': gdsToken
-      }
-    )
+    downloadPath = await downloadTool(`${c.GDS_BASE}/artifacts/${artifact.id}/content`, userAgent, {
+      accept: 'application/x-yaml',
+      'x-download-token': gdsToken
+    })
   } catch (err) {
     if (err instanceof HTTPError && err.httpStatusCode) {
       if (err.httpStatusCode === 401) {
@@ -162,9 +128,7 @@ async function downloadArtifact(
   }
   const sha256 = calculateSHA256(downloadPath)
   if (sha256.toLowerCase() !== artifact.checksum.toLowerCase()) {
-    throw new Error(
-      `Checksum does not match (expected: "${artifact.checksum}", got: "${sha256}")`
-    )
+    throw new Error(`Checksum does not match (expected: "${artifact.checksum}", got: "${sha256}")`)
   }
   return downloadPath
 }
@@ -185,11 +149,7 @@ class HTTPError extends Error {
   }
 }
 
-async function downloadTool(
-  url: string,
-  userAgent: string,
-  headers?: OutgoingHttpHeaders
-): Promise<string> {
+async function downloadTool(url: string, userAgent: string, headers?: OutgoingHttpHeaders): Promise<string> {
   const dest = path.join(getTempDirectory(), uuidv4())
   await io.mkdirP(path.dirname(dest))
   core.debug(`Downloading ${url}`)
@@ -206,11 +166,7 @@ async function downloadTool(
     (err: Error) => {
       if (err instanceof HTTPError && err.httpStatusCode) {
         // Don't retry anything less than 500, except 408 Request Timeout and 429 Too Many Requests
-        if (
-          err.httpStatusCode < 500 &&
-          err.httpStatusCode !== 408 &&
-          err.httpStatusCode !== 429
-        ) {
+        if (err.httpStatusCode < 500 && err.httpStatusCode !== 408 && err.httpStatusCode !== 429) {
           return false
         }
       }
@@ -238,14 +194,8 @@ async function downloadToolAttempt(
 
   const response: httpClient.HttpClientResponse = await http.get(url, headers)
   if (response.message.statusCode !== 200) {
-    const errorResponse = JSON.parse(
-      await response.readBody()
-    ) as GDSErrorResponse
-    const err = new HTTPError(
-      response.message.statusCode,
-      errorResponse,
-      response.message.headers
-    )
+    const errorResponse = JSON.parse(await response.readBody()) as GDSErrorResponse
+    const err = new HTTPError(response.message.statusCode, errorResponse, response.message.headers)
     core.debug(
       `Failed to download from "${url}". Code(${response.message.statusCode}) Message(${response.message.statusMessage})`
     )

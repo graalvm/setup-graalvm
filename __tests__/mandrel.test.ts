@@ -1,7 +1,7 @@
 import * as path from 'path'
 import * as mandrel from '../src/mandrel'
-import {expect, test} from '@jest/globals'
-import {getLatestRelease} from '../src/utils'
+import { expect, test } from '@jest/globals'
+import { getLatestRelease } from '../src/utils'
 
 process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
 process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')

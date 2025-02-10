@@ -24,10 +24,10 @@
  * Forked from https://github.com/actions/setup-java/blob/5b36705a13905facb447b6812d613a06a07e371d/__tests__/cache.test.ts
  */
 
-import {mkdtempSync} from 'fs'
-import {tmpdir} from 'os'
-import {join} from 'path'
-import {restore, save} from '../src/features/cache'
+import { mkdtempSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
+import { restore, save } from '../src/features/cache'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as core from '@actions/core'
@@ -86,24 +86,17 @@ describe('dependency cache', () => {
   })
 
   describe('restore', () => {
-    let spyCacheRestore: jest.SpyInstance<
-      ReturnType<typeof cache.restoreCache>,
-      Parameters<typeof cache.restoreCache>
-    >
+    let spyCacheRestore: jest.SpyInstance<ReturnType<typeof cache.restoreCache>, Parameters<typeof cache.restoreCache>>
 
     beforeEach(() => {
       spyCacheRestore = jest
         .spyOn(cache, 'restoreCache')
-        .mockImplementation((_paths: string[], _primaryKey: string) =>
-          Promise.resolve(undefined)
-        )
+        .mockImplementation((_paths: string[], _primaryKey: string) => Promise.resolve(undefined))
       spyWarning.mockImplementation(() => null)
     })
 
     it('throws error if unsupported package manager specified', () => {
-      return expect(restore('ant')).rejects.toThrow(
-        'unknown package manager specified: ant'
-      )
+      return expect(restore('ant')).rejects.toThrow('unknown package manager specified: ant')
     })
 
     describe('for maven', () => {
@@ -176,24 +169,17 @@ describe('dependency cache', () => {
     })
   })
   describe('save', () => {
-    let spyCacheSave: jest.SpyInstance<
-      ReturnType<typeof cache.saveCache>,
-      Parameters<typeof cache.saveCache>
-    >
+    let spyCacheSave: jest.SpyInstance<ReturnType<typeof cache.saveCache>, Parameters<typeof cache.saveCache>>
 
     beforeEach(() => {
       spyCacheSave = jest
         .spyOn(cache, 'saveCache')
-        .mockImplementation((_paths: string[], _key: string) =>
-          Promise.resolve(0)
-        )
+        .mockImplementation((_paths: string[], _key: string) => Promise.resolve(0))
       spyWarning.mockImplementation(() => null)
     })
 
     it('throws error if unsupported package manager specified', () => {
-      return expect(save('ant')).rejects.toThrow(
-        'unknown package manager specified: ant'
-      )
+      return expect(save('ant')).rejects.toThrow('unknown package manager specified: ant')
     })
 
     it('save with -1 cacheId , should not fail workflow', async () => {
@@ -204,21 +190,15 @@ describe('dependency cache', () => {
       expect(spyCacheSave).toHaveBeenCalled()
       expect(spyWarning).not.toHaveBeenCalled()
       expect(spyInfo).toHaveBeenCalled()
-      expect(spyInfo).toHaveBeenCalledWith(
-        expect.stringMatching(/^Cache saved with the key:.*/)
-      )
+      expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
     })
 
     it('saves with error from toolkit, should fail workflow', async () => {
-      spyCacheSave.mockImplementation(() =>
-        Promise.reject(new cache.ValidationError('Validation failed'))
-      )
+      spyCacheSave.mockImplementation(() => Promise.reject(new cache.ValidationError('Validation failed')))
       createStateForMissingBuildFile()
 
       expect.assertions(1)
-      await expect(save('maven')).rejects.toEqual(
-        new cache.ValidationError('Validation failed')
-      )
+      await expect(save('maven')).rejects.toEqual(new cache.ValidationError('Validation failed'))
     })
 
     describe('for maven', () => {
@@ -233,9 +213,7 @@ describe('dependency cache', () => {
 
         await save('maven')
         expect(spyCacheSave).not.toHaveBeenCalled()
-        expect(spyWarning).toHaveBeenCalledWith(
-          'Error retrieving key from state.'
-        )
+        expect(spyWarning).toHaveBeenCalledWith('Error retrieving key from state.')
       })
       it('uploads cache', async () => {
         createFile(join(workspace, 'pom.xml'))
@@ -244,9 +222,7 @@ describe('dependency cache', () => {
         await save('maven')
         expect(spyCacheSave).toHaveBeenCalled()
         expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(
-          expect.stringMatching(/^Cache saved with the key:.*/)
-        )
+        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
     })
     describe('for gradle', () => {
@@ -262,9 +238,7 @@ describe('dependency cache', () => {
 
         await save('gradle')
         expect(spyCacheSave).not.toHaveBeenCalled()
-        expect(spyWarning).toHaveBeenCalledWith(
-          'Error retrieving key from state.'
-        )
+        expect(spyWarning).toHaveBeenCalledWith('Error retrieving key from state.')
       })
       it('uploads cache based on build.gradle', async () => {
         createFile(join(workspace, 'build.gradle'))
@@ -273,9 +247,7 @@ describe('dependency cache', () => {
         await save('gradle')
         expect(spyCacheSave).toHaveBeenCalled()
         expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(
-          expect.stringMatching(/^Cache saved with the key:.*/)
-        )
+        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
       it('uploads cache based on build.gradle.kts', async () => {
         createFile(join(workspace, 'build.gradle.kts'))
@@ -284,9 +256,7 @@ describe('dependency cache', () => {
         await save('gradle')
         expect(spyCacheSave).toHaveBeenCalled()
         expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(
-          expect.stringMatching(/^Cache saved with the key:.*/)
-        )
+        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
       it('uploads cache based on buildSrc/Versions.kt', async () => {
         createDirectory(join(workspace, 'buildSrc'))
@@ -296,9 +266,7 @@ describe('dependency cache', () => {
         await save('gradle')
         expect(spyCacheSave).toHaveBeenCalled()
         expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(
-          expect.stringMatching(/^Cache saved with the key:.*/)
-        )
+        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
     })
     describe('for sbt', () => {
@@ -313,9 +281,7 @@ describe('dependency cache', () => {
 
         await save('sbt')
         expect(spyCacheSave).not.toHaveBeenCalled()
-        expect(spyWarning).toHaveBeenCalledWith(
-          'Error retrieving key from state.'
-        )
+        expect(spyWarning).toHaveBeenCalledWith('Error retrieving key from state.')
       })
       it('uploads cache', async () => {
         createFile(join(workspace, 'build.sbt'))
@@ -324,9 +290,7 @@ describe('dependency cache', () => {
         await save('sbt')
         expect(spyCacheSave).toHaveBeenCalled()
         expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(
-          expect.stringMatching(/^Cache saved with the key:.*/)
-        )
+        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
     })
   })
@@ -340,7 +304,7 @@ function resetState() {
  * Create states to emulate a restore process without build file.
  */
 function createStateForMissingBuildFile() {
-  jest.spyOn(core, 'getState').mockImplementation(name => {
+  jest.spyOn(core, 'getState').mockImplementation((name) => {
     switch (name) {
       case 'cache-primary-key':
         return 'setup-graalvm-cache-'
@@ -354,7 +318,7 @@ function createStateForMissingBuildFile() {
  * Create states to emulate a successful restore process.
  */
 function createStateForSuccessfulRestore() {
-  jest.spyOn(core, 'getState').mockImplementation(name => {
+  jest.spyOn(core, 'getState').mockImplementation((name) => {
     switch (name) {
       case 'cache-primary-key':
         return 'setup-graalvm-cache-primary-key'

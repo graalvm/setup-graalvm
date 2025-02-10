@@ -1,13 +1,9 @@
 import * as path from 'path'
 import * as graalvm from '../src/graalvm'
-import {expect, test} from '@jest/globals'
-import {getTaggedRelease} from '../src/utils'
-import {
-  findGraalVMVersion,
-  findHighestJavaVersion,
-  findLatestEABuildDownloadUrl
-} from '../src/graalvm'
-import {GRAALVM_GH_USER, GRAALVM_RELEASES_REPO} from '../src/constants'
+import { expect, test } from '@jest/globals'
+import { getTaggedRelease } from '../src/utils'
+import { findGraalVMVersion, findHighestJavaVersion, findLatestEABuildDownloadUrl } from '../src/graalvm'
+import { GRAALVM_GH_USER, GRAALVM_RELEASES_REPO } from '../src/constants'
 
 process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
 process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
@@ -52,11 +48,7 @@ test('find version/javaVersion', async () => {
   }
   expect(error.message).toContain('Unable to find the latest Java version for')
 
-  const latestRelease = await getTaggedRelease(
-    GRAALVM_GH_USER,
-    GRAALVM_RELEASES_REPO,
-    'vm-22.3.1'
-  )
+  const latestRelease = await getTaggedRelease(GRAALVM_GH_USER, GRAALVM_RELEASES_REPO, 'vm-22.3.1')
   const latestVersion = findGraalVMVersion(latestRelease)
   expect(latestVersion).not.toBe('')
   const latestJavaVersion = findHighestJavaVersion(latestRelease, latestVersion)
@@ -64,7 +56,7 @@ test('find version/javaVersion', async () => {
 
   error = new Error('unexpected')
   try {
-    const invalidRelease = {...latestRelease, tag_name: 'invalid'}
+    const invalidRelease = { ...latestRelease, tag_name: 'invalid' }
     findGraalVMVersion(invalidRelease)
   } catch (err) {
     if (!(err instanceof Error)) {

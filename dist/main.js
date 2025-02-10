@@ -36551,9 +36551,7 @@ const GitHubDotCom = Octokit.defaults({
 async function exec(commandLine, args, options) {
     const exitCode = await execExports.exec(commandLine, args, options);
     if (exitCode !== 0) {
-        throw new Error(`'${[commandLine]
-            .concat(args || [])
-            .join(' ')}' exited with a non-zero code: ${exitCode}`);
+        throw new Error(`'${[commandLine].concat(args || []).join(' ')}' exited with a non-zero code: ${exitCode}`);
     }
 }
 async function getLatestRelease(repo) {
@@ -36664,8 +36662,7 @@ function tmpfile(fileName) {
 }
 function setNativeImageOption(javaVersionOrDev, optionValue) {
     const coercedJavaVersionOrDev = semverExports.coerce(javaVersionOrDev);
-    if ((coercedJavaVersionOrDev &&
-        semverExports.gte(coercedJavaVersionOrDev, '22.0.0')) ||
+    if ((coercedJavaVersionOrDev && semverExports.gte(coercedJavaVersionOrDev, '22.0.0')) ||
         javaVersionOrDev === VERSION_DEV ||
         javaVersionOrDev.endsWith('-ea')) {
         /* NATIVE_IMAGE_OPTIONS was introduced in GraalVM for JDK 22 (so were EA builds). */
@@ -36874,9 +36871,7 @@ async function downloadTool(url, userAgent, headers) {
     }, (err) => {
         if (err instanceof HTTPError && err.httpStatusCode) {
             // Don't retry anything less than 500, except 408 Request Timeout and 429 Too Many Requests
-            if (err.httpStatusCode < 500 &&
-                err.httpStatusCode !== 408 &&
-                err.httpStatusCode !== 429) {
+            if (err.httpStatusCode < 500 && err.httpStatusCode !== 408 && err.httpStatusCode !== 429) {
                 return false;
             }
         }
@@ -36994,9 +36989,7 @@ async function findLatestEABuildDownloadUrl(javaEaVersion) {
     catch (error) {
         throw new Error(`Unable to resolve download URL for '${javaEaVersion}' (reason: ${error}). Please make sure the java-version is set correctly. ${ERROR_HINT}`);
     }
-    if (Array.isArray(response) ||
-        response.type !== 'file' ||
-        !response.content) {
+    if (Array.isArray(response) || response.type !== 'file' || !response.content) {
         throw new Error(`Unexpected response when resolving download URL for '${javaEaVersion}'. ${ERROR_REQUEST}`);
     }
     const versionData = JSON.parse(Buffer.from(response.content, 'base64').toString('utf-8'));
@@ -37005,12 +36998,12 @@ async function findLatestEABuildDownloadUrl(javaEaVersion) {
         latestVersion = versionData;
     }
     else {
-        latestVersion = versionData.find(v => v.latest);
+        latestVersion = versionData.find((v) => v.latest);
         if (!latestVersion) {
             throw new Error(`Unable to find latest version for '${javaEaVersion}'. ${ERROR_REQUEST}`);
         }
     }
-    const file = latestVersion.files.find(f => f.arch === JDK_ARCH && f.platform === GRAALVM_PLATFORM);
+    const file = latestVersion.files.find((f) => f.arch === JDK_ARCH && f.platform === GRAALVM_PLATFORM);
     if (!file || !file.filename.startsWith('graalvm-jdk-')) {
         throw new Error(`Unable to find file metadata for '${javaEaVersion}'. ${ERROR_REQUEST}`);
     }
@@ -37039,8 +37032,7 @@ async function findLatestGraalVMJDKCEJavaVersion(majorJavaVersion) {
     const versionNumberStartIndex = `refs/tags/${GRAALVM_JDK_TAG_PREFIX}`.length;
     for (const matchingRef of matchingRefs) {
         const currentVersion = matchingRef.ref.substring(versionNumberStartIndex);
-        if (semverExports.valid(currentVersion) &&
-            semverExports.gt(currentVersion, highestVersion)) {
+        if (semverExports.valid(currentVersion) && semverExports.gt(currentVersion, highestVersion)) {
             highestVersion = currentVersion;
         }
     }
@@ -88384,17 +88376,9 @@ const supportedPackageManager = [
     },
     {
         id: 'gradle',
-        path: [
-            join(os$1.homedir(), '.gradle', 'caches'),
-            join(os$1.homedir(), '.gradle', 'wrapper')
-        ],
+        path: [join(os$1.homedir(), '.gradle', 'caches'), join(os$1.homedir(), '.gradle', 'wrapper')],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
-        pattern: [
-            '**/*.gradle*',
-            '**/gradle-wrapper.properties',
-            'buildSrc/**/Versions.kt',
-            'buildSrc/**/Dependencies.kt'
-        ]
+        pattern: ['**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt', 'buildSrc/**/Dependencies.kt']
     },
     {
         id: 'sbt',
@@ -88407,11 +88391,7 @@ const supportedPackageManager = [
             `!${join(os$1.homedir(), '.sbt', '*.lock')}`,
             `!${join(os$1.homedir(), '**', 'ivydata-*.properties')}`
         ],
-        pattern: [
-            '**/*.sbt',
-            '**/project/build.properties',
-            '**/project/**.{scala,sbt}'
-        ]
+        pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
     }
 ];
 function getCoursierCachePath() {
@@ -88422,7 +88402,7 @@ function getCoursierCachePath() {
     return join(os$1.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
 }
 function findPackageManager(id) {
-    const packageManager = supportedPackageManager.find(pm => pm.id === id);
+    const packageManager = supportedPackageManager.find((pm) => pm.id === id);
     if (packageManager === undefined) {
         throw new Error(`unknown package manager specified: ${id}`);
     }
@@ -88470,10 +88450,7 @@ const COMPONENT_TO_DEPS = new Map([
         new Map([
             ['nodejs', `${APT_GET_INSTALL_BASE} g++ make`],
             ['ruby', `${APT_GET_INSTALL_BASE} make gcc libssl-dev libz-dev`],
-            [
-                'R',
-                `${APT_GET_INSTALL_BASE} libgomp1 build-essential gfortran libxml2 libc++-dev`
-            ]
+            ['R', `${APT_GET_INSTALL_BASE} libgomp1 build-essential gfortran libxml2 libc++-dev`]
         ])
     ],
     ['darwin', new Map([['ruby', 'brew install openssl']])]
@@ -88669,8 +88646,7 @@ async function findLatestLibericaJavaVersion(javaVersion) {
         const version = matchingRef.ref.substring(prefixLength);
         if (semverExports.valid(version) &&
             // pattern '17.0.1' should match '17.0.1+12' but not '17.0.10'
-            (version.length <= patternLength ||
-                !isDigit(version.charAt(patternLength))) &&
+            (version.length <= patternLength || !isDigit(version.charAt(patternLength))) &&
             semverExports.compareBuild(version, bestMatch) == 1) {
             bestMatch = version;
         }
@@ -88686,8 +88662,7 @@ async function findLibericaURL(javaVersion, javaPackage) {
     const assetPrefix = `${LIBERICA_VM_PREFIX}${determineVariantPart(javaPackage)}openjdk${javaVersion}`;
     const assetSuffix = `-${platform}${GRAALVM_FILE_EXTENSION}`;
     for (const asset of release.assets) {
-        if (asset.name.startsWith(assetPrefix) &&
-            asset.name.endsWith(assetSuffix)) {
+        if (asset.name.startsWith(assetPrefix) && asset.name.endsWith(assetSuffix)) {
             return asset.browser_download_url;
         }
     }
@@ -88727,8 +88702,7 @@ function checkForUpdates(graalVMVersion, javaVersion) {
         coreExports.notice('A new GraalVM release is available! Please consider upgrading to GraalVM for JDK 21: https://medium.com/graalvm/graalvm-for-jdk-21-is-here-ee01177dd12d');
         return;
     }
-    if (graalVMVersion.length > 0 &&
-        (javaVersion === '17' || javaVersion === '19')) {
+    if (graalVMVersion.length > 0 && (javaVersion === '17' || javaVersion === '19')) {
         const recommendedJDK = javaVersion === '17' ? '17' : '21';
         coreExports.notice(`A new GraalVM release is available! Please consider upgrading to GraalVM for JDK ${recommendedJDK}. Instructions: https://github.com/graalvm/setup-graalvm#migrating-from-graalvm-223-or-earlier-to-the-new-graalvm-for-jdk-17-and-later`);
         return;
@@ -88813,7 +88787,9 @@ function setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17O
     coreExports.startGroup('Updating Windows environment...');
     const vcvarsallPath = findVcvarsallPath();
     coreExports.debug(`Calling "${vcvarsallPath}"...`);
-    const [originalEnv, vcvarsallOutput, updatedEnv] = execSync(`set && cls && "${vcvarsallPath}" x64 && cls && set`, { shell: 'cmd' })
+    const [originalEnv, vcvarsallOutput, updatedEnv] = execSync(`set && cls && "${vcvarsallPath}" x64 && cls && set`, {
+        shell: 'cmd'
+    })
         .toString()
         .split('\f'); // form feed page break (printed by `cls`)
     coreExports.debug(vcvarsallOutput);
@@ -88854,8 +88830,7 @@ async function setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersio
     const isSupported = isGraalVMforJDK17OrLater ||
         graalVMVersion === VERSION_LATEST ||
         graalVMVersion === VERSION_DEV ||
-        (!graalVMVersion.startsWith(MANDREL_NAMESPACE) &&
-            semverExports.gte(toSemVer(graalVMVersion), '22.2.0'));
+        (!graalVMVersion.startsWith(MANDREL_NAMESPACE) && semverExports.gte(toSemVer(graalVMVersion), '22.2.0'));
     if (!isSupported) {
         coreExports.warning(`Build reports for PRs and job summaries are only available in GraalVM 22.2.0 or later. This build job uses GraalVM ${graalVMVersion}.`);
         return;
@@ -88908,9 +88883,7 @@ async function run() {
         const graalVMVersion = coreExports.getInput(INPUT_VERSION);
         const gdsToken = coreExports.getInput(INPUT_GDS_TOKEN);
         const componentsString = coreExports.getInput(INPUT_COMPONENTS);
-        const components = componentsString.length > 0
-            ? componentsString.split(',').map(x => x.trim())
-            : [];
+        const components = componentsString.length > 0 ? componentsString.split(',').map((x) => x.trim()) : [];
         const setJavaHome = coreExports.getInput(INPUT_SET_JAVA_HOME) === 'true';
         const cache = coreExports.getInput(INPUT_CACHE);
         const enableCheckForUpdates = coreExports.getInput(INPUT_CHECK_FOR_UPDATES) === 'true';
@@ -88927,8 +88900,7 @@ async function run() {
         let graalVMHome;
         if (isGraalVMforJDK17OrLater) {
             if (enableCheckForUpdates &&
-                (distribution === DISTRIBUTION_GRAALVM ||
-                    distribution === DISTRIBUTION_GRAALVM_COMMUNITY)) {
+                (distribution === DISTRIBUTION_GRAALVM || distribution === DISTRIBUTION_GRAALVM_COMMUNITY)) {
                 checkForUpdates(graalVMVersion, javaVersion);
             }
             switch (distribution) {
@@ -88963,8 +88935,7 @@ async function run() {
             switch (graalVMVersion) {
                 case VERSION_LATEST:
                     if (javaVersion.startsWith('17') ||
-                        (coercedJavaVersion !== null &&
-                            semverExports.gte(coercedJavaVersion, '20.0.0'))) {
+                        (coercedJavaVersion !== null && semverExports.gte(coercedJavaVersion, '20.0.0'))) {
                         coreExports.info(`This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`);
                         graalVMHome = await setUpGraalVMJDK(javaVersion, gdsToken);
                     }
@@ -88976,8 +88947,7 @@ async function run() {
                     if (gdsToken.length > 0) {
                         throw new Error('Downloading GraalVM EE dev builds is not supported');
                     }
-                    if (coercedJavaVersion !== null &&
-                        !semverExports.gte(coercedJavaVersion, '21.0.0')) {
+                    if (coercedJavaVersion !== null && !semverExports.gte(coercedJavaVersion, '21.0.0')) {
                         coreExports.warning(`GraalVM dev builds are only available for JDK 21. This build is now using a stable release of GraalVM for JDK ${javaVersion}.`);
                         graalVMHome = await setUpGraalVMJDK(javaVersion, gdsToken);
                     }

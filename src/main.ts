@@ -2,46 +2,37 @@ import * as c from './constants.js'
 import * as core from '@actions/core'
 import * as graalvm from './graalvm.js'
 import * as semver from 'semver'
-import {isFeatureAvailable as isCacheAvailable} from '@actions/cache'
-import {basename, join} from 'path'
-import {restore} from './features/cache.js'
-import {setUpDependencies} from './dependencies.js'
-import {setUpGUComponents} from './gu.js'
-import {setUpMandrel} from './mandrel.js'
-import {setUpLiberica} from './liberica.js'
-import {checkForUpdates} from './features/check-for-updates.js'
-import {setUpNativeImageMusl} from './features/musl.js'
-import {setUpWindowsEnvironment} from './msvc.js'
-import {setUpNativeImageBuildReports} from './features/reports.js'
-import {exec} from '@actions/exec'
-import {setUpSBOMSupport} from './features/sbom.js'
+import { isFeatureAvailable as isCacheAvailable } from '@actions/cache'
+import { basename, join } from 'path'
+import { restore } from './features/cache.js'
+import { setUpDependencies } from './dependencies.js'
+import { setUpGUComponents } from './gu.js'
+import { setUpMandrel } from './mandrel.js'
+import { setUpLiberica } from './liberica.js'
+import { checkForUpdates } from './features/check-for-updates.js'
+import { setUpNativeImageMusl } from './features/musl.js'
+import { setUpWindowsEnvironment } from './msvc.js'
+import { setUpNativeImageBuildReports } from './features/reports.js'
+import { exec } from '@actions/exec'
+import { setUpSBOMSupport } from './features/sbom.js'
 
 async function run(): Promise<void> {
   try {
-    const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, {required: true})
+    const javaVersion = core.getInput(c.INPUT_JAVA_VERSION, { required: true })
     const javaPackage = core.getInput(c.INPUT_JAVA_PACKAGE)
     const distribution = core.getInput(c.INPUT_DISTRIBUTION)
     const graalVMVersion = core.getInput(c.INPUT_VERSION)
     const gdsToken = core.getInput(c.INPUT_GDS_TOKEN)
     const componentsString: string = core.getInput(c.INPUT_COMPONENTS)
-    const components: string[] =
-      componentsString.length > 0
-        ? componentsString.split(',').map(x => x.trim())
-        : []
+    const components: string[] = componentsString.length > 0 ? componentsString.split(',').map((x) => x.trim()) : []
     const setJavaHome = core.getInput(c.INPUT_SET_JAVA_HOME) === 'true'
     const cache = core.getInput(c.INPUT_CACHE)
-    const enableCheckForUpdates =
-      core.getInput(c.INPUT_CHECK_FOR_UPDATES) === 'true'
+    const enableCheckForUpdates = core.getInput(c.INPUT_CHECK_FOR_UPDATES) === 'true'
     const enableNativeImageMusl = core.getInput(c.INPUT_NI_MUSL) === 'true'
-    const isGraalVMforJDK17OrLater =
-      distribution.length > 0 || graalVMVersion.length == 0
+    const isGraalVMforJDK17OrLater = distribution.length > 0 || graalVMVersion.length == 0
 
     if (c.IS_WINDOWS) {
-      setUpWindowsEnvironment(
-        javaVersion,
-        graalVMVersion,
-        isGraalVMforJDK17OrLater
-      )
+      setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater)
     }
     await setUpDependencies(components)
     if (enableNativeImageMusl) {
@@ -53,8 +44,7 @@ async function run(): Promise<void> {
     if (isGraalVMforJDK17OrLater) {
       if (
         enableCheckForUpdates &&
-        (distribution === c.DISTRIBUTION_GRAALVM ||
-          distribution === c.DISTRIBUTION_GRAALVM_COMMUNITY)
+        (distribution === c.DISTRIBUTION_GRAALVM || distribution === c.DISTRIBUTION_GRAALVM_COMMUNITY)
       ) {
         checkForUpdates(graalVMVersion, javaVersion)
       }
@@ -93,30 +83,21 @@ async function run(): Promise<void> {
         case c.VERSION_LATEST:
           if (
             javaVersion.startsWith('17') ||
-            (coercedJavaVersion !== null &&
-              semver.gte(coercedJavaVersion, '20.0.0'))
+            (coercedJavaVersion !== null && semver.gte(coercedJavaVersion, '20.0.0'))
           ) {
             core.info(
               `This build is using the new Oracle GraalVM. To select a specific distribution, use the 'distribution' option (see https://github.com/graalvm/setup-graalvm/tree/main#options).`
             )
             graalVMHome = await graalvm.setUpGraalVMJDK(javaVersion, gdsToken)
           } else {
-            graalVMHome = await graalvm.setUpGraalVMLatest_22_X(
-              gdsToken,
-              javaVersion
-            )
+            graalVMHome = await graalvm.setUpGraalVMLatest_22_X(gdsToken, javaVersion)
           }
           break
         case c.VERSION_DEV:
           if (gdsToken.length > 0) {
-            throw new Error(
-              'Downloading GraalVM EE dev builds is not supported'
-            )
+            throw new Error('Downloading GraalVM EE dev builds is not supported')
           }
-          if (
-            coercedJavaVersion !== null &&
-            !semver.gte(coercedJavaVersion, '21.0.0')
-          ) {
+          if (coercedJavaVersion !== null && !semver.gte(coercedJavaVersion, '21.0.0')) {
             core.warning(
               `GraalVM dev builds are only available for JDK 21. This build is now using a stable release of GraalVM for JDK ${javaVersion}.`
             )
@@ -132,11 +113,7 @@ async function run(): Promise<void> {
             if (enableCheckForUpdates) {
               checkForUpdates(graalVMVersion, javaVersion)
             }
-            graalVMHome = await graalvm.setUpGraalVMRelease(
-              gdsToken,
-              graalVMVersion,
-              javaVersion
-            )
+            graalVMHome = await graalvm.setUpGraalVMRelease(gdsToken, graalVMVersion, javaVersion)
           }
           break
       }
@@ -149,22 +126,12 @@ async function run(): Promise<void> {
     if (setJavaHome) {
       core.exportVariable('JAVA_HOME', graalVMHome)
     }
-    await setUpGUComponents(
-      javaVersion,
-      graalVMVersion,
-      graalVMHome,
-      components,
-      gdsToken
-    )
+    await setUpGUComponents(javaVersion, graalVMVersion, graalVMHome, components, gdsToken)
 
     if (cache && isCacheAvailable()) {
       await restore(cache)
     }
-    setUpNativeImageBuildReports(
-      isGraalVMforJDK17OrLater,
-      javaVersion,
-      graalVMVersion
-    )
+    setUpNativeImageBuildReports(isGraalVMforJDK17OrLater, javaVersion, graalVMVersion)
     setUpSBOMSupport(javaVersion, distribution)
 
     core.startGroup(`Successfully set up '${basename(graalVMHome)}'`)

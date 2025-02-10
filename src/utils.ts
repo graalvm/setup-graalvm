@@ -5,12 +5,12 @@ import * as httpClient from '@actions/http-client'
 import * as semver from 'semver'
 import * as tc from '@actions/tool-cache'
 import * as fs from 'fs'
-import {ExecOptions, exec as e} from '@actions/exec'
-import {readFileSync, readdirSync} from 'fs'
-import {Octokit} from '@octokit/core'
-import {createHash} from 'crypto'
-import {join} from 'path'
-import {tmpdir} from 'os'
+import { ExecOptions, exec as e } from '@actions/exec'
+import { readFileSync, readdirSync } from 'fs'
+import { Octokit } from '@octokit/core'
+import { createHash } from 'crypto'
+import { join } from 'path'
+import { tmpdir } from 'os'
 
 // Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
 const baseUrl = 'https://api.github.com'
@@ -21,26 +21,16 @@ const GitHubDotCom = Octokit.defaults({
   }
 })
 
-export async function exec(
-  commandLine: string,
-  args?: string[],
-  options?: ExecOptions | undefined
-): Promise<void> {
+export async function exec(commandLine: string, args?: string[], options?: ExecOptions | undefined): Promise<void> {
   const exitCode = await e(commandLine, args, options)
   if (exitCode !== 0) {
-    throw new Error(
-      `'${[commandLine]
-        .concat(args || [])
-        .join(' ')}' exited with a non-zero code: ${exitCode}`
-    )
+    throw new Error(`'${[commandLine].concat(args || []).join(' ')}' exited with a non-zero code: ${exitCode}`)
   }
 }
 
-export async function getLatestRelease(
-  repo: string
-): Promise<c.LatestReleaseResponse['data']> {
+export async function getLatestRelease(repo: string): Promise<c.LatestReleaseResponse['data']> {
   const githubToken = getGitHubToken()
-  const options = githubToken.length > 0 ? {auth: githubToken} : {}
+  const options = githubToken.length > 0 ? { auth: githubToken } : {}
   const octokit = new GitHubDotCom(options)
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
@@ -50,12 +40,9 @@ export async function getLatestRelease(
   ).data
 }
 
-export async function getContents(
-  repo: string,
-  path: string
-): Promise<c.ContentsResponse['data']> {
+export async function getContents(repo: string, path: string): Promise<c.ContentsResponse['data']> {
   const githubToken = getGitHubToken()
-  const options = githubToken.length > 0 ? {auth: githubToken} : {}
+  const options = githubToken.length > 0 ? { auth: githubToken } : {}
   const octokit = new GitHubDotCom(options)
   return (
     await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
@@ -72,7 +59,7 @@ export async function getTaggedRelease(
   tag: string
 ): Promise<c.LatestReleaseResponse['data']> {
   const githubToken = getGitHubToken()
-  const options = githubToken.length > 0 ? {auth: githubToken} : {}
+  const options = githubToken.length > 0 ? { auth: githubToken } : {}
   const octokit = new GitHubDotCom(options)
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
@@ -89,26 +76,19 @@ export async function getMatchingTags(
   tagPrefix: string
 ): Promise<c.MatchingRefsResponse['data']> {
   const githubToken = getGitHubToken()
-  const options = githubToken.length > 0 ? {auth: githubToken} : {}
+  const options = githubToken.length > 0 ? { auth: githubToken } : {}
   const octokit = new GitHubDotCom(options)
   return (
-    await octokit.request(
-      'GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}',
-      {
-        owner,
-        repo,
-        tagPrefix
-      }
-    )
+    await octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}', {
+      owner,
+      repo,
+      tagPrefix
+    })
   ).data
 }
 
-export async function downloadAndExtractJDK(
-  downloadUrl: string
-): Promise<string> {
-  return findJavaHomeInSubfolder(
-    await extract(await tc.downloadTool(downloadUrl))
-  )
+export async function downloadAndExtractJDK(downloadUrl: string): Promise<string> {
+  return findJavaHomeInSubfolder(await extract(await tc.downloadTool(downloadUrl)))
 }
 
 export async function downloadExtractAndCacheJDK(
@@ -140,9 +120,7 @@ async function extract(downloadPath: string): Promise<string> {
   } else if (c.GRAALVM_FILE_EXTENSION === '.zip') {
     return await tc.extractZip(downloadPath)
   } else {
-    throw new Error(
-      `Unexpected filetype downloaded: ${c.GRAALVM_FILE_EXTENSION}`
-    )
+    throw new Error(`Unexpected filetype downloaded: ${c.GRAALVM_FILE_EXTENSION}`)
   }
 }
 
@@ -151,9 +129,7 @@ function findJavaHomeInSubfolder(searchPath: string): string {
   if (baseContents.length === 1) {
     return join(searchPath, baseContents[0], c.JDK_HOME_SUFFIX)
   } else {
-    throw new Error(
-      `Unexpected amount of directory items found: ${baseContents.length}`
-    )
+    throw new Error(`Unexpected amount of directory items found: ${baseContents.length}`)
   }
 }
 
@@ -171,9 +147,7 @@ export function toSemVer(version: string): string {
   const suffix = versionParts.length === 2 ? '-' + versionParts[1] : ''
   const validVersion = semver.valid(semver.coerce(versionParts[0]) + suffix)
   if (!validVersion) {
-    throw new Error(
-      `Unable to convert '${version}' to semantic version. ${c.ERROR_HINT}`
-    )
+    throw new Error(`Unable to convert '${version}' to semantic version. ${c.ERROR_HINT}`)
   }
   return validVersion
 }
@@ -186,9 +160,7 @@ function getGitHubToken(): string {
   return core.getInput(c.INPUT_GITHUB_TOKEN)
 }
 
-export async function findExistingPRCommentId(
-  bodyStartsWith: string
-): Promise<number | undefined> {
+export async function findExistingPRCommentId(bodyStartsWith: string): Promise<number | undefined> {
   if (!isPREvent()) {
     throw new Error('Not a PR event.')
   }
@@ -200,7 +172,7 @@ export async function findExistingPRCommentId(
       ...context.repo,
       issue_number: context.payload.pull_request?.number as number
     })
-    const matchingComment = comments.reverse().find(comment => {
+    const matchingComment = comments.reverse().find((comment) => {
       return comment.body && comment.body.startsWith(bodyStartsWith)
     })
     return matchingComment ? matchingComment.id : undefined
@@ -211,10 +183,7 @@ export async function findExistingPRCommentId(
   }
 }
 
-export async function updatePRComment(
-  content: string,
-  commentId: number
-): Promise<void> {
+export async function updatePRComment(content: string, commentId: number): Promise<void> {
   if (!isPREvent()) {
     throw new Error('Not a PR event.')
   }
@@ -254,14 +223,10 @@ export function tmpfile(fileName: string) {
   return join(tmpdir(), fileName)
 }
 
-export function setNativeImageOption(
-  javaVersionOrDev: string,
-  optionValue: string
-): void {
+export function setNativeImageOption(javaVersionOrDev: string, optionValue: string): void {
   const coercedJavaVersionOrDev = semver.coerce(javaVersionOrDev)
   if (
-    (coercedJavaVersionOrDev &&
-      semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
+    (coercedJavaVersionOrDev && semver.gte(coercedJavaVersionOrDev, '22.0.0')) ||
     javaVersionOrDev === c.VERSION_DEV ||
     javaVersionOrDev.endsWith('-ea')
   ) {

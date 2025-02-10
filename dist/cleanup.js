@@ -78569,17 +78569,9 @@ const supportedPackageManager = [
     },
     {
         id: 'gradle',
-        path: [
-            join(os$1.homedir(), '.gradle', 'caches'),
-            join(os$1.homedir(), '.gradle', 'wrapper')
-        ],
+        path: [join(os$1.homedir(), '.gradle', 'caches'), join(os$1.homedir(), '.gradle', 'wrapper')],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
-        pattern: [
-            '**/*.gradle*',
-            '**/gradle-wrapper.properties',
-            'buildSrc/**/Versions.kt',
-            'buildSrc/**/Dependencies.kt'
-        ]
+        pattern: ['**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt', 'buildSrc/**/Dependencies.kt']
     },
     {
         id: 'sbt',
@@ -78592,11 +78584,7 @@ const supportedPackageManager = [
             `!${join(os$1.homedir(), '.sbt', '*.lock')}`,
             `!${join(os$1.homedir(), '**', 'ivydata-*.properties')}`
         ],
-        pattern: [
-            '**/*.sbt',
-            '**/project/build.properties',
-            '**/project/**.{scala,sbt}'
-        ]
+        pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
     }
 ];
 function getCoursierCachePath() {
@@ -78607,7 +78595,7 @@ function getCoursierCachePath() {
     return join(os$1.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
 }
 function findPackageManager(id) {
-    const packageManager = supportedPackageManager.find(pm => pm.id === id);
+    const packageManager = supportedPackageManager.find((pm) => pm.id === id);
     if (packageManager === undefined) {
         throw new Error(`unknown package manager specified: ${id}`);
     }
@@ -78658,8 +78646,7 @@ async function save(id) {
  * @see {@link https://github.com/actions/cache/issues/454#issuecomment-840493935|why --no-daemon is necessary}
  */
 function isProbablyGradleDaemonProblem(packageManager, error) {
-    if (packageManager.id !== 'gradle' ||
-        process.env['RUNNER_OS'] !== 'Windows') {
+    if (packageManager.id !== 'gradle' || process.env['RUNNER_OS'] !== 'Windows') {
         return false;
     }
     const message = error.message || '';
@@ -87864,7 +87851,7 @@ async function findExistingPRCommentId(bodyStartsWith) {
             ...context.repo,
             issue_number: context.payload.pull_request?.number
         });
-        const matchingComment = comments.reverse().find(comment => {
+        const matchingComment = comments.reverse().find((comment) => {
             return comment.body && comment.body.startsWith(bodyStartsWith);
         });
         return matchingComment ? matchingComment.id : undefined;
@@ -87964,10 +87951,7 @@ function createReport(data) {
         objectCount = `${details.image_heap.objects.count.toLocaleString()} objects, `;
     }
     const debugInfoBytes = details.debug_info ? details.debug_info.bytes : 0;
-    const otherBytes = details.total_bytes -
-        details.code_area.bytes -
-        details.image_heap.bytes -
-        debugInfoBytes;
+    const otherBytes = details.total_bytes - details.code_area.bytes - details.image_heap.bytes - debugInfoBytes;
     let debugInfoLine = '';
     if (details.debug_info) {
         debugInfoLine = `
@@ -88232,9 +88216,9 @@ async function saveCache() {
  * @returns Promise that will ignore error reported by the given promise
  */
 async function ignoreErrors(promise) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         promise
-            .catch(error => {
+            .catch((error) => {
             coreExports.warning(error);
             resolve(void 0);
         })
