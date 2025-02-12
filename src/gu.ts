@@ -1,8 +1,8 @@
-import * as c from './constants.js'
+import * as c from './constants'
 import * as core from '@actions/core'
 import * as semver from 'semver'
-import { GRAALVM_PLATFORM } from './constants.js'
-import { exec } from './utils.js'
+import { GRAALVM_PLATFORM } from './constants'
+import { exec } from './utils'
 import { join } from 'path'
 
 const BASE_FLAGS = ['--non-interactive', 'install', '--no-progress']

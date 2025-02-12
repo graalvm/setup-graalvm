@@ -1,4 +1,4 @@
-import * as c from '../constants.js'
+import * as c from '../constants'
 import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as github from '@actions/github'
@@ -11,7 +11,7 @@ import {
   updatePRComment,
   tmpfile,
   setNativeImageOption
-} from '../utils.js'
+} from '../utils'
 
 const BUILD_OUTPUT_JSON_PATH = tmpfile('native-image-build-output.json')
 const BYTES_TO_KiB = 1024

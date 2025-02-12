@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import { execSync } from 'child_process'
 import { existsSync } from 'fs'
-import { VERSION_DEV } from './constants.js'
+import { VERSION_DEV } from './constants'
 
 // Keep in sync with https://github.com/actions/virtual-environments
 const KNOWN_VISUAL_STUDIO_INSTALLATIONS = [
