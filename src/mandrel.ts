@@ -1,6 +1,6 @@
-import * as c from './constants.js'
+import * as c from './constants'
 import * as httpClient from '@actions/http-client'
-import { downloadExtractAndCacheJDK } from './utils.js'
+import { downloadExtractAndCacheJDK } from './utils'
 import { downloadTool } from '@actions/tool-cache'
 import { basename } from 'path'
 

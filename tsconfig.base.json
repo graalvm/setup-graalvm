@@ -15,6 +15,7 @@
     "noUnusedParameters": false,
     "pretty": true,
     "resolveJsonModule": true,
+    "sourceMap": true,
     "strict": true,
     "strictNullChecks": true,
     "target": "ES2022"

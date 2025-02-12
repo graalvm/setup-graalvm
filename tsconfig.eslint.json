@@ -6,12 +6,5 @@
     "noEmit": true
   },
   "exclude": ["dist", "node_modules"],
-  "include": [
-    "__tests__",
-    "src",
-    "eslint.config.mjs",
-    "jest.config.js",
-    "rollup.cleanup.config.ts",
-    "rollup.main.config.ts"
-  ]
+  "include": ["__tests__", "src", "eslint.config.mjs", "jest.config.js"]
 }
