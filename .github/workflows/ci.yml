@@ -470,6 +470,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: ${{ matrix.components }}
           native-image-enable-sbom: 'true'
+          cache: 'maven'
       - name: Build Maven project and verify that SBOM was generated and its contents
         run: |
           cd __tests__/sbom/main-test-app
