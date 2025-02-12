@@ -90,7 +90,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: ${{ matrix.components }}
           gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
-        if: env.PASSES_GDS_TOKEN_CHECK
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
@@ -103,14 +103,14 @@ jobs:
           java --version
           java --version | grep "GraalVM" || exit 34
           native-image --version
-        if: runner.os != 'Windows' && env.PASSES_GDS_TOKEN_CHECK
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
       - name: Check Windows environment
         run: |
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
           native-image --version
-        if: runner.os == 'Windows' && env.PASSES_GDS_TOKEN_CHECK
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
 
   test-action-ce: # make sure the action works on a clean machine without building
     needs: test-action
@@ -172,7 +172,7 @@ jobs:
           if [[ "${{ matrix.java-version }}" != "dev" ]]; then
             gu list
           fi
-        if: runner.os != 'Windows'
+        if: ${{ runner.os != 'Windows' }}
       - name: Check Windows environment
         run: |
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
@@ -180,13 +180,16 @@ jobs:
           java -version
           native-image --version
           gu.cmd remove native-image
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
 
   test-action-ee:
     needs: test-action
     name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.os }}
+    env:
+      # Skip builds that require a GDS token but have no access to one (e.g., secrets are unavailable in PR runs)
+      PASSES_GDS_TOKEN_CHECK: ${{ secrets.GDS_TOKEN != '' }}
     strategy:
       matrix:
         version: ['latest']
@@ -212,6 +215,7 @@ jobs:
           java-version: ${{ matrix.java-version }}
           components: ${{ matrix.components }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
@@ -221,7 +225,7 @@ jobs:
           java --version | grep -e "GraalVM EE" -e "Oracle GraalVM" || exit 23
           native-image --version
           gu list
-        if: runner.os != 'Windows'
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
       - name: Check Windows environment
         run: |
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
@@ -229,7 +233,7 @@ jobs:
           java --version
           native-image --version
           gu.cmd remove native-image
-        if: runner.os == 'Windows'
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
 
   test-action-mandrel:
     needs: test-action
@@ -267,14 +271,14 @@ jobs:
           java --version
           java --version | grep "Temurin" || exit 23
           native-image --version
-        if: runner.os != 'Windows'
+        if: ${{ runner.os != 'Windows' }}
       - name: Check Windows environment
         run: |
           echo "GRAALVM_HOME: $env:GRAALVM_HOME"
           echo "JAVA_HOME: $env:JAVA_HOME"
           java --version
           native-image --version
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
 
   test-action-liberica:
     needs: test-action
@@ -303,7 +307,7 @@ jobs:
           java --version | fgrep -qw ${{ matrix.java-version }} || exit 23
           native-image --version
           native-image --version | fgrep -qw ${{ matrix.java-version }} || exit 24
-        if: runner.os != 'Windows'
+        if: ${{ runner.os != 'Windows' }}
       - name: Check Windows environment
         shell: pwsh
         run: |
@@ -317,7 +321,7 @@ jobs:
           if (!(native-image --version | findstr \<${{ matrix.java-version }}\>)) {
             exit 24
           }
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
 
   test-action-native-image-windows:
     name: native-image on windows-latest
@@ -472,11 +476,11 @@ jobs:
           mvn --no-transfer-progress -Pnative package
           bash verify-sbom.sh
         shell: bash
-        if: runner.os != 'Windows'
+        if: ${{ runner.os != 'Windows' }}
       - name: Build Maven project and verify that SBOM was generated and its contents (Windows)
         run: |
           cd __tests__\sbom\main-test-app
           mvn --no-transfer-progress -Pnative package
           cmd /c verify-sbom.cmd
         shell: cmd
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
