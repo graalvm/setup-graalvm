@@ -1,4 +1,4 @@
-import * as c from './constants'
+import * as c from './constants.js'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as httpClient from '@actions/http-client'
