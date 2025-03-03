@@ -38884,18 +38884,18 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // pkg/dist-src/index.js
-var dist_src_exports = {};
-__export(dist_src_exports, {
+var index_exports = {};
+__export(index_exports, {
   GraphqlResponseError: () => GraphqlResponseError,
   graphql: () => graphql2,
   withCustomRequest: () => withCustomRequest
 });
-module.exports = __toCommonJS(dist_src_exports);
+module.exports = __toCommonJS(index_exports);
 var import_request3 = __nccwpck_require__(8636);
 var import_universal_user_agent = __nccwpck_require__(3843);
 
 // pkg/dist-src/version.js
-var VERSION = "7.1.0";
+var VERSION = "7.1.1";
 
 // pkg/dist-src/with-defaults.js
 var import_request2 = __nccwpck_require__(8636);
@@ -38943,8 +38943,7 @@ function graphql(request2, query, options) {
       );
     }
     for (const key in options) {
-      if (!FORBIDDEN_VARIABLE_OPTIONS.includes(key))
-        continue;
+      if (!FORBIDDEN_VARIABLE_OPTIONS.includes(key)) continue;
       return Promise.reject(
         new Error(
           `[@octokit/graphql] "${key}" cannot be used as variable name`
@@ -39052,7 +39051,7 @@ __export(dist_src_exports, {
 module.exports = __toCommonJS(dist_src_exports);
 
 // pkg/dist-src/version.js
-var VERSION = "9.2.1";
+var VERSION = "9.2.2";
 
 // pkg/dist-src/normalize-paginated-list-response.js
 function normalizePaginatedListResponse(response) {
@@ -39100,7 +39099,7 @@ function iterator(octokit, route, parameters) {
           const response = await requestMethod({ method, url, headers });
           const normalizedResponse = normalizePaginatedListResponse(response);
           url = ((normalizedResponse.headers.link || "").match(
-            /<([^>]+)>;\s*rel="next"/
+            /<([^<>]+)>;\s*rel="next"/
           ) || [])[1];
           return { value: normalizedResponse };
         } catch (error) {
@@ -49138,6 +49137,8 @@ Builder.prototype.j2x = function(jObj, level, ajPath) {
       // null attribute should be ignored by the attribute list, but should not cause the tag closing
       if (this.isAttribute(key)) {
         val += '';
+      } else if (key === this.options.cdataPropName) {
+        val += '';
       } else if (key[0] === '?') {
         val += this.indentate(level) + '<' + key + '?' + this.tagEndChar;
       } else {
@@ -50123,7 +50124,7 @@ const replaceEntitiesValue = function(val){
 }
 function saveTextToParentTag(textData, currentNode, jPath, isLeafNode) {
   if (textData) { //store previously collected data as textNode
-    if(isLeafNode === undefined) isLeafNode = Object.keys(currentNode.child).length === 0
+    if(isLeafNode === undefined) isLeafNode = currentNode.child.length === 0
     
     textData = this.parseTextData(textData,
       currentNode.tagname,
@@ -54721,80 +54722,73 @@ module.exports = validRange
 /***/ ((module) => {
 
 const hexRegex = /^[-+]?0x[a-fA-F0-9]+$/;
-const numRegex = /^([\-\+])?(0*)(\.[0-9]+([eE]\-?[0-9]+)?|[0-9]+(\.[0-9]+([eE]\-?[0-9]+)?)?)$/;
-// const octRegex = /0x[a-z0-9]+/;
+const numRegex = /^([\-\+])?(0*)([0-9]*(\.[0-9]*)?)$/;
+// const octRegex = /^0x[a-z0-9]+/;
 // const binRegex = /0x[a-z0-9]+/;
 
-
-//polyfill
-if (!Number.parseInt && window.parseInt) {
-    Number.parseInt = window.parseInt;
-}
-if (!Number.parseFloat && window.parseFloat) {
-    Number.parseFloat = window.parseFloat;
-}
-
-  
+ 
 const consider = {
     hex :  true,
+    // oct: false,
     leadingZeros: true,
     decimalPoint: "\.",
-    eNotation: true
+    eNotation: true,
     //skipLike: /regex/
 };
 
 function toNumber(str, options = {}){
-    // const options = Object.assign({}, consider);
-    // if(opt.leadingZeros === false){
-    //     options.leadingZeros = false;
-    // }else if(opt.hex === false){
-    //     options.hex = false;
-    // }
-
     options = Object.assign({}, consider, options );
     if(!str || typeof str !== "string" ) return str;
     
     let trimmedStr  = str.trim();
-    // if(trimmedStr === "0.0") return 0;
-    // else if(trimmedStr === "+0.0") return 0;
-    // else if(trimmedStr === "-0.0") return -0;
-
+    
     if(options.skipLike !== undefined && options.skipLike.test(trimmedStr)) return str;
+    else if(str==="0") return 0;
     else if (options.hex && hexRegex.test(trimmedStr)) {
-        return Number.parseInt(trimmedStr, 16);
-    // } else if (options.parseOct && octRegex.test(str)) {
+        return parse_int(trimmedStr, 16);
+    // }else if (options.oct && octRegex.test(str)) {
     //     return Number.parseInt(val, 8);
+    }else if (trimmedStr.search(/[eE]/)!== -1) { //eNotation
+        const notation = trimmedStr.match(/^([-\+])?(0*)([0-9]*(\.[0-9]*)?[eE][-\+]?[0-9]+)$/); 
+        // +00.123 => [ , '+', '00', '.123', ..
+        if(notation){
+            // console.log(notation)
+            if(options.leadingZeros){ //accept with leading zeros
+                trimmedStr = (notation[1] || "") + notation[3];
+            }else{
+                if(notation[2] === "0" && notation[3][0]=== "."){ //valid number
+                }else{
+                    return str;
+                }
+            }
+            return options.eNotation ? Number(trimmedStr) : str;
+        }else{
+            return str;
+        }
     // }else if (options.parseBin && binRegex.test(str)) {
     //     return Number.parseInt(val, 2);
     }else{
         //separate negative sign, leading zeros, and rest number
         const match = numRegex.exec(trimmedStr);
+        // +00.123 => [ , '+', '00', '.123', ..
         if(match){
             const sign = match[1];
             const leadingZeros = match[2];
             let numTrimmedByZeros = trimZeros(match[3]); //complete num without leading zeros
             //trim ending zeros for floating number
             
-            const eNotation = match[4] || match[6];
             if(!options.leadingZeros && leadingZeros.length > 0 && sign && trimmedStr[2] !== ".") return str; //-0123
             else if(!options.leadingZeros && leadingZeros.length > 0 && !sign && trimmedStr[1] !== ".") return str; //0123
+            else if(options.leadingZeros && leadingZeros===str) return 0; //00
+            
             else{//no leading zeros or leading zeros are allowed
                 const num = Number(trimmedStr);
                 const numStr = "" + num;
+
                 if(numStr.search(/[eE]/) !== -1){ //given number is long and parsed to eNotation
                     if(options.eNotation) return num;
                     else return str;
-                }else if(eNotation){ //given number has enotation
-                    if(options.eNotation) return num;
-                    else return str;
                 }else if(trimmedStr.indexOf(".") !== -1){ //floating number
-                    // const decimalPart = match[5].substr(1);
-                    // const intPart = trimmedStr.substr(0,trimmedStr.indexOf("."));
-
-                    
-                    // const p = numStr.indexOf(".");
-                    // const givenIntPart = numStr.substr(0,p);
-                    // const givenDecPart = numStr.substr(p+1);
                     if(numStr === "0" && (numTrimmedByZeros === "") ) return num; //0.0
                     else if(numStr === numTrimmedByZeros) return num; //0.456. 0.79000
                     else if( sign && numStr === "-"+numTrimmedByZeros) return num;
@@ -54802,26 +54796,11 @@ function toNumber(str, options = {}){
                 }
                 
                 if(leadingZeros){
-                    // if(numTrimmedByZeros === numStr){
-                    //     if(options.leadingZeros) return num;
-                    //     else return str;
-                    // }else return str;
-                    if(numTrimmedByZeros === numStr) return num;
-                    else if(sign+numTrimmedByZeros === numStr) return num;
-                    else return str;
+                    return (numTrimmedByZeros === numStr) || (sign+numTrimmedByZeros === numStr) ? num : str
+                }else  {
+                    return (trimmedStr === numStr) || (trimmedStr === sign+numStr) ? num : str
                 }
-
-                if(trimmedStr === numStr) return num;
-                else if(trimmedStr === sign+numStr) return num;
-                // else{
-                //     //number with +/- sign
-                //     trimmedStr.test(/[-+][0-9]);
-
-                // }
-                return str;
             }
-            // else if(!eNotation && trimmedStr && trimmedStr !== Number(trimmedStr) ) return str;
-            
         }else{ //non-numeric string
             return str;
         }
@@ -54843,8 +54822,16 @@ function trimZeros(numStr){
     }
     return numStr;
 }
-module.exports = toNumber
 
+function parse_int(numStr, base){
+    //polyfill
+    if(parseInt) return parseInt(numStr, base);
+    else if(Number.parseInt) return Number.parseInt(numStr, base);
+    else if(window && window.parseInt) return window.parseInt(numStr, base);
+    else throw new Error("parseInt, Number.parseInt, window.parseInt are not supported")
+}
+
+module.exports = toNumber;
 
 /***/ }),
 
@@ -83510,7 +83497,7 @@ exports.flattenResponse = flattenResponse;
 "use strict";
 
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ExtendedServiceClient = void 0;
 const disableKeepAlivePolicy_js_1 = __nccwpck_require__(2639);
@@ -83572,9 +83559,9 @@ exports.ExtendedServiceClient = ExtendedServiceClient;
 "use strict";
 
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.convertHttpClient = void 0;
+exports.convertHttpClient = convertHttpClient;
 const response_js_1 = __nccwpck_require__(8153);
 const util_js_1 = __nccwpck_require__(3850);
 /**
@@ -83590,7 +83577,6 @@ function convertHttpClient(requestPolicyClient) {
         },
     };
 }
-exports.convertHttpClient = convertHttpClient;
 //# sourceMappingURL=httpClientAdapter.js.map
 
 /***/ }),
@@ -83601,7 +83587,7 @@ exports.convertHttpClient = convertHttpClient;
 "use strict";
 
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.toHttpHeadersLike = exports.convertHttpClient = exports.disableKeepAlivePolicyName = exports.HttpPipelineLogLevel = exports.createRequestPolicyFactoryPolicy = exports.requestPolicyFactoryPolicyName = exports.ExtendedServiceClient = void 0;
 /**
@@ -83631,9 +83617,11 @@ Object.defineProperty(exports, "toHttpHeadersLike", ({ enumerable: true, get: fu
 "use strict";
 
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.pipelineContainsDisableKeepAlivePolicy = exports.createDisableKeepAlivePolicy = exports.disableKeepAlivePolicyName = void 0;
+exports.disableKeepAlivePolicyName = void 0;
+exports.createDisableKeepAlivePolicy = createDisableKeepAlivePolicy;
+exports.pipelineContainsDisableKeepAlivePolicy = pipelineContainsDisableKeepAlivePolicy;
 exports.disableKeepAlivePolicyName = "DisableKeepAlivePolicy";
 function createDisableKeepAlivePolicy() {
     return {
@@ -83644,14 +83632,12 @@ function createDisableKeepAlivePolicy() {
         },
     };
 }
-exports.createDisableKeepAlivePolicy = createDisableKeepAlivePolicy;
 /**
  * @internal
  */
 function pipelineContainsDisableKeepAlivePolicy(pipeline) {
     return pipeline.getOrderedPolicies().some((policy) => policy.name === exports.disableKeepAlivePolicyName);
 }
-exports.pipelineContainsDisableKeepAlivePolicy = pipelineContainsDisableKeepAlivePolicy;
 //# sourceMappingURL=disableKeepAlivePolicy.js.map
 
 /***/ }),
@@ -83662,9 +83648,10 @@ exports.pipelineContainsDisableKeepAlivePolicy = pipelineContainsDisableKeepAliv
 "use strict";
 
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createRequestPolicyFactoryPolicy = exports.requestPolicyFactoryPolicyName = exports.HttpPipelineLogLevel = void 0;
+exports.requestPolicyFactoryPolicyName = exports.HttpPipelineLogLevel = void 0;
+exports.createRequestPolicyFactoryPolicy = createRequestPolicyFactoryPolicy;
 const util_js_1 = __nccwpck_require__(3850);
 const response_js_1 = __nccwpck_require__(8153);
 /**
@@ -83713,7 +83700,6 @@ function createRequestPolicyFactoryPolicy(factories) {
         },
     };
 }
-exports.createRequestPolicyFactoryPolicy = createRequestPolicyFactoryPolicy;
 //# sourceMappingURL=requestPolicyFactoryPolicy.js.map
 
 /***/ }),
@@ -83724,9 +83710,10 @@ exports.createRequestPolicyFactoryPolicy = createRequestPolicyFactoryPolicy;
 "use strict";
 
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.toPipelineResponse = exports.toCompatResponse = void 0;
+exports.toCompatResponse = toCompatResponse;
+exports.toPipelineResponse = toPipelineResponse;
 const core_rest_pipeline_1 = __nccwpck_require__(778);
 const util_js_1 = __nccwpck_require__(3850);
 const originalResponse = Symbol("Original FullOperationResponse");
@@ -83768,7 +83755,6 @@ function toCompatResponse(response, options) {
             headers });
     }
 }
-exports.toCompatResponse = toCompatResponse;
 /**
  * A helper to convert back to a PipelineResponse
  * @param compatResponse - A response compatible with `HttpOperationResponse` from core-http.
@@ -83785,7 +83771,6 @@ function toPipelineResponse(compatResponse) {
         return Object.assign(Object.assign({}, compatResponse), { headers, request: (0, util_js_1.toPipelineRequest)(compatResponse.request) });
     }
 }
-exports.toPipelineResponse = toPipelineResponse;
 //# sourceMappingURL=response.js.map
 
 /***/ }),
@@ -83796,9 +83781,12 @@ exports.toPipelineResponse = toPipelineResponse;
 "use strict";
 
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.HttpHeaders = exports.toHttpHeadersLike = exports.toWebResourceLike = exports.toPipelineRequest = void 0;
+exports.HttpHeaders = void 0;
+exports.toPipelineRequest = toPipelineRequest;
+exports.toWebResourceLike = toWebResourceLike;
+exports.toHttpHeadersLike = toHttpHeadersLike;
 const core_rest_pipeline_1 = __nccwpck_require__(778);
 // We use a custom symbol to cache a reference to the original request without
 // exposing it on the public interface.
@@ -83832,6 +83820,7 @@ function toPipelineRequest(webResource, options = {}) {
             onUploadProgress: webResource.onUploadProgress,
             proxySettings: webResource.proxySettings,
             streamResponseStatusCodes: webResource.streamResponseStatusCodes,
+            agent: webResource.agent,
         });
         if (options.originalRequest) {
             newRequest[originalClientRequestSymbol] =
@@ -83840,7 +83829,6 @@ function toPipelineRequest(webResource, options = {}) {
         return newRequest;
     }
 }
-exports.toPipelineRequest = toPipelineRequest;
 function toWebResourceLike(request, options) {
     var _a;
     const originalRequest = (_a = options === null || options === void 0 ? void 0 : options.originalRequest) !== null && _a !== void 0 ? _a : request;
@@ -83859,6 +83847,7 @@ function toWebResourceLike(request, options) {
         onUploadProgress: request.onUploadProgress,
         proxySettings: request.proxySettings,
         streamResponseStatusCodes: request.streamResponseStatusCodes,
+        agent: request.agent,
         clone() {
             throw new Error("Cannot clone a non-proxied WebResourceLike");
         },
@@ -83902,6 +83891,7 @@ function toWebResourceLike(request, options) {
                     "onUploadProgress",
                     "proxySettings",
                     "streamResponseStatusCodes",
+                    "agent",
                 ];
                 if (typeof prop === "string" && passThroughProps.includes(prop)) {
                     request[prop] = value;
@@ -83914,7 +83904,6 @@ function toWebResourceLike(request, options) {
         return webResource;
     }
 }
-exports.toWebResourceLike = toWebResourceLike;
 /**
  * Converts HttpHeaders from core-rest-pipeline to look like
  * HttpHeaders from core-http.
@@ -83924,7 +83913,6 @@ exports.toWebResourceLike = toWebResourceLike;
 function toHttpHeadersLike(headers) {
     return new HttpHeaders(headers.toJSON({ preserveCase: true }));
 }
-exports.toHttpHeadersLike = toHttpHeadersLike;
 /**
  * A collection of HttpHeaders that can be sent with a HTTP request.
  */
@@ -85429,7 +85417,7 @@ exports.buildCreatePoller = buildCreatePoller;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DEFAULT_RETRY_POLICY_COUNT = exports.SDK_VERSION = void 0;
-exports.SDK_VERSION = "1.18.2";
+exports.SDK_VERSION = "1.19.0";
 exports.DEFAULT_RETRY_POLICY_COUNT = 3;
 //# sourceMappingURL=constants.js.map
 
@@ -85455,6 +85443,7 @@ const formDataPolicy_js_1 = __nccwpck_require__(5497);
 const core_util_1 = __nccwpck_require__(7779);
 const proxyPolicy_js_1 = __nccwpck_require__(2815);
 const setClientRequestIdPolicy_js_1 = __nccwpck_require__(5686);
+const agentPolicy_js_1 = __nccwpck_require__(8554);
 const tlsPolicy_js_1 = __nccwpck_require__(5798);
 const tracingPolicy_js_1 = __nccwpck_require__(3237);
 /**
@@ -85465,6 +85454,9 @@ function createPipelineFromOptions(options) {
     var _a;
     const pipeline = (0, pipeline_js_1.createEmptyPipeline)();
     if (core_util_1.isNodeLike) {
+        if (options.agent) {
+            pipeline.addPolicy((0, agentPolicy_js_1.agentPolicy)(options.agent));
+        }
         if (options.tlsOptions) {
             pipeline.addPolicy((0, tlsPolicy_js_1.tlsPolicy)(options.tlsOptions));
         }
@@ -85621,7 +85613,7 @@ function createHttpHeaders(rawHeaders) {
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createFileFromStream = exports.createFile = exports.auxiliaryAuthenticationHeaderPolicyName = exports.auxiliaryAuthenticationHeaderPolicy = exports.ndJsonPolicyName = exports.ndJsonPolicy = exports.bearerTokenAuthenticationPolicyName = exports.bearerTokenAuthenticationPolicy = exports.formDataPolicyName = exports.formDataPolicy = exports.tlsPolicyName = exports.tlsPolicy = exports.userAgentPolicyName = exports.userAgentPolicy = exports.defaultRetryPolicy = exports.tracingPolicyName = exports.tracingPolicy = exports.retryPolicy = exports.throttlingRetryPolicyName = exports.throttlingRetryPolicy = exports.systemErrorRetryPolicyName = exports.systemErrorRetryPolicy = exports.redirectPolicyName = exports.redirectPolicy = exports.getDefaultProxySettings = exports.proxyPolicyName = exports.proxyPolicy = exports.multipartPolicyName = exports.multipartPolicy = exports.logPolicyName = exports.logPolicy = exports.setClientRequestIdPolicyName = exports.setClientRequestIdPolicy = exports.exponentialRetryPolicyName = exports.exponentialRetryPolicy = exports.decompressResponsePolicyName = exports.decompressResponsePolicy = exports.isRestError = exports.RestError = exports.createPipelineRequest = exports.createHttpHeaders = exports.createDefaultHttpClient = exports.createPipelineFromOptions = exports.createEmptyPipeline = void 0;
+exports.createFileFromStream = exports.createFile = exports.agentPolicyName = exports.agentPolicy = exports.auxiliaryAuthenticationHeaderPolicyName = exports.auxiliaryAuthenticationHeaderPolicy = exports.ndJsonPolicyName = exports.ndJsonPolicy = exports.bearerTokenAuthenticationPolicyName = exports.bearerTokenAuthenticationPolicy = exports.formDataPolicyName = exports.formDataPolicy = exports.tlsPolicyName = exports.tlsPolicy = exports.userAgentPolicyName = exports.userAgentPolicy = exports.defaultRetryPolicy = exports.tracingPolicyName = exports.tracingPolicy = exports.retryPolicy = exports.throttlingRetryPolicyName = exports.throttlingRetryPolicy = exports.systemErrorRetryPolicyName = exports.systemErrorRetryPolicy = exports.redirectPolicyName = exports.redirectPolicy = exports.getDefaultProxySettings = exports.proxyPolicyName = exports.proxyPolicy = exports.multipartPolicyName = exports.multipartPolicy = exports.logPolicyName = exports.logPolicy = exports.setClientRequestIdPolicyName = exports.setClientRequestIdPolicy = exports.exponentialRetryPolicyName = exports.exponentialRetryPolicy = exports.decompressResponsePolicyName = exports.decompressResponsePolicy = exports.isRestError = exports.RestError = exports.createPipelineRequest = exports.createHttpHeaders = exports.createDefaultHttpClient = exports.createPipelineFromOptions = exports.createEmptyPipeline = void 0;
 var pipeline_js_1 = __nccwpck_require__(9590);
 Object.defineProperty(exports, "createEmptyPipeline", ({ enumerable: true, get: function () { return pipeline_js_1.createEmptyPipeline; } }));
 var createPipelineFromOptions_js_1 = __nccwpck_require__(862);
@@ -85688,6 +85680,9 @@ Object.defineProperty(exports, "ndJsonPolicyName", ({ enumerable: true, get: fun
 var auxiliaryAuthenticationHeaderPolicy_js_1 = __nccwpck_require__(2262);
 Object.defineProperty(exports, "auxiliaryAuthenticationHeaderPolicy", ({ enumerable: true, get: function () { return auxiliaryAuthenticationHeaderPolicy_js_1.auxiliaryAuthenticationHeaderPolicy; } }));
 Object.defineProperty(exports, "auxiliaryAuthenticationHeaderPolicyName", ({ enumerable: true, get: function () { return auxiliaryAuthenticationHeaderPolicy_js_1.auxiliaryAuthenticationHeaderPolicyName; } }));
+var agentPolicy_js_1 = __nccwpck_require__(8554);
+Object.defineProperty(exports, "agentPolicy", ({ enumerable: true, get: function () { return agentPolicy_js_1.agentPolicy; } }));
+Object.defineProperty(exports, "agentPolicyName", ({ enumerable: true, get: function () { return agentPolicy_js_1.agentPolicyName; } }));
 var file_js_1 = __nccwpck_require__(7073);
 Object.defineProperty(exports, "createFile", ({ enumerable: true, get: function () { return file_js_1.createFile; } }));
 Object.defineProperty(exports, "createFileFromStream", ({ enumerable: true, get: function () { return file_js_1.createFileFromStream; } }));
@@ -86367,6 +86362,8 @@ class PipelineRequestImpl {
         this.requestId = options.requestId || (0, core_util_1.randomUUID)();
         this.allowInsecureConnection = (_f = options.allowInsecureConnection) !== null && _f !== void 0 ? _f : false;
         this.enableBrowserStreams = (_g = options.enableBrowserStreams) !== null && _g !== void 0 ? _g : false;
+        this.agent = options.agent;
+        this.tlsSettings = options.tlsSettings;
     }
 }
 /**
@@ -86378,6 +86375,39 @@ function createPipelineRequest(options) {
     return new PipelineRequestImpl(options);
 }
 //# sourceMappingURL=pipelineRequest.js.map
+
+/***/ }),
+
+/***/ 8554:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.agentPolicyName = void 0;
+exports.agentPolicy = agentPolicy;
+/**
+ * Name of the Agent Policy
+ */
+exports.agentPolicyName = "agentPolicy";
+/**
+ * Gets a pipeline policy that sets http.agent
+ */
+function agentPolicy(agent) {
+    return {
+        name: exports.agentPolicyName,
+        sendRequest: async (req, next) => {
+            // Users may define an agent on the request, honor it over the client level one
+            if (!req.agent) {
+                req.agent = agent;
+            }
+            return next(req);
+        },
+    };
+}
+//# sourceMappingURL=agentPolicy.js.map
 
 /***/ }),
 
@@ -87595,9 +87625,9 @@ exports.throttlingRetryPolicyName = "throttlingRetryPolicy";
  * A policy that retries when the server sends a 429 response with a Retry-After header.
  *
  * To learn more, please refer to
- * https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-request-limits,
- * https://docs.microsoft.com/en-us/azure/azure-subscription-service-limits and
- * https://docs.microsoft.com/en-us/azure/virtual-machines/troubleshooting/troubleshooting-throttling-errors
+ * https://learn.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-request-limits,
+ * https://learn.microsoft.com/en-us/azure/azure-subscription-service-limits and
+ * https://learn.microsoft.com/en-us/azure/virtual-machines/troubleshooting/troubleshooting-throttling-errors
  *
  * @param options - Options that configure retry logic.
  */
