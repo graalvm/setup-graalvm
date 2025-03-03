@@ -72,6 +72,6 @@ outputs:
     description: 'A boolean value to indicate an exact match was found for the primary key'
 runs:
   using: 'node20'
-  main: 'dist/main/index.js'
-  post: 'dist/cleanup/index.js'
+  main: 'dist/main.js'
+  post: 'dist/cleanup.js'
   post-if: 'success()'

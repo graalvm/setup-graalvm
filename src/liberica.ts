@@ -1,6 +1,6 @@
-import * as c from './constants'
+import * as c from './constants.js'
 import * as semver from 'semver'
-import { downloadExtractAndCacheJDK, getTaggedRelease, getMatchingTags } from './utils'
+import { downloadExtractAndCacheJDK, getTaggedRelease, getMatchingTags } from './utils.js'
 import { downloadTool } from '@actions/tool-cache'
 import { spawnSync } from 'child_process'
 
