@@ -10,8 +10,7 @@ import { setNativeImageOption } from '../utils'
 const INPUT_NI_SBOM = 'native-image-enable-sbom'
 const SBOM_FILE_SUFFIX = '.sbom.json'
 const MIN_JAVA_VERSION = '24.0.0'
-
-let javaVersionOrLatestEA: string | null = null
+const javaVersionKey = 'javaVersionKey'
 
 interface SBOM {
   components: Component[]
@@ -67,36 +66,36 @@ interface DependencySnapshot {
   >
 }
 
-export function setUpSBOMSupport(javaVersionOrDev: string, distribution: string): void {
+export function setUpSBOMSupport(javaVersion: string, distribution: string): void {
   if (!isFeatureEnabled()) {
     return
   }
 
-  validateJavaVersionAndDistribution(javaVersionOrDev, distribution)
-  javaVersionOrLatestEA = javaVersionOrDev
-  setNativeImageOption(javaVersionOrLatestEA, '--enable-sbom=export')
+  validateJavaVersionAndDistribution(javaVersion, distribution)
+  core.saveState(javaVersionKey, javaVersion)
+  setNativeImageOption(javaVersion, '--enable-sbom=export')
   core.info('Enabled SBOM generation for Native Image build')
 }
 
-function validateJavaVersionAndDistribution(javaVersionOrDev: string, distribution: string): void {
+function validateJavaVersionAndDistribution(javaVersion: string, distribution: string): void {
   if (distribution !== c.DISTRIBUTION_GRAALVM) {
     throw new Error(
       `The '${INPUT_NI_SBOM}' option is only supported for Oracle GraalVM (distribution '${c.DISTRIBUTION_GRAALVM}'), but found distribution '${distribution}'.`
     )
   }
 
-  if (javaVersionOrDev === 'dev') {
+  if (javaVersion === 'dev') {
     throw new Error(`The '${INPUT_NI_SBOM}' option is not supported for java-version 'dev'.`)
   }
 
-  if (javaVersionOrDev === 'latest-ea') {
+  if (javaVersion === 'latest-ea') {
     return
   }
 
-  const coercedJavaVersion = semver.coerce(javaVersionOrDev)
+  const coercedJavaVersion = semver.coerce(javaVersion)
   if (!coercedJavaVersion || semver.gt(MIN_JAVA_VERSION, coercedJavaVersion)) {
     throw new Error(
-      `The '${INPUT_NI_SBOM}' option is only supported for GraalVM for JDK ${MIN_JAVA_VERSION} or later, but found java-version '${javaVersionOrDev}'.`
+      `The '${INPUT_NI_SBOM}' option is only supported for GraalVM for JDK ${MIN_JAVA_VERSION} or later, but found java-version '${javaVersion}'.`
     )
   }
 }
@@ -106,7 +105,8 @@ export async function processSBOM(): Promise<void> {
     return
   }
 
-  if (javaVersionOrLatestEA === null) {
+  const javaVersion = core.getState(javaVersionKey)
+  if (!javaVersion) {
     throw new Error('setUpSBOMSupport must be called before processSBOM')
   }
 
@@ -116,7 +116,7 @@ export async function processSBOM(): Promise<void> {
     const sbomData = parseSBOM(sbomContent)
     const components = mapToComponentsWithDependencies(sbomData)
     printSBOMContent(components)
-    const snapshot = convertSBOMToSnapshot(sbomPath, components)
+    const snapshot = convertSBOMToSnapshot(javaVersion, sbomPath, components)
     await submitDependencySnapshot(snapshot)
   } catch (error) {
     throw new Error(
@@ -184,7 +184,7 @@ function printSBOMContent(components: Component[]): void {
   core.info('==================')
 }
 
-function convertSBOMToSnapshot(sbomPath: string, components: Component[]): DependencySnapshot {
+function convertSBOMToSnapshot(javaVersion: string, sbomPath: string, components: Component[]): DependencySnapshot {
   const context = github.context
   const sbomFileName = basename(sbomPath)
 
@@ -203,7 +203,7 @@ function convertSBOMToSnapshot(sbomPath: string, components: Component[]): Depen
     },
     detector: {
       name: 'Oracle GraalVM',
-      version: javaVersionOrLatestEA ?? '',
+      version: javaVersion,
       url: 'https://www.graalvm.org/'
     },
     scanned: new Date().toISOString(),

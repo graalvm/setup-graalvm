@@ -145,6 +145,7 @@ describe('sbom feature', () => {
       writeFileSync(sbomPath, JSON.stringify(sbom, null, 2))
 
       mockFindSBOM([sbomPath])
+      jest.spyOn(core, 'getState').mockReturnValue(javaVersion)
 
       await processSBOM()
     }
@@ -189,6 +190,10 @@ describe('sbom feature', () => {
         }
       ]
     }
+
+    it('should throw an error if setUpSBOMSupport was not called before processSBOM', async () => {
+      await expect(processSBOM()).rejects.toThrow('setUpSBOMSupport must be called before processSBOM')
+    })
 
     it('should process SBOM and display components', async () => {
       await setUpAndProcessSBOM(sampleSBOM)
