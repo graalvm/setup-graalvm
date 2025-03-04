@@ -9,7 +9,7 @@ This action:
 - exports a `$GRAALVM_HOME` environment variable
 - adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(Native Image, Truffle languages, and tools can be invoked directly)
 - sets `$JAVA_HOME` to `$GRAALVM_HOME` by default<br>(can be disabled via `set-java-home: 'false'`, see [Options](#options))
-- supports `x64` and `aarch64` (selected automatically, `aarch64` requires a [self-hosted runner][gha-self-hosted-runners])
+- supports `x64` and `aarch64/arm64` (see how to use [Linux arm64 runners](https://github.blog/changelog/2025-01-16-linux-arm64-hosted-runners-now-available-for-free-in-public-repositories-public-preview/))
 - supports dependency caching for Apache Maven, Gradle, and sbt (see [`cache` option](#options))
 - sets up Windows environments with build tools using [vcvarsall.bat][vcvarsall]
 - has built-in support for GraalVM components and the [GraalVM Updater][gu]
