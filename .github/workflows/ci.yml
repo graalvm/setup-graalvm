@@ -41,7 +41,7 @@ jobs:
       PASSES_GDS_TOKEN_CHECK: ${{ !matrix.set-gds-token || secrets.GDS_TOKEN != '' }}
     strategy:
       matrix:
-        java-version: ['23', '21', '17', '20', 'dev']
+        java-version: ['24', '21', '17', '20', 'dev']
         distribution: ['graalvm', 'graalvm-community']
         os: [
             ubuntu-latest, # Linux on Intel
@@ -56,7 +56,7 @@ jobs:
           - java-version: 'latest-ea'
             distribution: 'graalvm'
             os: ubuntu-latest
-          - java-version: '24-ea'
+          - java-version: '25-ea'
             distribution: 'graalvm'
             os: ubuntu-latest
           - java-version: '21'
