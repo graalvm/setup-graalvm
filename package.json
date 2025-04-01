@@ -42,7 +42,7 @@
     "@actions/io": "^1.1.3",
     "@actions/tool-cache": "^2.0.2",
     "@octokit/core": "^5.2.0",
-    "@octokit/types": "^13.8.0",
+    "@octokit/types": "^13.10.0",
     "@github/dependency-submission-toolkit": "^2.0.4",
     "semver": "^7.7.1",
     "uuid": "^11.1.0"
