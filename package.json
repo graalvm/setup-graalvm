@@ -33,7 +33,7 @@
   },
   "license": "UPL",
   "dependencies": {
-    "@actions/cache": "^4.0.2",
+    "@actions/cache": "^4.0.3",
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@actions/github": "^6.0.0",
@@ -43,7 +43,7 @@
     "@actions/tool-cache": "^2.0.2",
     "@octokit/core": "^5.2.0",
     "@octokit/types": "^13.8.0",
-    "@github/dependency-submission-toolkit": "^2.0.4",
+    "@github/dependency-submission-toolkit": "^2.0.5",
     "semver": "^7.7.1",
     "uuid": "^11.1.0"
   },
