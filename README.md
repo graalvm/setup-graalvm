@@ -1,5 +1,7 @@
 # GitHub Action for GraalVM [![CI](https://github.com/graalvm/setup-graalvm/actions/workflows/ci.yml/badge.svg)](https://github.com/graalvm/setup-graalvm/actions/workflows/ci.yml)
-This GitHub action sets up [Oracle GraalVM][graalvm-medium], GraalVM [Community Edition (CE)][repo], [Enterprise Edition (EE)][graalvm-ee], [Mandrel][mandrel], or [Liberica Native Image Kit][liberica] as well as [Native Image][native-image] and GraalVM components such as [Truffle languages][truffle-languages].
+
+Set up your GitHub Actions workflow with a specific distribution of [GraalVM][graalvm], and use it as your JDK and to build [efficient native images][graalvm].
+
 
 ## Key Features
 
@@ -7,12 +9,10 @@ This action:
 
 - supports Oracle GraalVM [releases][graalvm-dl], [EA builds][ea-builds], GraalVM Community Edition (CE) [releases], [dev builds][dev-builds], GraalVM Enterprise Edition (EE) [releases][graalvm-ee] (set [`gds-token`](#options)) 22.1.0 and later, [Mandrel][mandrel], and [Liberica Native Image Kit][liberica] (see [Options](#options))
 - exports a `$GRAALVM_HOME` environment variable
-- adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(Native Image, Truffle languages, and tools can be invoked directly)
+- adds `$GRAALVM_HOME/bin` to the `$PATH` environment variable<br>(`native-image`, `javac`, and other JDK tools can be invoked directly)
 - sets `$JAVA_HOME` to `$GRAALVM_HOME` by default<br>(can be disabled via `set-java-home: 'false'`, see [Options](#options))
 - supports `x64` and `aarch64/arm64` (see how to use [Linux arm64 runners](https://github.blog/changelog/2025-01-16-linux-arm64-hosted-runners-now-available-for-free-in-public-repositories-public-preview/))
 - supports dependency caching for Apache Maven, Gradle, and sbt (see [`cache` option](#options))
-- sets up Windows environments with build tools using [vcvarsall.bat][vcvarsall]
-- has built-in support for GraalVM components and the [GraalVM Updater][gu]
 
 
 ## Templates
@@ -270,21 +270,16 @@ Only pull requests from committers that can be verified as having signed the OCA
 [gha-self-hosted-runners]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [gu]: https://www.graalvm.org/reference-manual/graalvm-updater/
 [graalvm]: https://www.graalvm.org/
-[graalvm-dl]: https://www.oracle.com/java/technologies/downloads/
-[graalvm-medium]: https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5
+[graalvm-dl]: https://www.graalvm.org/downloads/
 [graalvm-ee]: https://www.oracle.com/downloads/graalvm-downloads.html
 [liberica]: https://bell-sw.com/liberica-native-image-kit/
 [mandrel]: https://github.com/graalvm/mandrel
 [mandrel-releases]: https://github.com/graalvm/mandrel/releases
 [mandrel-stable]: https://github.com/graalvm/mandrel/releases/latest
 [musl]: https://musl.libc.org/
-[native-image]: https://www.graalvm.org/native-image/
 [native-image-musl-build]: https://github.com/graalvm/setup-graalvm/blob/778131f1d6837ccd4b2e91382c31830896a2d56e/.github/workflows/test.yml#L74-L92
 [native-image-static]: https://github.com/oracle/graal/blob/fa6f4a974dedacf4688dcc430dd100849d9882f2/docs/reference-manual/native-image/StaticImages.md
 [oca]: https://oca.opensource.oracle.com
 [releases]: https://github.com/graalvm/graalvm-ce-builds/releases
-[repo]: https://github.com/oracle/graal
 [setup-java-caching]: https://github.com/actions/setup-java/tree/5b36705a13905facb447b6812d613a06a07e371d#caching-packages-dependencies
 [stable]: https://github.com/graalvm/graalvm-ce-builds/releases/latest
-[truffle-languages]: https://www.graalvm.org/reference-manual/languages/
-[vcvarsall]: https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line
