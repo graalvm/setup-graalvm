@@ -1,6 +1,6 @@
 # GitHub Action for GraalVM [![CI](https://github.com/graalvm/setup-graalvm/actions/workflows/ci.yml/badge.svg)](https://github.com/graalvm/setup-graalvm/actions/workflows/ci.yml)
 
-Set up your GitHub Actions workflow with a specific [GraalVM][graalvm] distribution, and use it both as your JDK and to build [efficient native images][graalvm].
+Set up your GitHub Actions workflow with a specific [GraalVM][graalvm] distribution, and use it both as your JDK and for [ahead-of-time Native Image compilation][graalvm].
 
 
 ## Key Features
