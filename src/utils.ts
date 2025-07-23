@@ -1,25 +1,15 @@
 import * as c from './constants'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import * as httpClient from '@actions/http-client'
 import * as semver from 'semver'
 import * as tc from '@actions/tool-cache'
 import * as fs from 'fs'
 import { ExecOptions, exec as e } from '@actions/exec'
 import { readFileSync, readdirSync } from 'fs'
-import { Octokit } from '@octokit/core'
 import { createHash } from 'crypto'
 import { join } from 'path'
 import { tmpdir } from 'os'
-
-// Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
-const baseUrl = 'https://api.github.com'
-const GitHubDotCom = Octokit.defaults({
-  baseUrl,
-  request: {
-    agent: new httpClient.HttpClient().getAgent(baseUrl)
-  }
-})
+import { GitHub } from '@actions/github/lib/utils'
 
 export async function exec(commandLine: string, args?: string[], options?: ExecOptions | undefined): Promise<void> {
   const exitCode = await e(commandLine, args, options)
@@ -29,9 +19,7 @@ export async function exec(commandLine: string, args?: string[], options?: ExecO
 }
 
 export async function getLatestRelease(repo: string): Promise<c.LatestReleaseResponse['data']> {
-  const githubToken = getGitHubToken()
-  const options = githubToken.length > 0 ? { auth: githubToken } : {}
-  const octokit = new GitHubDotCom(options)
+  const octokit = getOctokit()
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
       owner: c.GRAALVM_GH_USER,
@@ -41,9 +29,7 @@ export async function getLatestRelease(repo: string): Promise<c.LatestReleaseRes
 }
 
 export async function getContents(repo: string, path: string): Promise<c.ContentsResponse['data']> {
-  const githubToken = getGitHubToken()
-  const options = githubToken.length > 0 ? { auth: githubToken } : {}
-  const octokit = new GitHubDotCom(options)
+  const octokit = getOctokit()
   return (
     await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
       owner: c.GRAALVM_GH_USER,
@@ -58,9 +44,7 @@ export async function getTaggedRelease(
   repo: string,
   tag: string
 ): Promise<c.LatestReleaseResponse['data']> {
-  const githubToken = getGitHubToken()
-  const options = githubToken.length > 0 ? { auth: githubToken } : {}
-  const octokit = new GitHubDotCom(options)
+  const octokit = getOctokit()
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
       owner,
@@ -75,9 +59,7 @@ export async function getMatchingTags(
   repo: string,
   tagPrefix: string
 ): Promise<c.MatchingRefsResponse['data']> {
-  const githubToken = getGitHubToken()
-  const options = githubToken.length > 0 ? { auth: githubToken } : {}
-  const octokit = new GitHubDotCom(options)
+  const octokit = getOctokit()
   return (
     await octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}', {
       owner,
@@ -156,8 +138,15 @@ export function isPREvent(): boolean {
   return process.env[c.ENV_GITHUB_EVENT_NAME] === c.EVENT_NAME_PULL_REQUEST
 }
 
-function getGitHubToken(): string {
-  return core.getInput(c.INPUT_GITHUB_TOKEN)
+function getOctokit(): InstanceType<typeof GitHub> {
+  /* Set up GitHub instance manually because @actions/github does not allow unauthenticated access */
+  const GitHubWithPlugins = GitHub.plugin()
+  const token = core.getInput(c.INPUT_GITHUB_TOKEN)
+  if (token) {
+    return new GitHubWithPlugins({ auth: `token ${token}` })
+  } else {
+    return new GitHubWithPlugins() /* unauthenticated */
+  }
 }
 
 export async function findExistingPRCommentId(bodyStartsWith: string): Promise<number | undefined> {
@@ -166,7 +155,7 @@ export async function findExistingPRCommentId(bodyStartsWith: string): Promise<n
   }
 
   const context = github.context
-  const octokit = github.getOctokit(getGitHubToken())
+  const octokit = getOctokit()
   try {
     const comments = await octokit.paginate(octokit.rest.issues.listComments, {
       ...context.repo,
@@ -189,7 +178,7 @@ export async function updatePRComment(content: string, commentId: number): Promi
   }
 
   try {
-    await github.getOctokit(getGitHubToken()).rest.issues.updateComment({
+    await getOctokit().rest.issues.updateComment({
       ...github.context.repo,
       comment_id: commentId,
       body: content
@@ -207,7 +196,7 @@ export async function createPRComment(content: string): Promise<void> {
   }
   const context = github.context
   try {
-    await github.getOctokit(getGitHubToken()).rest.issues.createComment({
+    await getOctokit().rest.issues.createComment({
       ...context.repo,
       issue_number: context.payload.pull_request?.number as number,
       body: content
