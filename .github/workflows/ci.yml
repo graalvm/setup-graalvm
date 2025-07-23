@@ -32,6 +32,8 @@ jobs:
         run: npm run lint
       - name: Test
         run: npm run test
+        env:
+          INPUT_GITHUB_TOKEN: ${{ github.token }} # for core.getInput()
 
   test-action:
     name: GraalVM
