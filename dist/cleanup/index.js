@@ -79190,24 +79190,15 @@ exports.setNativeImageOption = setNativeImageOption;
 const c = __importStar(__nccwpck_require__(7242));
 const core = __importStar(__nccwpck_require__(7484));
 const github = __importStar(__nccwpck_require__(3228));
-const httpClient = __importStar(__nccwpck_require__(4844));
 const semver = __importStar(__nccwpck_require__(2088));
 const tc = __importStar(__nccwpck_require__(3472));
 const fs = __importStar(__nccwpck_require__(9896));
 const exec_1 = __nccwpck_require__(5236);
 const fs_1 = __nccwpck_require__(9896);
-const core_1 = __nccwpck_require__(1897);
 const crypto_1 = __nccwpck_require__(6982);
 const path_1 = __nccwpck_require__(6928);
 const os_1 = __nccwpck_require__(857);
-// Set up Octokit for github.com only and in the same way as @actions/github (see https://git.io/Jy9YP)
-const baseUrl = 'https://api.github.com';
-const GitHubDotCom = core_1.Octokit.defaults({
-    baseUrl,
-    request: {
-        agent: new httpClient.HttpClient().getAgent(baseUrl)
-    }
-});
+const utils_1 = __nccwpck_require__(8006);
 async function exec(commandLine, args, options) {
     const exitCode = await (0, exec_1.exec)(commandLine, args, options);
     if (exitCode !== 0) {
@@ -79215,18 +79206,14 @@ async function exec(commandLine, args, options) {
     }
 }
 async function getLatestRelease(repo) {
-    const githubToken = getGitHubToken();
-    const options = githubToken.length > 0 ? { auth: githubToken } : {};
-    const octokit = new GitHubDotCom(options);
+    const octokit = getOctokit();
     return (await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
         owner: c.GRAALVM_GH_USER,
         repo
     })).data;
 }
 async function getContents(repo, path) {
-    const githubToken = getGitHubToken();
-    const options = githubToken.length > 0 ? { auth: githubToken } : {};
-    const octokit = new GitHubDotCom(options);
+    const octokit = getOctokit();
     return (await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
         owner: c.GRAALVM_GH_USER,
         repo,
@@ -79234,9 +79221,7 @@ async function getContents(repo, path) {
     })).data;
 }
 async function getTaggedRelease(owner, repo, tag) {
-    const githubToken = getGitHubToken();
-    const options = githubToken.length > 0 ? { auth: githubToken } : {};
-    const octokit = new GitHubDotCom(options);
+    const octokit = getOctokit();
     return (await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
         owner,
         repo,
@@ -79244,9 +79229,7 @@ async function getTaggedRelease(owner, repo, tag) {
     })).data;
 }
 async function getMatchingTags(owner, repo, tagPrefix) {
-    const githubToken = getGitHubToken();
-    const options = githubToken.length > 0 ? { auth: githubToken } : {};
-    const octokit = new GitHubDotCom(options);
+    const octokit = getOctokit();
     return (await octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}', {
         owner,
         repo,
@@ -79314,15 +79297,23 @@ function toSemVer(version) {
 function isPREvent() {
     return process.env[c.ENV_GITHUB_EVENT_NAME] === c.EVENT_NAME_PULL_REQUEST;
 }
-function getGitHubToken() {
-    return core.getInput(c.INPUT_GITHUB_TOKEN);
+function getOctokit() {
+    /* Set up GitHub instance manually because @actions/github does not allow unauthenticated access */
+    const GitHubWithPlugins = utils_1.GitHub.plugin();
+    const token = core.getInput(c.INPUT_GITHUB_TOKEN);
+    if (token) {
+        return new GitHubWithPlugins({ auth: `token ${token}` });
+    }
+    else {
+        return new GitHubWithPlugins(); /* unauthenticated */
+    }
 }
 async function findExistingPRCommentId(bodyStartsWith) {
     if (!isPREvent()) {
         throw new Error('Not a PR event.');
     }
     const context = github.context;
-    const octokit = github.getOctokit(getGitHubToken());
+    const octokit = getOctokit();
     try {
         const comments = await octokit.paginate(octokit.rest.issues.listComments, {
             ...context.repo,
@@ -79342,7 +79333,7 @@ async function updatePRComment(content, commentId) {
         throw new Error('Not a PR event.');
     }
     try {
-        await github.getOctokit(getGitHubToken()).rest.issues.updateComment({
+        await getOctokit().rest.issues.updateComment({
             ...github.context.repo,
             comment_id: commentId,
             body: content
@@ -79358,7 +79349,7 @@ async function createPRComment(content) {
     }
     const context = github.context;
     try {
-        await github.getOctokit(getGitHubToken()).rest.issues.createComment({
+        await getOctokit().rest.issues.createComment({
             ...context.repo,
             issue_number: context.payload.pull_request?.number,
             body: content
