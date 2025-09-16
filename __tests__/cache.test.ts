@@ -24,24 +24,28 @@
  * Forked from https://github.com/actions/setup-java/blob/5b36705a13905facb447b6812d613a06a07e371d/__tests__/cache.test.ts
  */
 
+import { jest } from '@jest/globals'
 import { mkdtempSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { restore, save } from '../src/features/cache'
 import * as fs from 'fs'
 import * as os from 'os'
-import * as core from '@actions/core'
-import * as cache from '@actions/cache'
+import * as cache from '../__fixtures__/cache.js'
+import * as core from '../__fixtures__/core.js'
+
+// Mocks should be declared before the module being tested is imported.
+jest.unstable_mockModule('@actions/core', () => core)
+jest.unstable_mockModule('@actions/cache', () => cache)
+
+// The module being tested should be imported dynamically. This ensures that the
+// mocks are used in place of any actual dependencies.
+const { restore, save } = await import('../src/features/cache.js')
 
 describe('dependency cache', () => {
   const ORIGINAL_RUNNER_OS = process.env['RUNNER_OS']
   const ORIGINAL_GITHUB_WORKSPACE = process.env['GITHUB_WORKSPACE']
   const ORIGINAL_CWD = process.cwd()
   let workspace: string
-  let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>
-  let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>
-  let spyDebug: jest.SpyInstance<void, Parameters<typeof core.debug>>
-  let spySaveState: jest.SpyInstance<void, Parameters<typeof core.saveState>>
 
   beforeEach(() => {
     workspace = mkdtempSync(join(tmpdir(), 'setup-graalvm-cache-'))
@@ -65,17 +69,9 @@ describe('dependency cache', () => {
   })
 
   beforeEach(() => {
-    spyInfo = jest.spyOn(core, 'info')
-    spyInfo.mockImplementation(() => null)
-
-    spyWarning = jest.spyOn(core, 'warning')
-    spyWarning.mockImplementation(() => null)
-
-    spyDebug = jest.spyOn(core, 'debug')
-    spyDebug.mockImplementation(() => null)
-
-    spySaveState = jest.spyOn(core, 'saveState')
-    spySaveState.mockImplementation(() => null)
+    core.info.mockImplementation(() => null)
+    core.warning.mockImplementation(() => null)
+    core.debug.mockImplementation(() => null)
   })
 
   afterEach(() => {
@@ -86,13 +82,8 @@ describe('dependency cache', () => {
   })
 
   describe('restore', () => {
-    let spyCacheRestore: jest.SpyInstance<ReturnType<typeof cache.restoreCache>, Parameters<typeof cache.restoreCache>>
-
     beforeEach(() => {
-      spyCacheRestore = jest
-        .spyOn(cache, 'restoreCache')
-        .mockImplementation((_paths: string[], _primaryKey: string) => Promise.resolve(undefined))
-      spyWarning.mockImplementation(() => null)
+      cache.restoreCache.mockImplementation((_paths: string[], _primaryKey: string) => Promise.resolve(undefined))
     })
 
     it('throws error if unsupported package manager specified', () => {
@@ -111,9 +102,9 @@ describe('dependency cache', () => {
         createFile(join(workspace, 'pom.xml'))
 
         await restore('maven')
-        expect(spyCacheRestore).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith('maven cache is not found')
+        expect(cache.restoreCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith('maven cache is not found')
       })
     })
     describe('for gradle', () => {
@@ -128,17 +119,17 @@ describe('dependency cache', () => {
         createFile(join(workspace, 'build.gradle'))
 
         await restore('gradle')
-        expect(spyCacheRestore).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found')
+        expect(cache.restoreCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith('gradle cache is not found')
       })
       it('downloads cache based on build.gradle.kts', async () => {
         createFile(join(workspace, 'build.gradle.kts'))
 
         await restore('gradle')
-        expect(spyCacheRestore).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found')
+        expect(cache.restoreCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith('gradle cache is not found')
       })
     })
     it('downloads cache based on buildSrc/Versions.kt', async () => {
@@ -146,9 +137,9 @@ describe('dependency cache', () => {
       createFile(join(workspace, 'buildSrc', 'Versions.kt'))
 
       await restore('gradle')
-      expect(spyCacheRestore).toHaveBeenCalled()
-      expect(spyWarning).not.toHaveBeenCalled()
-      expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found')
+      expect(cache.restoreCache).toHaveBeenCalled()
+      expect(core.warning).not.toHaveBeenCalled()
+      expect(core.info).toHaveBeenCalledWith('gradle cache is not found')
     })
     describe('for sbt', () => {
       it('throws error if no build.sbt found', async () => {
@@ -162,20 +153,16 @@ describe('dependency cache', () => {
         createFile(join(workspace, 'build.sbt'))
 
         await restore('sbt')
-        expect(spyCacheRestore).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith('sbt cache is not found')
+        expect(cache.restoreCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith('sbt cache is not found')
       })
     })
   })
   describe('save', () => {
-    let spyCacheSave: jest.SpyInstance<ReturnType<typeof cache.saveCache>, Parameters<typeof cache.saveCache>>
-
     beforeEach(() => {
-      spyCacheSave = jest
-        .spyOn(cache, 'saveCache')
-        .mockImplementation((_paths: string[], _key: string) => Promise.resolve(0))
-      spyWarning.mockImplementation(() => null)
+      cache.saveCache.mockImplementation((_paths: string[], _key: string) => Promise.resolve(0))
+      core.warning.mockImplementation(() => null)
     })
 
     it('throws error if unsupported package manager specified', () => {
@@ -183,18 +170,18 @@ describe('dependency cache', () => {
     })
 
     it('save with -1 cacheId , should not fail workflow', async () => {
-      spyCacheSave.mockImplementation(() => Promise.resolve(-1))
+      cache.saveCache.mockImplementation(() => Promise.resolve(-1))
       createStateForMissingBuildFile()
 
       await save('maven')
-      expect(spyCacheSave).toHaveBeenCalled()
-      expect(spyWarning).not.toHaveBeenCalled()
-      expect(spyInfo).toHaveBeenCalled()
-      expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
+      expect(cache.saveCache).toHaveBeenCalled()
+      expect(core.warning).not.toHaveBeenCalled()
+      expect(core.info).toHaveBeenCalled()
+      expect(core.info).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
     })
 
     it('saves with error from toolkit, should fail workflow', async () => {
-      spyCacheSave.mockImplementation(() => Promise.reject(new cache.ValidationError('Validation failed')))
+      cache.saveCache.mockImplementation(() => Promise.reject(new cache.ValidationError('Validation failed')))
       createStateForMissingBuildFile()
 
       expect.assertions(1)
@@ -205,24 +192,24 @@ describe('dependency cache', () => {
       it('uploads cache even if no pom.xml found', async () => {
         createStateForMissingBuildFile()
         await save('maven')
-        expect(spyCacheSave).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
+        expect(cache.saveCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
       })
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'pom.xml'))
 
         await save('maven')
-        expect(spyCacheSave).not.toHaveBeenCalled()
-        expect(spyWarning).toHaveBeenCalledWith('Error retrieving key from state.')
+        expect(cache.saveCache).not.toHaveBeenCalled()
+        expect(core.warning).toHaveBeenCalledWith('Error retrieving key from state.')
       })
       it('uploads cache', async () => {
         createFile(join(workspace, 'pom.xml'))
         createStateForSuccessfulRestore()
 
         await save('maven')
-        expect(spyCacheSave).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
+        expect(cache.saveCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
     })
     describe('for gradle', () => {
@@ -230,33 +217,33 @@ describe('dependency cache', () => {
         createStateForMissingBuildFile()
 
         await save('gradle')
-        expect(spyCacheSave).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
+        expect(cache.saveCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
       })
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'build.gradle'))
 
         await save('gradle')
-        expect(spyCacheSave).not.toHaveBeenCalled()
-        expect(spyWarning).toHaveBeenCalledWith('Error retrieving key from state.')
+        expect(cache.saveCache).not.toHaveBeenCalled()
+        expect(core.warning).toHaveBeenCalledWith('Error retrieving key from state.')
       })
       it('uploads cache based on build.gradle', async () => {
         createFile(join(workspace, 'build.gradle'))
         createStateForSuccessfulRestore()
 
         await save('gradle')
-        expect(spyCacheSave).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
+        expect(cache.saveCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
       it('uploads cache based on build.gradle.kts', async () => {
         createFile(join(workspace, 'build.gradle.kts'))
         createStateForSuccessfulRestore()
 
         await save('gradle')
-        expect(spyCacheSave).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
+        expect(cache.saveCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
       it('uploads cache based on buildSrc/Versions.kt', async () => {
         createDirectory(join(workspace, 'buildSrc'))
@@ -264,47 +251,47 @@ describe('dependency cache', () => {
         createStateForSuccessfulRestore()
 
         await save('gradle')
-        expect(spyCacheSave).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
+        expect(cache.saveCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
     })
     describe('for sbt', () => {
       it('uploads cache even if no build.sbt found', async () => {
         createStateForMissingBuildFile()
         await save('sbt')
-        expect(spyCacheSave).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
+        expect(cache.saveCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
       })
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'build.sbt'))
 
         await save('sbt')
-        expect(spyCacheSave).not.toHaveBeenCalled()
-        expect(spyWarning).toHaveBeenCalledWith('Error retrieving key from state.')
+        expect(cache.saveCache).not.toHaveBeenCalled()
+        expect(core.warning).toHaveBeenCalledWith('Error retrieving key from state.')
       })
       it('uploads cache', async () => {
         createFile(join(workspace, 'build.sbt'))
         createStateForSuccessfulRestore()
 
         await save('sbt')
-        expect(spyCacheSave).toHaveBeenCalled()
-        expect(spyWarning).not.toHaveBeenCalled()
-        expect(spyInfo).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
+        expect(cache.saveCache).toHaveBeenCalled()
+        expect(core.warning).not.toHaveBeenCalled()
+        expect(core.info).toHaveBeenCalledWith(expect.stringMatching(/^Cache saved with the key:.*/))
       })
     })
   })
 })
 
 function resetState() {
-  jest.spyOn(core, 'getState').mockReset()
+  core.getState.mockReset()
 }
 
 /**
  * Create states to emulate a restore process without build file.
  */
 function createStateForMissingBuildFile() {
-  jest.spyOn(core, 'getState').mockImplementation((name) => {
+  core.getState.mockImplementation((name) => {
     switch (name) {
       case 'cache-primary-key':
         return 'setup-graalvm-cache-'
@@ -318,7 +305,7 @@ function createStateForMissingBuildFile() {
  * Create states to emulate a successful restore process.
  */
 function createStateForSuccessfulRestore() {
-  jest.spyOn(core, 'getState').mockImplementation((name) => {
+  core.getState.mockImplementation((name) => {
     switch (name) {
       case 'cache-primary-key':
         return 'setup-graalvm-cache-primary-key'

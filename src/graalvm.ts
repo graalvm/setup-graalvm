@@ -1,4 +1,4 @@
-import * as c from './constants'
+import * as c from './constants.js'
 import * as core from '@actions/core'
 import * as semver from 'semver'
 import {
@@ -8,8 +8,8 @@ import {
   getLatestRelease,
   getMatchingTags,
   getTaggedRelease
-} from './utils'
-import { downloadGraalVM, downloadGraalVMEELegacy } from './gds'
+} from './utils.js'
+import { downloadGraalVM, downloadGraalVMEELegacy } from './gds.js'
 import { downloadTool } from '@actions/tool-cache'
 import { basename } from 'path'
 
