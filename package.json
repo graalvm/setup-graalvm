@@ -82,5 +82,10 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
+  },
+  "overrides": {
+    "@actions/glob": {
+      "minimatch": "^10.0.1"
+    }
   }
 }
