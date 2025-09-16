@@ -1,52 +1,34 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import * as c from '../src/constants'
-import { setUpSBOMSupport, processSBOM } from '../src/features/sbom'
-import * as core from '@actions/core'
-import * as github from '@actions/github'
-import * as glob from '@actions/glob'
 import { join } from 'path'
 import { tmpdir } from 'os'
+import { expect, jest } from '@jest/globals'
 import { mkdtempSync, writeFileSync, rmSync } from 'fs'
+import * as core from '../__fixtures__/core.js'
+import * as glob from '../__fixtures__/glob.js'
+import * as github from '../__fixtures__/github.js'
 
-jest.mock('@actions/glob')
-jest.mock('@actions/github', () => ({
-  getOctokit: jest.fn(() => ({
-    request: jest.fn().mockResolvedValue(undefined)
-  })),
-  context: {
-    repo: {
-      owner: 'test-owner',
-      repo: 'test-repo'
-    },
-    sha: 'test-sha',
-    ref: 'test-ref',
-    workflow: 'test-workflow',
-    job: 'test-job',
-    runId: '12345'
-  }
-}))
+// Mocks should be declared before the module being tested is imported.
+jest.unstable_mockModule('@actions/core', () => core)
+jest.unstable_mockModule('@actions/glob', () => glob)
+jest.unstable_mockModule('@actions/github', () => github)
+
+// The module being tested should be imported dynamically. This ensures that the
+// mocks are used in place of any actual dependencies.
+const { setUpSBOMSupport, processSBOM } = await import('../src/features/sbom.js')
 
 function mockFindSBOM(files: string[]) {
-  const mockCreate = jest.fn().mockResolvedValue({
-    glob: jest.fn().mockResolvedValue(files)
-  })
-  ;(glob.create as jest.Mock).mockImplementation(mockCreate)
+  glob.create.mockImplementation(
+    jest.fn<() => Promise<any>>().mockResolvedValue({
+      glob: jest.fn<() => Promise<string[]>>().mockResolvedValue(files)
+    })
+  )
 }
 
-// Mocks the GitHub dependency submission API return value
-// 'undefined' is treated as a successful request
-function mockGithubAPIReturnValue(returnValue: Error | undefined = undefined) {
-  const mockOctokit = {
-    request:
-      returnValue === undefined ? jest.fn().mockResolvedValue(returnValue) : jest.fn().mockRejectedValue(returnValue)
-  }
-  ;(github.getOctokit as jest.Mock).mockReturnValue(mockOctokit)
-  return mockOctokit
-}
+const request = jest.fn<any>().mockResolvedValue(undefined)
 
 describe('sbom feature', () => {
-  let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>
-  let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>
-  let spyExportVariable: jest.SpyInstance<void, Parameters<typeof core.exportVariable>>
   let workspace: string
   let originalEnv: NodeJS.ProcessEnv
   const javaVersion = '24.0.0'
@@ -62,12 +44,11 @@ describe('sbom feature', () => {
     }
 
     workspace = mkdtempSync(join(tmpdir(), 'setup-graalvm-sbom-'))
-    mockGithubAPIReturnValue()
 
-    spyInfo = jest.spyOn(core, 'info').mockImplementation(() => null)
-    spyWarning = jest.spyOn(core, 'warning').mockImplementation(() => null)
-    spyExportVariable = jest.spyOn(core, 'exportVariable').mockImplementation(() => null)
-    jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
+    core.info.mockImplementation(() => null)
+    core.warning.mockImplementation(() => null)
+    core.debug.mockImplementation(() => null)
+    core.getInput.mockImplementation((name: string) => {
       if (name === 'native-image-enable-sbom') {
         return 'true'
       }
@@ -76,14 +57,17 @@ describe('sbom feature', () => {
       }
       return ''
     })
+
+    github.getOctokit.mockImplementation(
+      jest.fn<any>(() => ({
+        request: request
+      }))
+    )
   })
 
   afterEach(() => {
     process.env = originalEnv
     jest.clearAllMocks()
-    spyInfo.mockRestore()
-    spyWarning.mockRestore()
-    spyExportVariable.mockRestore()
     rmSync(workspace, { recursive: true, force: true })
   })
 
@@ -117,35 +101,35 @@ describe('sbom feature', () => {
     it('should set the SBOM option when activated', () => {
       setUpSBOMSupport(javaVersion, distribution)
 
-      expect(spyExportVariable).toHaveBeenCalledWith(
+      expect(core.exportVariable).toHaveBeenCalledWith(
         c.NATIVE_IMAGE_OPTIONS_ENV,
         expect.stringContaining('--enable-sbom=export')
       )
-      expect(spyInfo).toHaveBeenCalledWith('Enabled SBOM generation for Native Image build')
-      expect(spyWarning).not.toHaveBeenCalled()
+      expect(core.info).toHaveBeenCalledWith('Enabled SBOM generation for Native Image build')
+      expect(core.warning).not.toHaveBeenCalled()
     })
 
     it('should not set the SBOM option when not activated', () => {
-      jest.spyOn(core, 'getInput').mockReturnValue('false')
+      core.getInput.mockReturnValue('false')
       setUpSBOMSupport(javaVersion, distribution)
 
-      expect(spyExportVariable).not.toHaveBeenCalled()
-      expect(spyInfo).not.toHaveBeenCalled()
-      expect(spyWarning).not.toHaveBeenCalled()
+      expect(core.exportVariable).not.toHaveBeenCalled()
+      expect(core.info).not.toHaveBeenCalled()
+      expect(core.warning).not.toHaveBeenCalled()
     })
   })
 
   describe('process', () => {
     async function setUpAndProcessSBOM(sbom: object): Promise<void> {
       setUpSBOMSupport(javaVersion, distribution)
-      spyInfo.mockClear()
+      core.info.mockClear()
 
       // Mock 'native-image' invocation by creating the SBOM file
       const sbomPath = join(workspace, 'test.sbom.json')
       writeFileSync(sbomPath, JSON.stringify(sbom, null, 2))
 
       mockFindSBOM([sbomPath])
-      jest.spyOn(core, 'getState').mockReturnValue(javaVersion)
+      core.getState.mockReturnValue(javaVersion)
 
       await processSBOM()
     }
@@ -198,12 +182,12 @@ describe('sbom feature', () => {
     it('should process SBOM and display components', async () => {
       await setUpAndProcessSBOM(sampleSBOM)
 
-      expect(spyInfo).toHaveBeenCalledWith('Found SBOM: ' + join(workspace, 'test.sbom.json'))
-      expect(spyInfo).toHaveBeenCalledWith('=== SBOM Content ===')
-      expect(spyInfo).toHaveBeenCalledWith('- pkg:maven/org.json/json@20241224')
-      expect(spyInfo).toHaveBeenCalledWith('- pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT')
-      expect(spyInfo).toHaveBeenCalledWith('   depends on: pkg:maven/org.json/json@20241224')
-      expect(spyWarning).not.toHaveBeenCalled()
+      expect(core.info).toHaveBeenCalledWith('Found SBOM: ' + join(workspace, 'test.sbom.json'))
+      expect(core.info).toHaveBeenCalledWith('=== SBOM Content ===')
+      expect(core.info).toHaveBeenCalledWith('- pkg:maven/org.json/json@20241224')
+      expect(core.info).toHaveBeenCalledWith('- pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT')
+      expect(core.info).toHaveBeenCalledWith('   depends on: pkg:maven/org.json/json@20241224')
+      expect(core.warning).not.toHaveBeenCalled()
     })
 
     it('should handle components without purl', async () => {
@@ -220,14 +204,14 @@ describe('sbom feature', () => {
       }
       await setUpAndProcessSBOM(sbomWithoutPurl)
 
-      expect(spyInfo).toHaveBeenCalledWith('=== SBOM Content ===')
-      expect(spyInfo).toHaveBeenCalledWith('- no-purl-package@1.0.0')
-      expect(spyWarning).not.toHaveBeenCalled()
+      expect(core.info).toHaveBeenCalledWith('=== SBOM Content ===')
+      expect(core.info).toHaveBeenCalledWith('- no-purl-package@1.0.0')
+      expect(core.warning).not.toHaveBeenCalled()
     })
 
     it('should handle missing SBOM file', async () => {
       setUpSBOMSupport(javaVersion, distribution)
-      spyInfo.mockClear()
+      core.info.mockClear()
 
       mockFindSBOM([])
 
@@ -250,10 +234,9 @@ describe('sbom feature', () => {
     })
 
     it('should submit dependencies when processing valid SBOM', async () => {
-      const mockOctokit = mockGithubAPIReturnValue(undefined)
       await setUpAndProcessSBOM(sampleSBOM)
 
-      expect(mockOctokit.request).toHaveBeenCalledWith(
+      expect(request).toHaveBeenCalledWith(
         'POST /repos/{owner}/{repo}/dependency-graph/snapshots',
         expect.objectContaining({
           owner: 'test-owner',
@@ -282,11 +265,15 @@ describe('sbom feature', () => {
           })
         })
       )
-      expect(spyInfo).toHaveBeenCalledWith('Dependency snapshot submitted successfully.')
+      expect(core.info).toHaveBeenCalledWith('Dependency snapshot submitted successfully.')
     })
 
     it('should handle GitHub API submission errors gracefully', async () => {
-      mockGithubAPIReturnValue(new Error('API submission failed'))
+      github.getOctokit.mockImplementation(
+        jest.fn<any>(() => ({
+          request: jest.fn<(a: any, b: any) => Promise<any>>().mockRejectedValue(new Error('API submission failed'))
+        }))
+      )
 
       await expect(setUpAndProcessSBOM(sampleSBOM)).rejects.toBeInstanceOf(Error)
     })
