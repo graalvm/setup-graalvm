@@ -458,7 +458,7 @@ jobs:
       contents: write
     strategy:
       matrix:
-        java-version: ['26-ea', 'latest-ea']
+        java-version: ['25', 'latest-ea']
         distribution: ['graalvm']
         os: [macos-latest, windows-latest, ubuntu-latest, ubuntu-22.04-arm]
         components: ['']
