@@ -2,7 +2,7 @@
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 required_patterns=(
-    '"pkg:maven/org.json/json@20241224"'
+    '"pkg:maven/org.json/json@20250517"'
     '"main-test-app"'
     '"svm"'
     '"nativeimage"'
