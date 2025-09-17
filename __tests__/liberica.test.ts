@@ -3,9 +3,11 @@ import * as c from '../src/constants'
 import * as path from 'path'
 import * as semver from 'semver'
 import { expect, test } from '@jest/globals'
+import { fileURLToPath } from 'url'
 
-process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
-process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
+const dirname = path.dirname(fileURLToPath(import.meta.url))
+process.env['RUNNER_TOOL_CACHE'] = path.join(dirname, 'TOOL_CACHE')
+process.env['RUNNER_TEMP'] = path.join(dirname, 'TEMP')
 
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectLatestToBe", "expectURL"] }] */
 

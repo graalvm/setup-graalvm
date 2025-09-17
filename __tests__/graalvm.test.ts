@@ -4,9 +4,11 @@ import { expect, test } from '@jest/globals'
 import { getTaggedRelease } from '../src/utils'
 import { findGraalVMVersion, findHighestJavaVersion, findLatestEABuildDownloadUrl } from '../src/graalvm'
 import { GRAALVM_GH_USER, GRAALVM_RELEASES_REPO } from '../src/constants'
+import { fileURLToPath } from 'url'
 
-process.env['RUNNER_TOOL_CACHE'] = path.join(__dirname, 'TOOL_CACHE')
-process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
+const dirname = path.dirname(fileURLToPath(import.meta.url))
+process.env['RUNNER_TOOL_CACHE'] = path.join(dirname, 'TOOL_CACHE')
+process.env['RUNNER_TEMP'] = path.join(dirname, 'TEMP')
 
 test('request invalid version/javaVersion', async () => {
   for (const combination of [

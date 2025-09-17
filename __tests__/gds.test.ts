@@ -1,10 +1,12 @@
 import * as path from 'path'
 import { downloadGraalVM, downloadGraalVMEELegacy, fetchArtifact, fetchArtifactEE } from '../src/gds'
 import { expect, test } from '@jest/globals'
+import { fileURLToPath } from 'url'
 
 const TEST_USER_AGENT = 'GraalVMGitHubActionTest/1.0.4'
 
-process.env['RUNNER_TEMP'] = path.join(__dirname, 'TEMP')
+const dirname = path.dirname(fileURLToPath(import.meta.url))
+process.env['RUNNER_TEMP'] = path.join(dirname, 'TEMP')
 
 test('fetch artifacts', async () => {
   let artifact = await fetchArtifact(TEST_USER_AGENT, 'isBase:True', '17.0.12')

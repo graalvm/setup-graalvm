@@ -2,7 +2,8 @@
   "name": "setup-graalvm",
   "author": "GraalVM Community",
   "description": "GitHub Action for GraalVM",
-  "version": "1.3.7",
+  "version": "1.4.0",
+  "type": "module",
   "private": true,
   "repository": {
     "type": "git",
@@ -17,8 +18,11 @@
     "actions",
     "setup"
   ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "engines": {
-    "node": ">=20"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "bundle": "npm run format:write && npm run package",
@@ -26,9 +30,9 @@
     "format:check": "npx prettier --check .",
     "lint": "npx eslint .",
     "package": "npm run package:main && npm run package:cleanup",
-    "package:main": "npx ncc build src/main.ts -o dist/main",
-    "package:cleanup": "npx ncc build src/cleanup.ts -o dist/cleanup",
-    "test": "npx jest",
+    "package:main": "npx rollup --config rollup.main.config.ts --configPlugin @rollup/plugin-typescript",
+    "package:cleanup": "npx rollup --config rollup.cleanup.config.ts --configPlugin @rollup/plugin-typescript",
+    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run package"
   },
   "license": "UPL",
@@ -44,18 +48,21 @@
     "@octokit/types": "^14.1.0",
     "@github/dependency-submission-toolkit": "^2.0.5",
     "semver": "^7.7.2",
-    "uuid": "^11.1.0"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/compat": "^1.3.2",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.19.11",
-    "@types/semver": "^7.7.0",
+    "@types/node": "^24.4.0",
+    "@types/semver": "^7.7.1",
     "@types/uuid": "^10.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/eslint-plugin": "^8.43.0",
     "@typescript-eslint/parser": "^8.31.1",
-    "@vercel/ncc": "^0.38.3",
-    "eslint": "^9.34.0",
+    "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
@@ -63,12 +70,22 @@
     "eslint-plugin-jsonc": "^2.20.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.5.4",
-    "jest": "^30.1.2",
+    "jest": "^30.1.3",
     "js-yaml": "^4.1.0",
     "prettier": "^3.6.2",
     "prettier-eslint": "^16.4.2",
+    "rollup": "^4.50.2",
     "ts-jest": "^29.4.1",
+    "ts-jest-resolver": "^2.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "*"
+  },
+  "overrides": {
+    "@actions/glob": {
+      "minimatch": "^10.0.1"
+    }
   }
 }

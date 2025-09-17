@@ -1,4 +1,4 @@
-import * as c from './constants'
+import * as c from './constants.js'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as semver from 'semver'
@@ -9,7 +9,7 @@ import { readFileSync, readdirSync } from 'fs'
 import { createHash } from 'crypto'
 import { join } from 'path'
 import { tmpdir } from 'os'
-import { GitHub } from '@actions/github/lib/utils'
+import { GitHub } from '@actions/github/lib/utils.js'
 
 export async function exec(commandLine: string, args?: string[], options?: ExecOptions | undefined): Promise<void> {
   const exitCode = await e(commandLine, args, options)
