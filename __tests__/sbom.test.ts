@@ -31,7 +31,7 @@ const request = jest.fn<any>().mockResolvedValue(undefined)
 describe('sbom feature', () => {
   let workspace: string
   let originalEnv: NodeJS.ProcessEnv
-  const javaVersion = '24.0.0'
+  const javaVersion = '25.0.0'
   const distribution = c.DISTRIBUTION_GRAALVM
 
   beforeEach(() => {
@@ -92,7 +92,7 @@ describe('sbom feature', () => {
     })
 
     it('should not throw an error when the java-version is supported', () => {
-      const supported_versions = ['24', '24-ea', '24.0.2', 'latest-ea']
+      const supported_versions = ['25', '26-ea', 'latest-ea']
       for (const version of supported_versions) {
         expect(() => setUpSBOMSupport(version, distribution)).not.toThrow()
       }
@@ -144,13 +144,13 @@ describe('sbom feature', () => {
           type: 'library',
           group: 'org.json',
           name: 'json',
-          version: '20241224',
-          purl: 'pkg:maven/org.json/json@20241224',
-          'bom-ref': 'pkg:maven/org.json/json@20241224',
+          version: '20250517',
+          purl: 'pkg:maven/org.json/json@20250517',
+          'bom-ref': 'pkg:maven/org.json/json@20250517',
           properties: [
             {
               name: 'syft:cpe23',
-              value: 'cpe:2.3:a:json:json:20241224:*:*:*:*:*:*:*'
+              value: 'cpe:2.3:a:json:json:20250517:*:*:*:*:*:*:*'
             }
           ]
         },
@@ -166,10 +166,10 @@ describe('sbom feature', () => {
       dependencies: [
         {
           ref: 'pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT',
-          dependsOn: ['pkg:maven/org.json/json@20241224']
+          dependsOn: ['pkg:maven/org.json/json@20250517']
         },
         {
-          ref: 'pkg:maven/org.json/json@20241224',
+          ref: 'pkg:maven/org.json/json@20250517',
           dependsOn: []
         }
       ]
@@ -184,9 +184,9 @@ describe('sbom feature', () => {
 
       expect(core.info).toHaveBeenCalledWith('Found SBOM: ' + join(workspace, 'test.sbom.json'))
       expect(core.info).toHaveBeenCalledWith('=== SBOM Content ===')
-      expect(core.info).toHaveBeenCalledWith('- pkg:maven/org.json/json@20241224')
+      expect(core.info).toHaveBeenCalledWith('- pkg:maven/org.json/json@20250517')
       expect(core.info).toHaveBeenCalledWith('- pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT')
-      expect(core.info).toHaveBeenCalledWith('   depends on: pkg:maven/org.json/json@20241224')
+      expect(core.info).toHaveBeenCalledWith('   depends on: pkg:maven/org.json/json@20250517')
       expect(core.warning).not.toHaveBeenCalled()
     })
 
@@ -253,12 +253,12 @@ describe('sbom feature', () => {
               name: 'test.sbom.json',
               resolved: expect.objectContaining({
                 json: expect.objectContaining({
-                  package_url: 'pkg:maven/org.json/json@20241224',
+                  package_url: 'pkg:maven/org.json/json@20250517',
                   dependencies: []
                 }),
                 'main-test-app': expect.objectContaining({
                   package_url: 'pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT',
-                  dependencies: ['pkg:maven/org.json/json@20241224']
+                  dependencies: ['pkg:maven/org.json/json@20250517']
                 })
               })
             })
