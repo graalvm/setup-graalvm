@@ -394,6 +394,8 @@ jobs:
           javac HelloWorld.java
           native-image --static --libc=musl HelloWorld
           ./helloworld
+          native-image --static --libc=musl -m jdk.httpserver
+          ./jdk.httpserver --help
   test-action-native-image-musl:
     name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
@@ -417,6 +419,9 @@ jobs:
           javac HelloWorld.java
           native-image --static --libc=musl HelloWorld
           ./helloworld
+          native-image --static --libc=musl --gc=G1 -m jdk.httpserver
+          ./jdk.httpserver --help
+
 
   # test-action-extensive:
   #   name: extensive tests on ubuntu-latest
