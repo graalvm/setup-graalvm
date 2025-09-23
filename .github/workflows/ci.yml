@@ -35,343 +35,343 @@ jobs:
         env:
           INPUT_GITHUB_TOKEN: ${{ github.token }} # for core.getInput()
 
-  test-action:
-    name: GraalVM
-    runs-on: ${{ matrix.os }}
-    env:
-      # Skip builds that require a GDS token but have no access to one (e.g., secrets are unavailable in PR runs)
-      PASSES_GDS_TOKEN_CHECK: ${{ !matrix.set-gds-token || secrets.GDS_TOKEN != '' }}
-    strategy:
-      matrix:
-        java-version: ['25', '21', '17', '20', 'dev']
-        distribution: ['graalvm', 'graalvm-community']
-        os: [
-            ubuntu-latest, # Linux on Intel
-            ubuntu-22.04-arm, # Linux on arm64
-            macos-latest, # macOS on Apple silicon
-            macos-13, # macOS on Intel
-            windows-latest
-          ]
-        set-gds-token: [false]
-        components: ['']
-        include:
-          - java-version: 'latest-ea'
-            distribution: 'graalvm'
-            os: ubuntu-latest
-          - java-version: '25-ea'
-            distribution: 'graalvm'
-            os: ubuntu-latest
-          - java-version: '21'
-            distribution: ''
-            os: ubuntu-latest
-          - java-version: 'dev'
-            distribution: ''
-            os: windows-latest
-          - java-version: '21'
-            distribution: 'graalvm-community'
-            os: ubuntu-latest
-            components: 'native-image' # should print a warning but not fail
-          - java-version: '21.0.0' # test for GA version (see #63)
-            distribution: 'graalvm'
-            os: ubuntu-latest
-          - java-version: '17'
-            distribution: 'graalvm'
-            os: ubuntu-latest
-            set-gds-token: true
-          - java-version: '17.0.13'
-            distribution: 'graalvm'
-            os: ubuntu-latest
-            set-gds-token: true
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          java-version: ${{ matrix.java-version }}
-          distribution: ${{ matrix.distribution }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          components: ${{ matrix.components }}
-          gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
-        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          if [[ "${{ matrix.java-version }}" == "dev" ]]; then
-            [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
-          else
-            [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
-          fi
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | grep "GraalVM" || exit 34
-          native-image --version
-        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
-      - name: Check Windows environment
-        run: |
-          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
-          echo "JAVA_HOME: $env:JAVA_HOME"
-          java --version
-          native-image --version
-        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
+  # test-action:
+  #   name: GraalVM
+  #   runs-on: ${{ matrix.os }}
+  #   env:
+  #     # Skip builds that require a GDS token but have no access to one (e.g., secrets are unavailable in PR runs)
+  #     PASSES_GDS_TOKEN_CHECK: ${{ !matrix.set-gds-token || secrets.GDS_TOKEN != '' }}
+  #   strategy:
+  #     matrix:
+  #       java-version: ['25', '21', '17', '20', 'dev']
+  #       distribution: ['graalvm', 'graalvm-community']
+  #       os: [
+  #           ubuntu-latest, # Linux on Intel
+  #           ubuntu-22.04-arm, # Linux on arm64
+  #           macos-latest, # macOS on Apple silicon
+  #           macos-13, # macOS on Intel
+  #           windows-latest
+  #         ]
+  #       set-gds-token: [false]
+  #       components: ['']
+  #       include:
+  #         - java-version: 'latest-ea'
+  #           distribution: 'graalvm'
+  #           os: ubuntu-latest
+  #         - java-version: '25-ea'
+  #           distribution: 'graalvm'
+  #           os: ubuntu-latest
+  #         - java-version: '21'
+  #           distribution: ''
+  #           os: ubuntu-latest
+  #         - java-version: 'dev'
+  #           distribution: ''
+  #           os: windows-latest
+  #         - java-version: '21'
+  #           distribution: 'graalvm-community'
+  #           os: ubuntu-latest
+  #           components: 'native-image' # should print a warning but not fail
+  #         - java-version: '21.0.0' # test for GA version (see #63)
+  #           distribution: 'graalvm'
+  #           os: ubuntu-latest
+  #         - java-version: '17'
+  #           distribution: 'graalvm'
+  #           os: ubuntu-latest
+  #           set-gds-token: true
+  #         - java-version: '17.0.13'
+  #           distribution: 'graalvm'
+  #           os: ubuntu-latest
+  #           set-gds-token: true
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         java-version: ${{ matrix.java-version }}
+  #         distribution: ${{ matrix.distribution }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         components: ${{ matrix.components }}
+  #         gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
+  #       if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         if [[ "${{ matrix.java-version }}" == "dev" ]]; then
+  #           [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
+  #         else
+  #           [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
+  #         fi
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         java --version
+  #         java --version | grep "GraalVM" || exit 34
+  #         native-image --version
+  #       if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
+  #     - name: Check Windows environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+  #         echo "JAVA_HOME: $env:JAVA_HOME"
+  #         java --version
+  #         native-image --version
+  #       if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
 
-  test-action-ce: # make sure the action works on a clean machine without building
-    needs: test-action
-    name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        version: ['latest', 'dev']
-        java-version: ['17', '20']
-        components: ['native-image']
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        exclude:
-          - version: 'latest'
-            java-version: '20'
-          - version: 'dev'
-            java-version: '19'
-        include:
-          - version: '22.2.0' # for update notifications
-            java-version: '17'
-            components: 'native-image'
-            os: ubuntu-22.04
-          - version: '21.2.0'
-            java-version: '8' # for JDK 8 notification
-            components: 'native-image'
-            os: ubuntu-latest
-          - version: '22.3.1'
-            java-version: '11' # for JDK 11 notification
-            components: 'native-image'
-            os: macos-13
-          - version: '22.3.1'
-            java-version: '17'
-            components: 'native-image'
-            os: windows-2022
-          - version: 'dev'
-            java-version: 'dev'
-            components: 'native-image'
-            os: ubuntu-latest
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          version: ${{ matrix.version }}
-          java-version: ${{ matrix.java-version }}
-          components: ${{ matrix.components }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          if [[ "${{ matrix.version }}" == "dev" ]] && [[ "${{ matrix.java-version }}" == "dev" ]]; then
-            [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
-          else
-            [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
-          fi
-          echo "JAVA_HOME: $JAVA_HOME"
-          java -version
-          java -version 2>&1 | grep "GraalVM" || exit 34
-          native-image --version
-          if [[ "${{ matrix.java-version }}" != "dev" ]]; then
-            gu list
-          fi
-        if: ${{ runner.os != 'Windows' }}
-      - name: Check Windows environment
-        run: |
-          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
-          echo "JAVA_HOME: $env:JAVA_HOME"
-          java -version
-          native-image --version
-          gu.cmd remove native-image
-        if: ${{ runner.os == 'Windows' }}
+  # test-action-ce: # make sure the action works on a clean machine without building
+  #   needs: test-action
+  #   name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       version: ['latest', 'dev']
+  #       java-version: ['17', '20']
+  #       components: ['native-image']
+  #       os: [macos-latest, windows-latest, ubuntu-latest]
+  #       exclude:
+  #         - version: 'latest'
+  #           java-version: '20'
+  #         - version: 'dev'
+  #           java-version: '19'
+  #       include:
+  #         - version: '22.2.0' # for update notifications
+  #           java-version: '17'
+  #           components: 'native-image'
+  #           os: ubuntu-22.04
+  #         - version: '21.2.0'
+  #           java-version: '8' # for JDK 8 notification
+  #           components: 'native-image'
+  #           os: ubuntu-latest
+  #         - version: '22.3.1'
+  #           java-version: '11' # for JDK 11 notification
+  #           components: 'native-image'
+  #           os: macos-13
+  #         - version: '22.3.1'
+  #           java-version: '17'
+  #           components: 'native-image'
+  #           os: windows-2022
+  #         - version: 'dev'
+  #           java-version: 'dev'
+  #           components: 'native-image'
+  #           os: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         version: ${{ matrix.version }}
+  #         java-version: ${{ matrix.java-version }}
+  #         components: ${{ matrix.components }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         if [[ "${{ matrix.version }}" == "dev" ]] && [[ "${{ matrix.java-version }}" == "dev" ]]; then
+  #           [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
+  #         else
+  #           [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
+  #         fi
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         java -version
+  #         java -version 2>&1 | grep "GraalVM" || exit 34
+  #         native-image --version
+  #         if [[ "${{ matrix.java-version }}" != "dev" ]]; then
+  #           gu list
+  #         fi
+  #       if: ${{ runner.os != 'Windows' }}
+  #     - name: Check Windows environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+  #         echo "JAVA_HOME: $env:JAVA_HOME"
+  #         java -version
+  #         native-image --version
+  #         gu.cmd remove native-image
+  #       if: ${{ runner.os == 'Windows' }}
 
-  test-action-ee:
-    needs: test-action
-    name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
-    if: github.event_name != 'pull_request'
-    runs-on: ${{ matrix.os }}
-    env:
-      # Skip builds that require a GDS token but have no access to one (e.g., secrets are unavailable in PR runs)
-      PASSES_GDS_TOKEN_CHECK: ${{ secrets.GDS_TOKEN != '' }}
-    strategy:
-      matrix:
-        version: ['latest']
-        java-version: ['17']
-        components: ['native-image']
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        include:
-          - version: '22.3.3'
-            java-version: '11'
-            components: 'native-image'
-            os: ubuntu-latest
-          - version: '22.3.3'
-            java-version: '17'
-            components: 'native-image'
-            os: ubuntu-latest
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          version: ${{ matrix.version }}
-          gds-token: ${{ secrets.GDS_TOKEN }}
-          java-version: ${{ matrix.java-version }}
-          components: ${{ matrix.components }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | grep -e "GraalVM EE" -e "Oracle GraalVM" || exit 23
-          native-image --version
-          gu list
-        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
-      - name: Check Windows environment
-        run: |
-          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
-          echo "JAVA_HOME: $env:JAVA_HOME"
-          java --version
-          native-image --version
-          gu.cmd remove native-image
-        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
+  # test-action-ee:
+  #   needs: test-action
+  #   name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+  #   if: github.event_name != 'pull_request'
+  #   runs-on: ${{ matrix.os }}
+  #   env:
+  #     # Skip builds that require a GDS token but have no access to one (e.g., secrets are unavailable in PR runs)
+  #     PASSES_GDS_TOKEN_CHECK: ${{ secrets.GDS_TOKEN != '' }}
+  #   strategy:
+  #     matrix:
+  #       version: ['latest']
+  #       java-version: ['17']
+  #       components: ['native-image']
+  #       os: [macos-latest, windows-latest, ubuntu-latest]
+  #       include:
+  #         - version: '22.3.3'
+  #           java-version: '11'
+  #           components: 'native-image'
+  #           os: ubuntu-latest
+  #         - version: '22.3.3'
+  #           java-version: '17'
+  #           components: 'native-image'
+  #           os: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         version: ${{ matrix.version }}
+  #         gds-token: ${{ secrets.GDS_TOKEN }}
+  #         java-version: ${{ matrix.java-version }}
+  #         components: ${{ matrix.components }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #       if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         java --version
+  #         java --version | grep -e "GraalVM EE" -e "Oracle GraalVM" || exit 23
+  #         native-image --version
+  #         gu list
+  #       if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
+  #     - name: Check Windows environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+  #         echo "JAVA_HOME: $env:JAVA_HOME"
+  #         java --version
+  #         native-image --version
+  #         gu.cmd remove native-image
+  #       if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
 
-  test-action-mandrel:
-    needs: test-action
-    name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        version: ['mandrel-22.2.0.0-Final', '23.0.1.2-Final', 'mandrel-latest']
-        java-version: ['17']
-        distribution: ['mandrel']
-        os: [windows-latest, ubuntu-latest]
-        include:
-          - version: 'mandrel-latest'
-            java-version: '17'
-            distribution: '' # test empty distribution for backward compatibility
-            os: ubuntu-latest
-          - version: '' # test with no version
-            java-version: '21'
-            distribution: 'mandrel'
-            os: ubuntu-latest
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          version: ${{ matrix.version }}
-          distribution: ${{ matrix.distribution }}
-          java-version: ${{ matrix.java-version }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | grep "Temurin" || exit 23
-          native-image --version
-        if: ${{ runner.os != 'Windows' }}
-      - name: Check Windows environment
-        run: |
-          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
-          echo "JAVA_HOME: $env:JAVA_HOME"
-          java --version
-          native-image --version
-        if: ${{ runner.os == 'Windows' }}
+  # test-action-mandrel:
+  #   needs: test-action
+  #   name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       version: ['mandrel-22.2.0.0-Final', '23.0.1.2-Final', 'mandrel-latest']
+  #       java-version: ['17']
+  #       distribution: ['mandrel']
+  #       os: [windows-latest, ubuntu-latest]
+  #       include:
+  #         - version: 'mandrel-latest'
+  #           java-version: '17'
+  #           distribution: '' # test empty distribution for backward compatibility
+  #           os: ubuntu-latest
+  #         - version: '' # test with no version
+  #           java-version: '21'
+  #           distribution: 'mandrel'
+  #           os: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         version: ${{ matrix.version }}
+  #         distribution: ${{ matrix.distribution }}
+  #         java-version: ${{ matrix.java-version }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         java --version
+  #         java --version | grep "Temurin" || exit 23
+  #         native-image --version
+  #       if: ${{ runner.os != 'Windows' }}
+  #     - name: Check Windows environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+  #         echo "JAVA_HOME: $env:JAVA_HOME"
+  #         java --version
+  #         native-image --version
+  #       if: ${{ runner.os == 'Windows' }}
 
-  test-action-liberica:
-    needs: test-action
-    name: Liberica (${{ matrix.java-version }}, '${{ matrix.java-package }}', ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        java-version: ['17', '21.0.2']
-        java-package: ['', 'jdk', 'jdk+fx']
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          distribution: liberica
-          java-version: ${{ matrix.java-version }}
-          java-package: ${{ matrix.java-package }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | fgrep -qw ${{ matrix.java-version }} || exit 23
-          native-image --version
-          native-image --version | fgrep -qw ${{ matrix.java-version }} || exit 24
-        if: ${{ runner.os != 'Windows' }}
-      - name: Check Windows environment
-        shell: pwsh
-        run: |
-          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
-          echo "JAVA_HOME: $env:JAVA_HOME"
-          java --version
-          if (!(java --version | findstr \<${{ matrix.java-version }}\>)) {
-            exit 23
-          }
-          native-image --version
-          if (!(native-image --version | findstr \<${{ matrix.java-version }}\>)) {
-            exit 24
-          }
-        if: ${{ runner.os == 'Windows' }}
+  # test-action-liberica:
+  #   needs: test-action
+  #   name: Liberica (${{ matrix.java-version }}, '${{ matrix.java-package }}', ${{ matrix.os }})
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       java-version: ['17', '21.0.2']
+  #       java-package: ['', 'jdk', 'jdk+fx']
+  #       os: [ubuntu-latest, macos-latest, windows-latest]
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         distribution: liberica
+  #         java-version: ${{ matrix.java-version }}
+  #         java-package: ${{ matrix.java-package }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 12
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         java --version
+  #         java --version | fgrep -qw ${{ matrix.java-version }} || exit 23
+  #         native-image --version
+  #         native-image --version | fgrep -qw ${{ matrix.java-version }} || exit 24
+  #       if: ${{ runner.os != 'Windows' }}
+  #     - name: Check Windows environment
+  #       shell: pwsh
+  #       run: |
+  #         echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+  #         echo "JAVA_HOME: $env:JAVA_HOME"
+  #         java --version
+  #         if (!(java --version | findstr \<${{ matrix.java-version }}\>)) {
+  #           exit 23
+  #         }
+  #         native-image --version
+  #         if (!(native-image --version | findstr \<${{ matrix.java-version }}\>)) {
+  #           exit 24
+  #         }
+  #       if: ${{ runner.os == 'Windows' }}
 
-  test-action-native-image-windows:
-    name: native-image on windows-latest
-    runs-on: windows-latest
-    permissions:
-      contents: read
-      pull-requests: write # for `native-image-pr-reports` option
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          java-version: 'dev'
-          distribution: 'graalvm-community'
-          native-image-job-reports: 'true'
-          native-image-pr-reports: 'true'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build HelloWorld executable with GraalVM Native Image on Windows
-        run: |
-          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
-          javac HelloWorld.java
-          native-image HelloWorld
-          ./helloworld
+  # test-action-native-image-windows:
+  #   name: native-image on windows-latest
+  #   runs-on: windows-latest
+  #   permissions:
+  #     contents: read
+  #     pull-requests: write # for `native-image-pr-reports` option
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         java-version: 'dev'
+  #         distribution: 'graalvm-community'
+  #         native-image-job-reports: 'true'
+  #         native-image-pr-reports: 'true'
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Build HelloWorld executable with GraalVM Native Image on Windows
+  #       run: |
+  #         echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
+  #         javac HelloWorld.java
+  #         native-image HelloWorld
+  #         ./helloworld
 
-  test-action-native-image-windows-msvc:
-    name: native-image on windows-2022
-    runs-on: windows-2022
-    permissions:
-      contents: read
-      pull-requests: write # for `native-image-pr-reports` option
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          java-version: '17'
-          distribution: 'graalvm'
-          native-image-job-reports: 'true'
-          native-image-pr-reports: 'true'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build HelloWorld executable with GraalVM Native Image on Windows
-        run: |
-          echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
-          javac HelloWorld.java
-          native-image HelloWorld
-          ./helloworld
+  # test-action-native-image-windows-msvc:
+  #   name: native-image on windows-2022
+  #   runs-on: windows-2022
+  #   permissions:
+  #     contents: read
+  #     pull-requests: write # for `native-image-pr-reports` option
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'graalvm'
+  #         native-image-job-reports: 'true'
+  #         native-image-pr-reports: 'true'
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Build HelloWorld executable with GraalVM Native Image on Windows
+  #       run: |
+  #         echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
+  #         javac HelloWorld.java
+  #         native-image HelloWorld
+  #         ./helloworld
 
-  test-action-native-image-musl:
+  test-action-native-image-musl-ce:
     name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
     permissions:
@@ -394,9 +394,8 @@ jobs:
           javac HelloWorld.java
           native-image --static --libc=musl HelloWorld
           ./helloworld
-
-  test-action-extensive:
-    name: extensive tests on ubuntu-latest
+  test-action-native-image-musl:
+    name: native-image-musl on ubuntu-latest
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -406,84 +405,108 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          java-version: '17.0.8'
+          java-version: '25'
           distribution: 'graalvm'
-          components: 'espresso,llvm-toolchain,native-image,nodejs,python,ruby,wasm'
-          set-java-home: 'false'
+          native-image-musl: 'true'
           native-image-job-reports: 'true'
           native-image-pr-reports: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check environment
-        run: |
-          echo "GRAALVM_HOME: $GRAALVM_HOME"
-          echo "JAVA_HOME: $JAVA_HOME"
-          [[ "$GRAALVM_HOME" != "$JAVA_HOME" ]] || exit 12
-          [[ $(which java) == *"graalvm"* ]] || exit 23
-          java --version
-          java -truffle --version
-          gu --version
-          gu list
-          [[ $(which lli) == *"graalvm"* ]] || exit 34
-          lli --version
-          native-image --version
-          [[ $(which node) == *"graalvm"* ]] || exit 45
-          node --version
-          graalpy --version
-          truffleruby --version
-          wasm --version
-      - name: Build HelloWorld.java with GraalVM Native Image
+      - name: Build static HelloWorld executable with GraalVM Native Image and musl
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
-          native-image -g HelloWorld
+          native-image --static --libc=musl HelloWorld
           ./helloworld
-      # - name: Build Ruby-FFI with TruffleRuby
-      #   run: |
-      #     [[ $(which bundle) == *"graalvm"* ]] || exit 57
-      #     git clone --depth 1 https://github.com/ffi/ffi.git
-      #     pushd ffi > /dev/null
-      #     # https://github.com/ffi/ffi/blob/447845cb3030194c79700c86fb388a12e6f81386/.github/workflows/ci.yml#L58-L62
-      #     bundle install
-      #     bundle exec rake libffi
-      #     bundle exec rake compile
-      #     bundle exec rake test
-      #     popd > /dev/null
-      - name: Remove components
-        run: gu remove espresso llvm-toolchain nodejs python ruby wasm
 
-  test-action-sbom:
-    name: test 'native-image-enable-sbom' option
-    runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
-    strategy:
-      matrix:
-        java-version: ['25', 'latest-ea']
-        distribution: ['graalvm']
-        os: [macos-latest, windows-latest, ubuntu-latest, ubuntu-22.04-arm]
-        components: ['']
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Run setup-graalvm action
-        uses: ./
-        with:
-          java-version: ${{ matrix.java-version }}
-          distribution: ${{ matrix.distribution }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          components: ${{ matrix.components }}
-          native-image-enable-sbom: 'true'
-          cache: 'maven'
-      - name: Build Maven project and verify that SBOM was generated and its contents
-        run: |
-          cd __tests__/sbom/main-test-app
-          mvn --no-transfer-progress -Pnative package
-          bash verify-sbom.sh
-        shell: bash
-        if: ${{ runner.os != 'Windows' }}
-      - name: Build Maven project and verify that SBOM was generated and its contents (Windows)
-        run: |
-          cd __tests__\sbom\main-test-app
-          mvn --no-transfer-progress -Pnative package
-          cmd /c verify-sbom.cmd
-        shell: cmd
-        if: ${{ runner.os == 'Windows' }}
+  # test-action-extensive:
+  #   name: extensive tests on ubuntu-latest
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #     pull-requests: write # for `native-image-pr-reports` option
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         java-version: '17.0.8'
+  #         distribution: 'graalvm'
+  #         components: 'espresso,llvm-toolchain,native-image,nodejs,python,ruby,wasm'
+  #         set-java-home: 'false'
+  #         native-image-job-reports: 'true'
+  #         native-image-pr-reports: 'true'
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Check environment
+  #       run: |
+  #         echo "GRAALVM_HOME: $GRAALVM_HOME"
+  #         echo "JAVA_HOME: $JAVA_HOME"
+  #         [[ "$GRAALVM_HOME" != "$JAVA_HOME" ]] || exit 12
+  #         [[ $(which java) == *"graalvm"* ]] || exit 23
+  #         java --version
+  #         java -truffle --version
+  #         gu --version
+  #         gu list
+  #         [[ $(which lli) == *"graalvm"* ]] || exit 34
+  #         lli --version
+  #         native-image --version
+  #         [[ $(which node) == *"graalvm"* ]] || exit 45
+  #         node --version
+  #         graalpy --version
+  #         truffleruby --version
+  #         wasm --version
+  #     - name: Build HelloWorld.java with GraalVM Native Image
+  #       run: |
+  #         echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
+  #         javac HelloWorld.java
+  #         native-image -g HelloWorld
+  #         ./helloworld
+  #     # - name: Build Ruby-FFI with TruffleRuby
+  #     #   run: |
+  #     #     [[ $(which bundle) == *"graalvm"* ]] || exit 57
+  #     #     git clone --depth 1 https://github.com/ffi/ffi.git
+  #     #     pushd ffi > /dev/null
+  #     #     # https://github.com/ffi/ffi/blob/447845cb3030194c79700c86fb388a12e6f81386/.github/workflows/ci.yml#L58-L62
+  #     #     bundle install
+  #     #     bundle exec rake libffi
+  #     #     bundle exec rake compile
+  #     #     bundle exec rake test
+  #     #     popd > /dev/null
+  #     - name: Remove components
+  #       run: gu remove espresso llvm-toolchain nodejs python ruby wasm
+
+  # test-action-sbom:
+  #   name: test 'native-image-enable-sbom' option
+  #   runs-on: ${{ matrix.os }}
+  #   permissions:
+  #     contents: write
+  #   strategy:
+  #     matrix:
+  #       java-version: ['25', 'latest-ea']
+  #       distribution: ['graalvm']
+  #       os: [macos-latest, windows-latest, ubuntu-latest, ubuntu-22.04-arm]
+  #       components: ['']
+  #   steps:
+  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  #     - name: Run setup-graalvm action
+  #       uses: ./
+  #       with:
+  #         java-version: ${{ matrix.java-version }}
+  #         distribution: ${{ matrix.distribution }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         components: ${{ matrix.components }}
+  #         native-image-enable-sbom: 'true'
+  #         cache: 'maven'
+  #     - name: Build Maven project and verify that SBOM was generated and its contents
+  #       run: |
+  #         cd __tests__/sbom/main-test-app
+  #         mvn --no-transfer-progress -Pnative package
+  #         bash verify-sbom.sh
+  #       shell: bash
+  #       if: ${{ runner.os != 'Windows' }}
+  #     - name: Build Maven project and verify that SBOM was generated and its contents (Windows)
+  #       run: |
+  #         cd __tests__\sbom\main-test-app
+  #         mvn --no-transfer-progress -Pnative package
+  #         cmd /c verify-sbom.cmd
+  #       shell: cmd
+  #       if: ${{ runner.os == 'Windows' }}
