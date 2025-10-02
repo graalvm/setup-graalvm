@@ -174,7 +174,7 @@ export async function setUpGraalVMJDKDevBuild(): Promise<string> {
   return downloadAndExtractJDK(downloadUrl)
 }
 
-export function findHighestJavaVersion(release: c.LatestReleaseResponse['data'], version: string): string {
+export function findHighestJavaVersion(release: c.LatestReleaseResponseData, version: string): string {
   const graalVMIdentifierPattern = determineGraalVMLegacyIdentifier(false, version, '(\\d+)')
   const expectedFileNameRegExp = new RegExp(
     `^${graalVMIdentifierPattern}${c.GRAALVM_FILE_EXTENSION.replace(/\./g, '\\.')}$`
@@ -214,7 +214,7 @@ export async function setUpGraalVMLatest_22_X(gdsToken: string, javaVersion: str
   return setUpGraalVMRelease(gdsToken, version, javaVersion)
 }
 
-export function findGraalVMVersion(release: c.LatestReleaseResponse['data']) {
+export function findGraalVMVersion(release: c.LatestReleaseResponseData) {
   const tag_name = release.tag_name
   if (!tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
     throw new Error(`Could not find latest GraalVM release: ${tag_name}`)
@@ -234,7 +234,7 @@ export async function setUpGraalVMRelease(gdsToken: string, version: string, jav
   return downloadExtractAndCacheJDK(downloader, toolName, version)
 }
 
-function findDownloadUrl(release: c.LatestReleaseResponse['data'], javaVersion: string): string {
+function findDownloadUrl(release: c.LatestReleaseResponseData, javaVersion: string): string {
   const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, c.VERSION_DEV, javaVersion)
   const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
   for (const asset of release.assets) {

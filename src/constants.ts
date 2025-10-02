@@ -53,13 +53,13 @@ export const ERROR_REQUEST = 'Please file an issue at: https://github.com/graalv
 export const ERROR_HINT =
   'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
 
-export type LatestReleaseResponse = otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']
+export type LatestReleaseResponseData =
+  otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']['data']
 
-export type MatchingRefsResponse = otypes.Endpoints['GET /repos/{owner}/{repo}/git/matching-refs/{ref}']['response']
+export type MatchingRefsResponseData =
+  otypes.Endpoints['GET /repos/{owner}/{repo}/git/matching-refs/{ref}']['response']['data']
 
-export type ReleasesResponse = otypes.Endpoints['GET /repos/{owner}/{repo}/releases']['response']
-
-export type ContentsResponse = otypes.Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['response']
+export type ContentsResponseData = otypes.Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['response']['data']
 
 export interface OracleGraalVMEAFile {
   filename: string

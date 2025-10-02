@@ -18,17 +18,17 @@ export async function exec(commandLine: string, args?: string[], options?: ExecO
   }
 }
 
-export async function getLatestRelease(repo: string): Promise<c.LatestReleaseResponse['data']> {
+export async function getLatestRelease(repo: string): Promise<c.LatestReleaseResponseData> {
   const octokit = getOctokit()
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
       owner: c.GRAALVM_GH_USER,
       repo
     })
-  ).data
+  ).data as c.LatestReleaseResponseData /** missing digest property */
 }
 
-export async function getContents(repo: string, path: string): Promise<c.ContentsResponse['data']> {
+export async function getContents(repo: string, path: string): Promise<c.ContentsResponseData> {
   const octokit = getOctokit()
   return (
     await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
@@ -39,11 +39,7 @@ export async function getContents(repo: string, path: string): Promise<c.Content
   ).data
 }
 
-export async function getTaggedRelease(
-  owner: string,
-  repo: string,
-  tag: string
-): Promise<c.LatestReleaseResponse['data']> {
+export async function getTaggedRelease(owner: string, repo: string, tag: string): Promise<c.LatestReleaseResponseData> {
   const octokit = getOctokit()
   return (
     await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
@@ -51,14 +47,14 @@ export async function getTaggedRelease(
       repo,
       tag
     })
-  ).data
+  ).data as c.LatestReleaseResponseData /** missing digest property */
 }
 
 export async function getMatchingTags(
   owner: string,
   repo: string,
   tagPrefix: string
-): Promise<c.MatchingRefsResponse['data']> {
+): Promise<c.MatchingRefsResponseData> {
   const octokit = getOctokit()
   return (
     await octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/tags/{tagPrefix}', {
