@@ -69174,7 +69174,7 @@ function requireConfig () {
 
 var userAgent$1 = {};
 
-var version = "4.0.5";
+var version = "4.1.0";
 var require$$0$1 = {
 	version: version};
 
@@ -74028,11 +74028,12 @@ function requireCache$1 () {
 		    constructor() {
 		        super("github.actions.results.api.v1.CreateCacheEntryResponse", [
 		            { no: 1, name: "ok", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
-		            { no: 2, name: "signed_upload_url", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+		            { no: 2, name: "signed_upload_url", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+		            { no: 3, name: "message", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
 		        ]);
 		    }
 		    create(value) {
-		        const message = { ok: false, signedUploadUrl: "" };
+		        const message = { ok: false, signedUploadUrl: "", message: "" };
 		        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
 		        if (value !== undefined)
 		            (0, runtime_3.reflectionMergePartial)(this, message, value);
@@ -74048,6 +74049,9 @@ function requireCache$1 () {
 		                    break;
 		                case /* string signed_upload_url */ 2:
 		                    message.signedUploadUrl = reader.string();
+		                    break;
+		                case /* string message */ 3:
+		                    message.message = reader.string();
 		                    break;
 		                default:
 		                    let u = options.readUnknownField;
@@ -74067,6 +74071,9 @@ function requireCache$1 () {
 		        /* string signed_upload_url = 2; */
 		        if (message.signedUploadUrl !== "")
 		            writer.tag(2, runtime_1.WireType.LengthDelimited).string(message.signedUploadUrl);
+		        /* string message = 3; */
+		        if (message.message !== "")
+		            writer.tag(3, runtime_1.WireType.LengthDelimited).string(message.message);
 		        let u = options.writeUnknownFields;
 		        if (u !== false)
 		            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -74150,11 +74157,12 @@ function requireCache$1 () {
 		    constructor() {
 		        super("github.actions.results.api.v1.FinalizeCacheEntryUploadResponse", [
 		            { no: 1, name: "ok", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
-		            { no: 2, name: "entry_id", kind: "scalar", T: 3 /*ScalarType.INT64*/ }
+		            { no: 2, name: "entry_id", kind: "scalar", T: 3 /*ScalarType.INT64*/ },
+		            { no: 3, name: "message", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
 		        ]);
 		    }
 		    create(value) {
-		        const message = { ok: false, entryId: "0" };
+		        const message = { ok: false, entryId: "0", message: "" };
 		        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
 		        if (value !== undefined)
 		            (0, runtime_3.reflectionMergePartial)(this, message, value);
@@ -74170,6 +74178,9 @@ function requireCache$1 () {
 		                    break;
 		                case /* int64 entry_id */ 2:
 		                    message.entryId = reader.int64().toString();
+		                    break;
+		                case /* string message */ 3:
+		                    message.message = reader.string();
 		                    break;
 		                default:
 		                    let u = options.readUnknownField;
@@ -74189,6 +74200,9 @@ function requireCache$1 () {
 		        /* int64 entry_id = 2; */
 		        if (message.entryId !== "0")
 		            writer.tag(2, runtime_1.WireType.Varint).int64(message.entryId);
+		        /* string message = 3; */
+		        if (message.message !== "")
+		            writer.tag(3, runtime_1.WireType.LengthDelimited).string(message.message);
 		        let u = options.writeUnknownFields;
 		        if (u !== false)
 		            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -74985,7 +74999,7 @@ function requireCache () {
 	    });
 	};
 	Object.defineProperty(cache$1, "__esModule", { value: true });
-	cache$1.saveCache = cache$1.restoreCache = cache$1.isFeatureAvailable = cache$1.ReserveCacheError = cache$1.ValidationError = void 0;
+	cache$1.saveCache = cache$1.restoreCache = cache$1.isFeatureAvailable = cache$1.FinalizeCacheError = cache$1.ReserveCacheError = cache$1.ValidationError = void 0;
 	const core = __importStar(requireCore());
 	const path = __importStar(require$$0$b);
 	const utils = __importStar(requireCacheUtils());
@@ -74993,7 +75007,6 @@ function requireCache () {
 	const cacheTwirpClient = __importStar(requireCacheTwirpClient());
 	const config_1 = requireConfig();
 	const tar_1 = requireTar();
-	const constants_1 = requireConstants$1();
 	const http_client_1 = requireLib();
 	class ValidationError extends Error {
 	    constructor(message) {
@@ -75011,6 +75024,14 @@ function requireCache () {
 	    }
 	}
 	cache$1.ReserveCacheError = ReserveCacheError;
+	class FinalizeCacheError extends Error {
+	    constructor(message) {
+	        super(message);
+	        this.name = 'FinalizeCacheError';
+	        Object.setPrototypeOf(this, FinalizeCacheError.prototype);
+	    }
+	}
+	cache$1.FinalizeCacheError = FinalizeCacheError;
 	function checkPaths(paths) {
 	    if (!paths || paths.length === 0) {
 	        throw new ValidationError(`Path Validation Error: At least one directory or file path is required`);
@@ -75387,10 +75408,6 @@ function requireCache () {
 	            }
 	            const archiveFileSize = utils.getArchiveFileSizeInBytes(archivePath);
 	            core.debug(`File Size: ${archiveFileSize}`);
-	            // For GHES, this check will take place in ReserveCache API with enterprise file size limit
-	            if (archiveFileSize > constants_1.CacheFileSizeLimit && !(0, config_1.isGhes)()) {
-	                throw new Error(`Cache size of ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B) is over the 10GB limit, not saving cache.`);
-	            }
 	            // Set the archive size in the options, will be used to display the upload progress
 	            options.archiveSizeBytes = archiveFileSize;
 	            core.debug('Reserving Cache');
@@ -75403,7 +75420,10 @@ function requireCache () {
 	            try {
 	                const response = yield twirpClient.CreateCacheEntry(request);
 	                if (!response.ok) {
-	                    throw new Error('Response was not ok');
+	                    if (response.message) {
+	                        core.warning(`Cache reservation failed: ${response.message}`);
+	                    }
+	                    throw new Error(response.message || 'Response was not ok');
 	                }
 	                signedUploadUrl = response.signedUploadUrl;
 	            }
@@ -75421,6 +75441,9 @@ function requireCache () {
 	            const finalizeResponse = yield twirpClient.FinalizeCacheEntryUpload(finalizeRequest);
 	            core.debug(`FinalizeCacheEntryUploadResponse: ${finalizeResponse.ok}`);
 	            if (!finalizeResponse.ok) {
+	                if (finalizeResponse.message) {
+	                    throw new FinalizeCacheError(finalizeResponse.message);
+	                }
 	                throw new Error(`Unable to finalize cache with key ${key}, another job may be finalizing this cache.`);
 	            }
 	            cacheId = parseInt(finalizeResponse.entryId);
@@ -75432,6 +75455,9 @@ function requireCache () {
 	            }
 	            else if (typedError.name === ReserveCacheError.name) {
 	                core.info(`Failed to save: ${typedError.message}`);
+	            }
+	            else if (typedError.name === FinalizeCacheError.name) {
+	                core.warning(typedError.message);
 	            }
 	            else {
 	                // Log server errors (5xx) as errors, all other errors as warnings
