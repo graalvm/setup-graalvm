@@ -1,11 +1,10 @@
 import * as c from '../constants.js'
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import { exec } from '../utils.js'
 import { join } from 'path'
 
-const MUSL_NAME = 'x86_64-linux-musl-native'
-const MUSL_VERSION = '10.2.1'
+const MUSL_NAME = 'musl-toolchain'
+const MUSL_VERSION = '1.2.5-oracle-00001'
 
 export async function setUpNativeImageMusl(): Promise<void> {
   if (!c.IS_LINUX) {
@@ -18,26 +17,10 @@ export async function setUpNativeImageMusl(): Promise<void> {
   } else {
     core.startGroup(`Setting up musl for GraalVM Native Image...`)
     const muslDownloadPath = await tc.downloadTool(
-      `https://github.com/graalvm/setup-graalvm/releases/download/x86_64-linux-musl-${MUSL_VERSION}/${MUSL_NAME}.tgz`
+      `https://gds.oracle.com/download/bfs/archive/musl-toolchain-${MUSL_VERSION}-linux-amd64.tar.gz`
     )
     const muslExtractPath = await tc.extractTar(muslDownloadPath)
     const muslPath = join(muslExtractPath, MUSL_NAME)
-
-    const zlibCommit = 'ec3df00224d4b396e2ac6586ab5d25f673caa4c2'
-    const zlibDownloadPath = await tc.downloadTool(`https://github.com/madler/zlib/archive/${zlibCommit}.tar.gz`)
-    const zlibExtractPath = await tc.extractTar(zlibDownloadPath)
-    const zlibPath = join(zlibExtractPath, `zlib-${zlibCommit}`)
-    const zlibBuildOptions = {
-      cwd: zlibPath,
-      env: {
-        ...process.env,
-        CC: join(muslPath, 'bin', 'gcc')
-      }
-    }
-    await exec('./configure', [`--prefix=${muslPath}`, '--static'], zlibBuildOptions)
-    await exec('make', [], zlibBuildOptions)
-    await exec('make', ['install'], { cwd: zlibPath })
-
     core.info(`Adding ${MUSL_NAME} ${MUSL_VERSION} to tool-cache ...`)
     toolPath = await tc.cacheDir(muslPath, MUSL_NAME, MUSL_VERSION)
     core.endGroup()

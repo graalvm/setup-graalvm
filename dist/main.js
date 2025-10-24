@@ -88852,8 +88852,8 @@ function checkForUpdates(graalVMVersion, javaVersion) {
     // TODO: add support for JDK-specific update checks (e.g., 17.0.X)
 }
 
-const MUSL_NAME = 'x86_64-linux-musl-native';
-const MUSL_VERSION = '10.2.1';
+const MUSL_NAME = 'musl-toolchain';
+const MUSL_VERSION = '1.2.5-oracle-00001';
 async function setUpNativeImageMusl() {
     if (!IS_LINUX) {
         coreExports.warning('musl is only supported on Linux');
@@ -88865,23 +88865,9 @@ async function setUpNativeImageMusl() {
     }
     else {
         coreExports.startGroup(`Setting up musl for GraalVM Native Image...`);
-        const muslDownloadPath = await toolCacheExports.downloadTool(`https://github.com/graalvm/setup-graalvm/releases/download/x86_64-linux-musl-${MUSL_VERSION}/${MUSL_NAME}.tgz`);
+        const muslDownloadPath = await toolCacheExports.downloadTool(`https://gds.oracle.com/download/bfs/archive/musl-toolchain-${MUSL_VERSION}-linux-amd64.tar.gz`);
         const muslExtractPath = await toolCacheExports.extractTar(muslDownloadPath);
         const muslPath = join(muslExtractPath, MUSL_NAME);
-        const zlibCommit = 'ec3df00224d4b396e2ac6586ab5d25f673caa4c2';
-        const zlibDownloadPath = await toolCacheExports.downloadTool(`https://github.com/madler/zlib/archive/${zlibCommit}.tar.gz`);
-        const zlibExtractPath = await toolCacheExports.extractTar(zlibDownloadPath);
-        const zlibPath = join(zlibExtractPath, `zlib-${zlibCommit}`);
-        const zlibBuildOptions = {
-            cwd: zlibPath,
-            env: {
-                ...process.env,
-                CC: join(muslPath, 'bin', 'gcc')
-            }
-        };
-        await exec('./configure', [`--prefix=${muslPath}`, '--static'], zlibBuildOptions);
-        await exec('make', [], zlibBuildOptions);
-        await exec('make', ['install'], { cwd: zlibPath });
         coreExports.info(`Adding ${MUSL_NAME} ${MUSL_VERSION} to tool-cache ...`);
         toolPath = await toolCacheExports.cacheDir(muslPath, MUSL_NAME, MUSL_VERSION);
         coreExports.endGroup();
