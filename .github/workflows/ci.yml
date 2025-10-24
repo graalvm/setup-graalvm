@@ -372,18 +372,22 @@ jobs:
           ./helloworld
 
   test-action-native-image-musl:
-    name: native-image-musl on ubuntu-latest
-    runs-on: ubuntu-latest
+    name: native-image-musl + JDK${{ matrix.java-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
+    strategy:
+      matrix:
+        java-version: ['21', '25']
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: Run setup-graalvm action
         uses: ./
         with:
-          java-version: 'dev'
-          distribution: 'graalvm-community'
+          java-version: ${{ matrix.java-version }}
+          distribution: 'graalvm'
           native-image-musl: 'true'
           native-image-job-reports: 'true'
           native-image-pr-reports: 'true'
@@ -392,7 +396,7 @@ jobs:
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
-          native-image --static --libc=musl HelloWorld
+          native-image --static --libc=musl --gc=G1 HelloWorld
           ./helloworld
 
   test-action-extensive:
