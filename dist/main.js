@@ -3,7 +3,7 @@ import require$$0$4, { createHash, randomUUID as randomUUID$2, createHmac } from
 import * as fs from 'fs';
 import fs__default, { readdirSync, readFileSync, existsSync } from 'fs';
 import * as require$$1$1 from 'path';
-import require$$1__default, { join, basename as basename$1 } from 'path';
+import require$$1__default, { join, extname, basename as basename$1 } from 'path';
 import require$$0$5 from 'http';
 import require$$1$2 from 'https';
 import require$$0$7 from 'net';
@@ -38705,6 +38705,20 @@ async function downloadExtractAndCacheJDK(downloader, toolName, version) {
     }
     return findJavaHomeInSubfolder(toolPath);
 }
+/**
+ * This copy of tc.downloadTool() preserves the file extension in the dest.
+ * The file extension is required on Windows runners without .NET to extract zip files correctly.
+ * See #195 and https://github.com/actions/toolkit/blob/6b63a2bfc339a753a113d2266323a4d52d84dee0/packages/tool-cache/src/tool-cache.ts#L44
+ */
+async function downloadFile(downloadUrl) {
+    const dest = join(_getTempDirectory(), crypto.randomUUID(), extname(downloadUrl));
+    return toolCacheExports.downloadTool(downloadUrl, dest);
+}
+function _getTempDirectory() {
+    const tempDirectory = process.env['RUNNER_TEMP'] || '';
+    ok(tempDirectory, 'Expected RUNNER_TEMP to be defined');
+    return tempDirectory;
+}
 function calculateSHA256(filePath) {
     const hashSum = createHash('sha256');
     hashSum.update(readFileSync(filePath));
@@ -40549,7 +40563,7 @@ function determineToolName$2(javaVersion, isCommunity) {
 }
 async function downloadGraalVMJDK(downloadUrl, javaVersion) {
     try {
-        return await toolCacheExports.downloadTool(downloadUrl);
+        return await downloadFile(downloadUrl);
     }
     catch (error) {
         if (error instanceof Error && error.message.includes('404')) {
@@ -40642,7 +40656,7 @@ async function downloadGraalVMCELegacy(version, javaVersion) {
     const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, version, javaVersion);
     const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${GRAALVM_FILE_EXTENSION}`;
     try {
-        return await toolCacheExports.downloadTool(downloadUrl);
+        return await downloadFile(downloadUrl);
     }
     catch (error) {
         if (error instanceof Error && error.message.includes('404')) {
@@ -93580,7 +93594,7 @@ async function setUpLiberica(javaVersion, javaPackage) {
     const resolvedJavaVersion = await findLatestLibericaJavaVersion(javaVersion);
     const downloadUrl = await findLibericaURL(resolvedJavaVersion, javaPackage);
     const toolName = determineToolName(javaVersion, javaPackage);
-    return downloadExtractAndCacheJDK(async () => toolCacheExports.downloadTool(downloadUrl), toolName, javaVersion);
+    return downloadExtractAndCacheJDK(async () => downloadFile(downloadUrl), toolName, javaVersion);
 }
 async function findLatestLibericaJavaVersion(javaVersion) {
     const matchingRefs = await getMatchingTags(LIBERICA_GH_USER, LIBERICA_RELEASES_REPO, `${LIBERICA_JDK_TAG_PREFIX}${javaVersion}`);
@@ -93673,7 +93687,7 @@ async function setUpNativeImageMusl() {
     }
     else {
         coreExports.startGroup(`Setting up musl for GraalVM Native Image...`);
-        const muslDownloadPath = await toolCacheExports.downloadTool(`https://gds.oracle.com/download/bfs/archive/musl-toolchain-${MUSL_VERSION}-linux-amd64.tar.gz`);
+        const muslDownloadPath = await downloadFile(`https://gds.oracle.com/download/bfs/archive/musl-toolchain-${MUSL_VERSION}-linux-amd64.tar.gz`);
         const muslExtractPath = await toolCacheExports.extractTar(muslDownloadPath);
         const muslPath = join(muslExtractPath, MUSL_NAME);
         coreExports.info(`Adding ${MUSL_NAME} ${MUSL_VERSION} to tool-cache ...`);

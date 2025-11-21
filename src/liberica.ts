@@ -1,7 +1,6 @@
 import * as c from './constants.js'
 import * as semver from 'semver'
-import { downloadExtractAndCacheJDK, getTaggedRelease, getMatchingTags } from './utils.js'
-import { downloadTool } from '@actions/tool-cache'
+import { downloadFile, downloadExtractAndCacheJDK, getTaggedRelease, getMatchingTags } from './utils.js'
 import { spawnSync } from 'child_process'
 
 const LIBERICA_GH_USER = 'bell-sw'
@@ -13,7 +12,7 @@ export async function setUpLiberica(javaVersion: string, javaPackage: string): P
   const resolvedJavaVersion = await findLatestLibericaJavaVersion(javaVersion)
   const downloadUrl = await findLibericaURL(resolvedJavaVersion, javaPackage)
   const toolName = determineToolName(javaVersion, javaPackage)
-  return downloadExtractAndCacheJDK(async () => downloadTool(downloadUrl), toolName, javaVersion)
+  return downloadExtractAndCacheJDK(async () => downloadFile(downloadUrl), toolName, javaVersion)
 }
 
 export async function findLatestLibericaJavaVersion(javaVersion: string): Promise<string> {
