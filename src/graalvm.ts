@@ -2,6 +2,7 @@ import * as c from './constants.js'
 import * as core from '@actions/core'
 import * as semver from 'semver'
 import {
+  downloadFile,
   downloadAndExtractJDK,
   downloadExtractAndCacheJDK,
   getContents,
@@ -10,7 +11,6 @@ import {
   getTaggedRelease
 } from './utils.js'
 import { downloadGraalVM, downloadGraalVMEELegacy } from './gds.js'
-import { downloadTool } from '@actions/tool-cache'
 import { basename } from 'path'
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm'
@@ -153,7 +153,7 @@ function determineToolName(javaVersion: string, isCommunity: boolean) {
 
 async function downloadGraalVMJDK(downloadUrl: string, javaVersion: string): Promise<string> {
   try {
-    return await downloadTool(downloadUrl)
+    return await downloadFile(downloadUrl)
   } catch (error) {
     if (error instanceof Error && error.message.includes('404')) {
       // Not Found
@@ -260,7 +260,7 @@ async function downloadGraalVMCELegacy(version: string, javaVersion: string): Pr
   const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, version, javaVersion)
   const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
   try {
-    return await downloadTool(downloadUrl)
+    return await downloadFile(downloadUrl)
   } catch (error) {
     if (error instanceof Error && error.message.includes('404')) {
       // Not Found

@@ -5,9 +5,10 @@ import * as semver from 'semver'
 import * as tc from '@actions/tool-cache'
 import * as fs from 'fs'
 import { ExecOptions, exec as e } from '@actions/exec'
+import { ok } from 'assert'
 import { readFileSync, readdirSync } from 'fs'
 import { createHash } from 'crypto'
-import { join } from 'path'
+import { extname, join } from 'path'
 import { tmpdir } from 'os'
 import { GitHub } from '@actions/github/lib/utils.js'
 
@@ -84,6 +85,17 @@ export async function downloadExtractAndCacheJDK(
     toolPath = await tc.cacheDir(extractDir, toolName, semVersion)
   }
   return findJavaHomeInSubfolder(toolPath)
+}
+
+export async function downloadFile(downloadUrl: string): Promise<string> {
+  const dest = join(_getTempDirectory(), crypto.randomUUID(), extname(downloadUrl))
+  return tc.downloadTool(downloadUrl, dest)
+}
+
+function _getTempDirectory(): string {
+  const tempDirectory = process.env['RUNNER_TEMP'] || ''
+  ok(tempDirectory, 'Expected RUNNER_TEMP to be defined')
+  return tempDirectory
 }
 
 export function calculateSHA256(filePath: string): string {

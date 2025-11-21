@@ -2,6 +2,7 @@ import * as c from '../constants.js'
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
 import { join } from 'path'
+import { downloadFile } from '../utils.js'
 
 const MUSL_NAME = 'musl-toolchain'
 const MUSL_VERSION = '1.2.5-oracle-00001'
@@ -16,7 +17,7 @@ export async function setUpNativeImageMusl(): Promise<void> {
     core.info(`Found ${MUSL_NAME} ${MUSL_VERSION} in tool-cache @ ${toolPath}`)
   } else {
     core.startGroup(`Setting up musl for GraalVM Native Image...`)
-    const muslDownloadPath = await tc.downloadTool(
+    const muslDownloadPath = await downloadFile(
       `https://gds.oracle.com/download/bfs/archive/musl-toolchain-${MUSL_VERSION}-linux-amd64.tar.gz`
     )
     const muslExtractPath = await tc.extractTar(muslDownloadPath)
