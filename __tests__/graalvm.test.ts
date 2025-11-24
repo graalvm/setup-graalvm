@@ -76,7 +76,7 @@ test('find version/javaVersion', async () => {
     }
     error = err
   }
-  expect(error.message).toContain('Could not find highest Java version.')
+  expect(error.message).toContain('Could not find latest GraalVM release:')
 })
 
 test('find EA version/javaVersion', async () => {

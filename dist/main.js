@@ -40583,7 +40583,7 @@ function findHighestJavaVersion(release, version) {
         return String(highestJavaVersion);
     }
     else {
-        throw new Error('Could not find highest Java version. Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.');
+        return undefined;
     }
 }
 // Support for GraalVM 22.X releases and earlier
@@ -40616,7 +40616,9 @@ async function setUpGraalVMRelease(gdsToken, version, javaVersion) {
     return downloadExtractAndCacheJDK(downloader, toolName, version);
 }
 function findDownloadUrl(release, javaVersion) {
-    const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, VERSION_DEV, javaVersion);
+    const graalVMIdentifier = javaVersion
+        ? determineGraalVMLegacyIdentifier(false, VERSION_DEV, javaVersion)
+        : determineGraalVMIdentifier(false, VERSION_DEV);
     const expectedFileName = `${graalVMIdentifier}${GRAALVM_FILE_EXTENSION}`;
     for (const asset of release.assets) {
         if (asset.name === expectedFileName) {
@@ -40624,6 +40626,10 @@ function findDownloadUrl(release, javaVersion) {
         }
     }
     throw new Error(`Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. ${ERROR_HINT}`);
+}
+function determineGraalVMIdentifier(isEE, version) {
+    const infix = 'community' ;
+    return `graalvm-${infix}-${version}-${GRAALVM_PLATFORM}-${GRAALVM_ARCH}`;
 }
 function determineGraalVMLegacyIdentifier(isEE, version, javaVersion) {
     return `${determineLegacyToolName(isEE, version, javaVersion)}-${GRAALVM_ARCH}-${version}`;

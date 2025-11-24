@@ -174,7 +174,7 @@ export async function setUpGraalVMJDKDevBuild(): Promise<string> {
   return downloadAndExtractJDK(downloadUrl)
 }
 
-export function findHighestJavaVersion(release: c.LatestReleaseResponseData, version: string): string {
+export function findHighestJavaVersion(release: c.LatestReleaseResponseData, version: string): string | undefined {
   const graalVMIdentifierPattern = determineGraalVMLegacyIdentifier(false, version, '(\\d+)')
   const expectedFileNameRegExp = new RegExp(
     `^${graalVMIdentifierPattern}${c.GRAALVM_FILE_EXTENSION.replace(/\./g, '\\.')}$`
@@ -192,9 +192,7 @@ export function findHighestJavaVersion(release: c.LatestReleaseResponseData, ver
   if (highestJavaVersion > 0) {
     return String(highestJavaVersion)
   } else {
-    throw new Error(
-      'Could not find highest Java version. Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
-    )
+    return undefined
   }
 }
 
@@ -234,8 +232,10 @@ export async function setUpGraalVMRelease(gdsToken: string, version: string, jav
   return downloadExtractAndCacheJDK(downloader, toolName, version)
 }
 
-function findDownloadUrl(release: c.LatestReleaseResponseData, javaVersion: string): string {
-  const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, c.VERSION_DEV, javaVersion)
+function findDownloadUrl(release: c.LatestReleaseResponseData, javaVersion?: string): string {
+  const graalVMIdentifier = javaVersion
+    ? determineGraalVMLegacyIdentifier(false, c.VERSION_DEV, javaVersion)
+    : determineGraalVMIdentifier(false, c.VERSION_DEV)
   const expectedFileName = `${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
   for (const asset of release.assets) {
     if (asset.name === expectedFileName) {
@@ -245,6 +245,11 @@ function findDownloadUrl(release: c.LatestReleaseResponseData, javaVersion: stri
   throw new Error(
     `Could not find GraalVM dev build for Java ${javaVersion}. It may no longer be available, so please consider upgrading the Java version. ${c.ERROR_HINT}`
   )
+}
+
+function determineGraalVMIdentifier(isEE: boolean, version: string): string {
+  const infix = isEE ? 'ee' : version === c.VERSION_DEV ? 'community' : 'ce'
+  return `graalvm-${infix}-${version}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}`
 }
 
 function determineGraalVMLegacyIdentifier(isEE: boolean, version: string, javaVersion: string): string {
