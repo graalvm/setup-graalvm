@@ -54,6 +54,9 @@ jobs:
           ]
         set-gds-token: [false]
         components: ['']
+        exclude:
+          - os: macos-13
+            java-version: 'dev'
         include:
           - java-version: 'latest-ea'
             distribution: 'graalvm'
