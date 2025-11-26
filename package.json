@@ -70,7 +70,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.2.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "prettier": "^3.6.2",
     "prettier-eslint": "^16.4.2",
     "rollup": "^4.52.5",
