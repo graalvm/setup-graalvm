@@ -27288,7 +27288,7 @@ function requireCore () {
 
 var coreExports = requireCore();
 
-const ACTION_VERSION = '1.4.3';
+const ACTION_VERSION = '1.4.4';
 const INPUT_GITHUB_TOKEN = 'github-token';
 const INPUT_CACHE = 'cache';
 process.platform === 'linux';

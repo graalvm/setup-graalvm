@@ -2,7 +2,7 @@
   "name": "setup-graalvm",
   "author": "GraalVM Community",
   "description": "GitHub Action for GraalVM",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "type": "module",
   "private": true,
   "repository": {
