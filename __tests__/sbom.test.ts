@@ -92,7 +92,7 @@ describe('sbom feature', () => {
     })
 
     it('should not throw an error when the java-version is supported', () => {
-      const supported_versions = ['25', '26-ea', 'latest-ea']
+      const supported_versions = ['25', '25e1-ea', 'latest-ea']
       for (const version of supported_versions) {
         expect(() => setUpSBOMSupport(version, distribution)).not.toThrow()
       }
