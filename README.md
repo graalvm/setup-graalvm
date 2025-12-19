@@ -92,7 +92,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '26-ea' # or 'latest-ea' for the latest Java version available
+          java-version: '25e1-ea' # or 'latest-ea' for the latest Java version available
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -194,7 +194,7 @@ This actions can be configured with the following options:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'25'`, `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.3'`, `'17.0.11'`</li><li>early access (EA) builds: `'26-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'`</li></ul> |
+| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'25'`, `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.3'`, `'17.0.11'`</li><li>early access (EA) builds: `'25e1-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'` *(requires `distribution: 'graalvm-community'`)*</li></ul> |
 | `distribution`  | `'graalvm'` | GraalVM distribution (see [supported distributions](#supported-distributions)) |
 | `java-package`  | `'jdk'` | The package type (`'jdk'` or `'jdk+fx'`). Currently applies to Liberica only. |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
