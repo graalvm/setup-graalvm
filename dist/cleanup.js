@@ -27530,7 +27530,7 @@ function requireCore$2 () {
 
 var coreExports = requireCore$2();
 
-const ACTION_VERSION = '1.4.4';
+const ACTION_VERSION = '1.4.5';
 const INPUT_GITHUB_TOKEN = 'github-token';
 const INPUT_CACHE = 'cache';
 process.platform === 'linux';
