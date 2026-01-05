@@ -41,7 +41,7 @@ import require$$0$f from 'node:crypto';
 import require$$2$5 from 'node:buffer';
 import require$$1$a from 'node:fs';
 
-const ACTION_VERSION = '1.4.4';
+const ACTION_VERSION = '1.4.5';
 const INPUT_VERSION = 'version';
 const INPUT_GDS_TOKEN = 'gds-token';
 const INPUT_JAVA_VERSION = 'java-version';
