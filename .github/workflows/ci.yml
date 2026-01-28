@@ -43,7 +43,7 @@ jobs:
       PASSES_GDS_TOKEN_CHECK: ${{ !matrix.set-gds-token || secrets.GDS_TOKEN != '' }}
     strategy:
       matrix:
-        java-version: ['25', '21', '17', '20', 'dev']
+        java-version: ['25', '21', '17', 'dev']
         distribution: ['graalvm', 'graalvm-community']
         os: [
             ubuntu-latest, # Linux on Intel
@@ -75,6 +75,9 @@ jobs:
             os: ubuntu-latest
             components: 'native-image' # should print a warning but not fail
           - java-version: '21.0.0' # test for GA version (see #63)
+            distribution: 'graalvm'
+            os: ubuntu-latest
+          - java-version: '20' # test for upgrade notice
             distribution: 'graalvm'
             os: ubuntu-latest
           - java-version: '17'
@@ -124,12 +127,10 @@ jobs:
     strategy:
       matrix:
         version: ['latest', 'dev']
-        java-version: ['17', '20']
+        java-version: ['17']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
         exclude:
-          - version: 'latest'
-            java-version: '20'
           - version: 'dev'
             java-version: '19'
         include:
