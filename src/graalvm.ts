@@ -36,6 +36,18 @@ export async function setUpGraalVMJDK(javaVersionOrDev: string, gdsToken: string
     )
     return setUpGraalVMJDK('17.0.12', gdsToken)
   }
+  if (c.IS_MACOS && c.JDK_ARCH === 'x64') {
+    if (javaVersionOrDev === '25') {
+      core.warning('This build uses Oracle GraalVM for JDK 25.0.1, the last available JDK 25 build for macOS Intel.')
+      return setUpGraalVMJDK('25.0.1', gdsToken)
+    } else if (javaVersionOrDev === '21') {
+      core.warning('This build uses Oracle GraalVM for JDK 21.0.9, the last available JDK 21 build for macOS Intel.')
+      return setUpGraalVMJDK('21.0.9', gdsToken)
+    } else if (javaVersionOrDev === '17') {
+      core.warning('This build uses Oracle GraalVM for JDK 17.0.17, the last available JDK 17 build for macOS Intel.')
+      return setUpGraalVMJDK('17.0.17', gdsToken)
+    }
+  }
   if (isTokenProvided) {
     // Download from GDS
     const downloader = async () => downloadGraalVM(gdsToken, javaVersion)
@@ -108,6 +120,10 @@ export async function findLatestEABuildDownloadUrl(javaEaVersion: string): Promi
 export async function setUpGraalVMJDKCE(javaVersionOrDev: string): Promise<string> {
   if (javaVersionOrDev === c.VERSION_DEV) {
     return setUpGraalVMJDKDevBuild()
+  }
+  if (c.IS_MACOS && c.JDK_ARCH === 'x64' && javaVersionOrDev === '25') {
+    core.warning('This build uses GraalVM CE for JDK 25.0.1, the last available JDK 25 build for macOS Intel.')
+    return setUpGraalVMJDKCE('25.0.1')
   }
   let javaVersion = javaVersionOrDev
   if (!javaVersion.includes('.')) {
