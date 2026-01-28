@@ -1,19 +1,17 @@
 version: 2
+
+multi-ecosystem-groups:
+  all:
+    schedule:
+      interval: 'monthly'
+
 updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
-    schedule:
-      interval: 'monthly'
-    groups:
-      github-actions-updates:
-        patterns:
-          - '*'
+    patterns: ['*']
+    multi-ecosystem-group: 'all'
 
   - package-ecosystem: 'npm'
     directory: '/'
-    schedule:
-      interval: 'monthly'
-    groups:
-      npm-updates:
-        patterns:
-          - '*'
+    patterns: ['*']
+    multi-ecosystem-group: 'all'
