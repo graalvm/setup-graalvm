@@ -10,7 +10,7 @@ import { readFileSync, readdirSync } from 'fs'
 import { createHash } from 'crypto'
 import { extname, join } from 'path'
 import { tmpdir } from 'os'
-import { GitHub } from '@actions/github/lib/utils.js'
+import { GitHub } from '@actions/github/lib/utils'
 
 export async function exec(commandLine: string, args?: string[], options?: ExecOptions | undefined): Promise<void> {
   const exitCode = await e(commandLine, args, options)
