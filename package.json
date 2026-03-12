@@ -79,6 +79,11 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
+  "overrides": {
+    "@actions/glob": {
+      "minimatch": "^6.2.3"
+    }
+  },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
   }
