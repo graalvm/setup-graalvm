@@ -247,11 +247,23 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        version: ['mandrel-22.2.0.0-Final', '23.0.1.2-Final', 'mandrel-latest']
-        java-version: ['17']
+        version: ['mandrel-latest']
+        java-version: ['25']
         distribution: ['mandrel']
         os: [windows-latest, ubuntu-latest]
         include:
+          - version: '25.0.2.0-Final'
+            java-version: '25'
+            distribution: 'mandrel'
+            os: ubuntu-latest
+          - version: '23.1.10.0-Final'
+            java-version: '21'
+            distribution: 'mandrel'
+            os: ubuntu-latest
+          - version: '23.0.6.0-Final'
+            java-version: '17'
+            distribution: 'mandrel'
+            os: ubuntu-latest
           - version: 'mandrel-latest'
             java-version: '17'
             distribution: '' # test empty distribution for backward compatibility
