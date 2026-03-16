@@ -46,7 +46,6 @@
     "@actions/io": "^3.0.2",
     "@actions/tool-cache": "^4.0.0",
     "@octokit/types": "^16.0.0",
-    "@github/dependency-submission-toolkit": "^2.0.5",
     "semver": "^7.7.3",
     "uuid": "^13.0.0"
   },
@@ -72,7 +71,6 @@
     "jest": "^30.2.0",
     "js-yaml": "^4.1.1",
     "prettier": "^3.8.1",
-    "prettier-eslint": "^16.4.2",
     "rollup": "^4.57.1",
     "ts-jest": "^29.4.6",
     "ts-jest-resolver": "^2.0.1",
