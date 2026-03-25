@@ -81976,13 +81976,20 @@ function getTagFromURI(uri) {
     }
 }
 async function getLatestMandrelReleaseUrl(javaVersion) {
-    const url = `${DISCO_API_BASE}?jdk_version=${javaVersion}&distribution=${DISTRIBUTION_MANDREL}&architecture=${JDK_ARCH}&operating_system=${JDK_PLATFORM}&latest=per_distro`;
+    const url = `${DISCO_API_BASE}?distribution=${DISTRIBUTION_MANDREL}&architecture=${JDK_ARCH}&operating_system=${JDK_PLATFORM}&latest=available`;
     const _http = new HttpClient();
     const response = await _http.getJson(url);
     if (response.statusCode !== 200) {
         throw new Error(`Failed to fetch latest Mandrel release for Java ${javaVersion} from DISCO API: ${response.result}`);
     }
-    const result = response.result?.result[0];
+    const results = response.result?.result;
+    const javaVersionPrefix = `mandrel-java${javaVersion}-`;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const result = results?.find((r) => r.filename?.startsWith(javaVersionPrefix));
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+    if (!result) {
+        throw new Error(`No Mandrel release found for Java ${javaVersion} from DISCO API`);
+    }
     try {
         const pkg_info_uri = result.links.pkg_info_uri;
         return await getLatestMandrelReleaseUrlHelper(_http, javaVersion, pkg_info_uri);

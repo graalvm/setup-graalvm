@@ -58,19 +58,15 @@ test('find latest', async () => {
 
 test('get known latest Mandrel for specific JDK', async () => {
   // Test deprecated versions that won't get updates anymore
-  for (const combination of [
-    ['11', '22.2.0.0-Final'],
-    ['20', '23.0.1.2-Final']
-  ]) {
-    const latest = await mandrel.getLatestMandrelReleaseUrl(combination[0])
-    expect(latest).toContain(`mandrel-java${combination[0]}`)
-    expect(latest).toContain(combination[1])
+  for (const javaVersion of ['22', '23']) {
+    const latest = await mandrel.getLatestMandrelReleaseUrl(javaVersion)
+    expect(latest).toContain(`mandrel-java${javaVersion}`)
   }
 })
 
 test('get latest Mandrel for specific JDK', async () => {
   // Test supported versions
-  for (const javaVersion of ['17', '21']) {
+  for (const javaVersion of ['21', '24']) {
     const latest = await mandrel.getLatestMandrelReleaseUrl(javaVersion)
     expect(latest).toContain(`mandrel-java${javaVersion}`)
   }

@@ -55,13 +55,20 @@ function getTagFromURI(uri: string): string {
 }
 
 export async function getLatestMandrelReleaseUrl(javaVersion: string): Promise<string> {
-  const url = `${DISCO_API_BASE}?jdk_version=${javaVersion}&distribution=${c.DISTRIBUTION_MANDREL}&architecture=${c.JDK_ARCH}&operating_system=${c.JDK_PLATFORM}&latest=per_distro`
+  const url = `${DISCO_API_BASE}?distribution=${c.DISTRIBUTION_MANDREL}&architecture=${c.JDK_ARCH}&operating_system=${c.JDK_PLATFORM}&latest=available`
   const _http = new httpClient.HttpClient()
   const response = await _http.getJson<JdkData>(url)
   if (response.statusCode !== 200) {
     throw new Error(`Failed to fetch latest Mandrel release for Java ${javaVersion} from DISCO API: ${response.result}`)
   }
-  const result = response.result?.result[0]
+  const results = response.result?.result
+  const javaVersionPrefix = `mandrel-java${javaVersion}-`
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const result = results?.find((r: any) => r.filename?.startsWith(javaVersionPrefix))
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  if (!result) {
+    throw new Error(`No Mandrel release found for Java ${javaVersion} from DISCO API`)
+  }
   try {
     const pkg_info_uri = result.links.pkg_info_uri
     return await getLatestMandrelReleaseUrlHelper(_http, javaVersion, pkg_info_uri)
