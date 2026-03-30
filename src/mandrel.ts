@@ -45,13 +45,21 @@ function getTagFromURI(uri: string): string {
   }
 }
 
+export function matchesMandrelAsset(
+  name: string,
+  javaVersion: string,
+  platform: string,
+  arch: string,
+  extension: string
+): boolean {
+  const expectedPrefix = `mandrel-java${javaVersion}-${platform}-${arch}-`
+  return name.startsWith(expectedPrefix) && name.endsWith(extension)
+}
+
 export async function getLatestMandrelReleaseUrl(javaVersion: string): Promise<string> {
-  const expectedPrefix = `mandrel-java${javaVersion}-${c.GRAALVM_PLATFORM}-${c.GRAALVM_ARCH}-`
-  const expectedSuffix = c.GRAALVM_FILE_EXTENSION
   try {
-    return await findLatestReleaseWithAsset(
-      MANDREL_REPO,
-      (name) => name.startsWith(expectedPrefix) && name.endsWith(expectedSuffix)
+    return await findLatestReleaseWithAsset(MANDREL_REPO, (name) =>
+      matchesMandrelAsset(name, javaVersion, c.JDK_PLATFORM, c.GRAALVM_ARCH, c.GRAALVM_FILE_EXTENSION)
     )
   } catch (error) {
     throw new Error(

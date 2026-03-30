@@ -81992,11 +81992,13 @@ function getTagFromURI(uri) {
         throw new Error(`Failed to extract tag from URI ${uri}: ${error}`);
     }
 }
+function matchesMandrelAsset(name, javaVersion, platform, arch, extension) {
+    const expectedPrefix = `mandrel-java${javaVersion}-${platform}-${arch}-`;
+    return name.startsWith(expectedPrefix) && name.endsWith(extension);
+}
 async function getLatestMandrelReleaseUrl(javaVersion) {
-    const expectedPrefix = `mandrel-java${javaVersion}-${GRAALVM_PLATFORM}-${GRAALVM_ARCH}-`;
-    const expectedSuffix = GRAALVM_FILE_EXTENSION;
     try {
-        return await findLatestReleaseWithAsset(MANDREL_REPO, (name) => name.startsWith(expectedPrefix) && name.endsWith(expectedSuffix));
+        return await findLatestReleaseWithAsset(MANDREL_REPO, (name) => matchesMandrelAsset(name, javaVersion, JDK_PLATFORM, GRAALVM_ARCH, GRAALVM_FILE_EXTENSION));
     }
     catch (error) {
         throw new Error(`Failed to find latest Mandrel release for Java ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct? ${error}`);
