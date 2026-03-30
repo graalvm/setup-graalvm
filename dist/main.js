@@ -38095,6 +38095,23 @@ async function getLatestRelease(repo) {
         repo
     })).data; /** missing digest property */
 }
+async function findLatestReleaseWithAsset(repo, assetNamePredicate) {
+    const octokit = getOctokit();
+    const iterator = octokit.paginate.iterator(octokit.rest.repos.listReleases, {
+        owner: GRAALVM_GH_USER,
+        repo,
+        per_page: 100
+    });
+    for await (const { data: releases } of iterator) {
+        for (const release of releases) {
+            const matchingAsset = release.assets.find((a) => assetNamePredicate(a.name));
+            if (matchingAsset) {
+                return matchingAsset.browser_download_url;
+            }
+        }
+    }
+    throw new Error(`Could not find a release in '${repo}' with a matching asset.`);
+}
 async function getContents(repo, path) {
     const octokit = getOctokit();
     return (await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
@@ -81938,9 +81955,9 @@ async function installGUComponents(gdsToken, graalVMHome, components) {
     }
 }
 
+const MANDREL_REPO = 'mandrel';
 const MANDREL_TAG_PREFIX = MANDREL_NAMESPACE;
 const MANDREL_DL_BASE = 'https://github.com/graalvm/mandrel/releases/download';
-const DISCO_API_BASE = 'https://api.foojay.io/disco/v3.0/packages/jdks';
 async function setUpMandrel(mandrelVersion, javaVersion) {
     const version = stripMandrelNamespace(mandrelVersion);
     let mandrelHome;
@@ -81976,32 +81993,13 @@ function getTagFromURI(uri) {
     }
 }
 async function getLatestMandrelReleaseUrl(javaVersion) {
-    const url = `${DISCO_API_BASE}?jdk_version=${javaVersion}&distribution=${DISTRIBUTION_MANDREL}&architecture=${JDK_ARCH}&operating_system=${JDK_PLATFORM}&latest=per_distro`;
-    const _http = new HttpClient();
-    const response = await _http.getJson(url);
-    if (response.statusCode !== 200) {
-        throw new Error(`Failed to fetch latest Mandrel release for Java ${javaVersion} from DISCO API: ${response.result}`);
-    }
-    const result = response.result?.result[0];
+    const expectedPrefix = `mandrel-java${javaVersion}-${GRAALVM_PLATFORM}-${GRAALVM_ARCH}-`;
+    const expectedSuffix = GRAALVM_FILE_EXTENSION;
     try {
-        const pkg_info_uri = result.links.pkg_info_uri;
-        return await getLatestMandrelReleaseUrlHelper(_http, javaVersion, pkg_info_uri);
+        return await findLatestReleaseWithAsset(MANDREL_REPO, (name) => name.startsWith(expectedPrefix) && name.endsWith(expectedSuffix));
     }
     catch (error) {
-        throw new Error(`Failed to get latest Mandrel release for Java ${javaVersion} from DISCO API: ${error}`);
-    }
-}
-async function getLatestMandrelReleaseUrlHelper(_http, java_version, pkg_info_uri) {
-    const response = await _http.getJson(pkg_info_uri);
-    if (response.statusCode !== 200) {
-        throw new Error(`Failed to fetch package info of latest Mandrel release for Java ${java_version} from DISCO API: ${response.result}`);
-    }
-    const result = response.result?.result[0];
-    try {
-        return result.direct_download_uri;
-    }
-    catch (error) {
-        throw new Error(`Failed to get download URI of latest Mandrel release for Java ${java_version} from DISCO API: ${error}`);
+        throw new Error(`Failed to find latest Mandrel release for Java ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct? ${error}`);
     }
 }
 async function setUpMandrelRelease(version, javaVersion) {

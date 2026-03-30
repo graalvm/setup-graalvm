@@ -59,7 +59,7 @@ test('find latest', async () => {
 test('get known latest Mandrel for specific JDK', async () => {
   // Test deprecated versions that won't get updates anymore
   for (const combination of [
-    ['11', '22.2.0.0-Final'],
+    ['11', '21.3.6.0-Final'],
     ['20', '23.0.1.2-Final']
   ]) {
     const latest = await mandrel.getLatestMandrelReleaseUrl(combination[0])

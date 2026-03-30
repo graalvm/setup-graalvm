@@ -29,6 +29,27 @@ export async function getLatestRelease(repo: string): Promise<c.LatestReleaseRes
   ).data as c.LatestReleaseResponseData /** missing digest property */
 }
 
+export async function findLatestReleaseWithAsset(
+  repo: string,
+  assetNamePredicate: (name: string) => boolean
+): Promise<string> {
+  const octokit = getOctokit()
+  const iterator = octokit.paginate.iterator(octokit.rest.repos.listReleases, {
+    owner: c.GRAALVM_GH_USER,
+    repo,
+    per_page: 100
+  })
+  for await (const { data: releases } of iterator) {
+    for (const release of releases) {
+      const matchingAsset = release.assets.find((a) => assetNamePredicate(a.name))
+      if (matchingAsset) {
+        return matchingAsset.browser_download_url
+      }
+    }
+  }
+  throw new Error(`Could not find a release in '${repo}' with a matching asset.`)
+}
+
 export async function getContents(repo: string, path: string): Promise<c.ContentsResponseData> {
   const octokit = getOctokit()
   return (
