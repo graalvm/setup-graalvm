@@ -59,7 +59,7 @@ test('find latest', async () => {
 test('get known latest Mandrel for specific JDK', async () => {
   // Test deprecated versions that won't get updates anymore
   for (const combination of [
-    ['11', '22.2.0.0-Final'],
+    ['11', '21.3.6.0-Final'],
     ['20', '23.0.1.2-Final']
   ]) {
     const latest = await mandrel.getLatestMandrelReleaseUrl(combination[0])
@@ -74,4 +74,29 @@ test('get latest Mandrel for specific JDK', async () => {
     const latest = await mandrel.getLatestMandrelReleaseUrl(javaVersion)
     expect(latest).toContain(`mandrel-java${javaVersion}`)
   }
+})
+
+test('matchesMandrelAsset matches correct platform-specific asset names', () => {
+  // Real asset names from mandrel-23.1.10.0-Final release
+  const linuxAmd64 = 'mandrel-java21-linux-amd64-23.1.10.0-Final.tar.gz'
+  const linuxAarch64 = 'mandrel-java21-linux-aarch64-23.1.10.0-Final.tar.gz'
+  const macosAarch64 = 'mandrel-java21-macos-aarch64-23.1.10.0-Final.tar.gz'
+  const windowsAmd64 = 'mandrel-java21-windows-amd64-23.1.10.0-Final.zip'
+
+  // Linux x64
+  expect(mandrel.matchesMandrelAsset(linuxAmd64, '21', 'linux', 'amd64', '.tar.gz')).toBe(true)
+  expect(mandrel.matchesMandrelAsset(linuxAarch64, '21', 'linux', 'amd64', '.tar.gz')).toBe(false)
+
+  // macOS uses 'macos', not 'darwin'
+  expect(mandrel.matchesMandrelAsset(macosAarch64, '21', 'macos', 'aarch64', '.tar.gz')).toBe(true)
+  expect(mandrel.matchesMandrelAsset(macosAarch64, '21', 'darwin', 'aarch64', '.tar.gz')).toBe(false)
+
+  // Windows
+  expect(mandrel.matchesMandrelAsset(windowsAmd64, '21', 'windows', 'amd64', '.zip')).toBe(true)
+
+  // Wrong java version
+  expect(mandrel.matchesMandrelAsset(linuxAmd64, '17', 'linux', 'amd64', '.tar.gz')).toBe(false)
+
+  // Wrong extension
+  expect(mandrel.matchesMandrelAsset(linuxAmd64, '21', 'linux', 'amd64', '.zip')).toBe(false)
 })
