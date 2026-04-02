@@ -51,7 +51,7 @@ import require$$1$5 from 'tty';
 import { createHmac } from 'node:crypto';
 import fs$1 from 'node:fs';
 
-const ACTION_VERSION = '1.5.1';
+const ACTION_VERSION = '1.5.2';
 const INPUT_VERSION = 'version';
 const INPUT_GDS_TOKEN = 'gds-token';
 const INPUT_JAVA_VERSION = 'java-version';
