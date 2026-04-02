@@ -120,7 +120,8 @@ async function downloadArtifact(gdsToken: string, userAgent: string, artifact: G
     if (err instanceof HTTPError && err.httpStatusCode) {
       if (err.httpStatusCode === 401) {
         throw new Error(
-          `The provided "gds-token" was rejected (reason: "${err.gdsError.message}", opc-request-id: ${err.headers['opc-request-id']})`
+          `The provided "gds-token" was rejected (reason: "${err.gdsError.message}", opc-request-id: ${err.headers['opc-request-id']})`,
+          { cause: err }
         )
       }
     }

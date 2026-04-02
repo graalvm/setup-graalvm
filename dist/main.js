@@ -38467,7 +38467,7 @@ async function downloadArtifact(gdsToken, userAgent, artifact) {
     catch (err) {
         if (err instanceof HTTPError && err.httpStatusCode) {
             if (err.httpStatusCode === 401) {
-                throw new Error(`The provided "gds-token" was rejected (reason: "${err.gdsError.message}", opc-request-id: ${err.headers['opc-request-id']})`);
+                throw new Error(`The provided "gds-token" was rejected (reason: "${err.gdsError.message}", opc-request-id: ${err.headers['opc-request-id']})`, { cause: err });
             }
         }
         throw err;
@@ -38638,7 +38638,7 @@ async function findLatestEABuildDownloadUrl(javaEaVersion) {
         response = await getContents(ORACLE_GRAALVM_REPO_EA_BUILDS, filePath);
     }
     catch (error) {
-        throw new Error(`Unable to resolve download URL for '${javaEaVersion}' (reason: ${error}). Please make sure the java-version is set correctly. ${ERROR_HINT}`);
+        throw new Error(`Unable to resolve download URL for '${javaEaVersion}'. Please make sure the java-version is set correctly. ${ERROR_HINT}`, { cause: error });
     }
     if (Array.isArray(response) || response.type !== 'file' || !response.content) {
         throw new Error(`Unexpected response when resolving download URL for '${javaEaVersion}'. ${ERROR_REQUEST}`);
@@ -38706,9 +38706,9 @@ async function downloadGraalVMJDK(downloadUrl, javaVersion) {
     catch (error) {
         if (error instanceof Error && error.message.includes('404')) {
             // Not Found
-            throw new Error(`Failed to download ${basename(downloadUrl)}. Are you sure java-version: '${javaVersion}' is correct?`);
+            throw new Error(`Failed to download ${basename(downloadUrl)}. Are you sure java-version: '${javaVersion}' is correct?`, { cause: error });
         }
-        throw new Error(`Failed to download ${basename(downloadUrl)} (error: ${error}).`);
+        throw new Error(`Failed to download ${basename(downloadUrl)}.`, { cause: error });
     }
 }
 // Support for GraalVM dev builds
@@ -38799,9 +38799,9 @@ async function downloadGraalVMCELegacy(version, javaVersion) {
     catch (error) {
         if (error instanceof Error && error.message.includes('404')) {
             // Not Found
-            throw new Error(`Failed to download ${graalVMIdentifier}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`);
+            throw new Error(`Failed to download ${graalVMIdentifier}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`, { cause: error });
         }
-        throw new Error(`Failed to download ${graalVMIdentifier} (error: ${error}).`);
+        throw new Error(`Failed to download ${graalVMIdentifier}.`, { cause: error });
     }
 }
 
@@ -82201,7 +82201,7 @@ function getTagFromURI(uri) {
         return parts[parts.length - 2];
     }
     catch (error) {
-        throw new Error(`Failed to extract tag from URI ${uri}: ${error}`);
+        throw new Error(`Failed to extract tag from URI ${uri}`, { cause: error });
     }
 }
 function matchesMandrelAsset(name, javaVersion, platform, arch, extension) {
@@ -82213,7 +82213,7 @@ async function getLatestMandrelReleaseUrl(javaVersion) {
         return await findLatestReleaseWithAsset(MANDREL_REPO, (name) => matchesMandrelAsset(name, javaVersion, JDK_PLATFORM, GRAALVM_ARCH, GRAALVM_FILE_EXTENSION));
     }
     catch (error) {
-        throw new Error(`Failed to find latest Mandrel release for Java ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct? ${error}`);
+        throw new Error(`Failed to find latest Mandrel release for Java ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct?`, { cause: error });
     }
 }
 async function setUpMandrelRelease(version, javaVersion) {
@@ -82229,9 +82229,9 @@ async function downloadMandrelJDK(version, javaVersion) {
     catch (error) {
         if (error instanceof Error && error.message.includes('404')) {
             // Not Found
-            throw new Error(`Failed to download ${basename(downloadUrl)}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`);
+            throw new Error(`Failed to download ${basename(downloadUrl)}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`, { cause: error });
         }
-        throw new Error(`Failed to download ${basename(downloadUrl)} (error: ${error}).`);
+        throw new Error(`Failed to download ${basename(downloadUrl)}.`, { cause: error });
     }
 }
 function determineMandrelIdentifier(version, javaVersion) {

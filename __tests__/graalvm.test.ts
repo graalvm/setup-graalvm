@@ -21,7 +21,7 @@ test('request invalid version/javaVersion', async () => {
       await graalvm.setUpGraalVMRelease('', combination[0], combination[1])
     } catch (err) {
       if (!(err instanceof Error)) {
-        throw new Error(`Unexpected non-Error: ${err}`)
+        throw new Error('Unexpected non-Error.', { cause: err })
       }
       error = err
     }
@@ -38,13 +38,13 @@ test('find version/javaVersion', async () => {
     await graalvm.findLatestGraalVMJDKCEJavaVersion(majorJavaVersion)
   }
 
-  let error = new Error('unexpected')
+  let error
   try {
     await graalvm.findLatestGraalVMJDKCEJavaVersion('11')
     throw new Error('Should not find Java version for 11')
   } catch (err) {
     if (!(err instanceof Error)) {
-      throw new Error(`Unexpected non-Error: ${err}`)
+      throw new Error('Unexpected non-Error', { cause: err })
     }
     error = err
   }
@@ -62,7 +62,7 @@ test('find version/javaVersion', async () => {
     findGraalVMVersion(invalidRelease)
   } catch (err) {
     if (!(err instanceof Error)) {
-      throw new Error(`Unexpected non-Error: ${err}`)
+      throw new Error('Unexpected non-Error', { cause: err })
     }
     error = err
   }
@@ -72,7 +72,7 @@ test('find version/javaVersion', async () => {
     findHighestJavaVersion(latestRelease, 'invalid')
   } catch (err) {
     if (!(err instanceof Error)) {
-      throw new Error(`Unexpected non-Error: ${err}`)
+      throw new Error('Unexpected non-Error', { cause: err })
     }
     error = err
   }
@@ -90,7 +90,7 @@ test('find EA version/javaVersion', async () => {
     await findLatestEABuildDownloadUrl('8-ea')
   } catch (err) {
     if (!(err instanceof Error)) {
-      throw new Error(`Unexpected non-Error: ${err}`)
+      throw new Error('Unexpected non-Error', { cause: err })
     }
     error = err
   }

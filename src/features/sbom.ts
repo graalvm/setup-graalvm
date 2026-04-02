@@ -119,9 +119,7 @@ export async function processSBOM(): Promise<void> {
     const snapshot = convertSBOMToSnapshot(javaVersion, sbomPath, components)
     await submitDependencySnapshot(snapshot)
   } catch (error) {
-    throw new Error(
-      `Failed to process and submit SBOM to the GitHub dependency submission API: ${error instanceof Error ? error.message : String(error)}`
-    )
+    throw new Error('Failed to process and submit SBOM to the GitHub dependency submission API.', { cause: error })
   }
 }
 
@@ -150,7 +148,7 @@ function parseSBOM(jsonString: string): SBOM {
     const sbomData: SBOM = JSON.parse(jsonString)
     return sbomData
   } catch (error) {
-    throw new Error(`Failed to parse SBOM JSON: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error('Failed to parse SBOM JSON.', { cause: error })
   }
 }
 
@@ -264,8 +262,6 @@ async function submitDependencySnapshot(snapshotData: DependencySnapshot): Promi
     })
     core.info('Dependency snapshot submitted successfully.')
   } catch (error) {
-    throw new Error(
-      `Failed to submit dependency snapshot for SBOM: ${error instanceof Error ? error.message : String(error)}`
-    )
+    throw new Error('Failed to submit dependency snapshot for SBOM', { cause: error })
   }
 }
