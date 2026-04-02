@@ -94,7 +94,8 @@ export async function findLatestEABuildDownloadUrl(javaEaVersion: string): Promi
     response = await getContents(ORACLE_GRAALVM_REPO_EA_BUILDS, filePath)
   } catch (error) {
     throw new Error(
-      `Unable to resolve download URL for '${javaEaVersion}' (reason: ${error}). Please make sure the java-version is set correctly. ${c.ERROR_HINT}`
+      `Unable to resolve download URL for '${javaEaVersion}'. Please make sure the java-version is set correctly. ${c.ERROR_HINT}`,
+      { cause: error }
     )
   }
   if (Array.isArray(response) || response.type !== 'file' || !response.content) {
@@ -174,10 +175,11 @@ async function downloadGraalVMJDK(downloadUrl: string, javaVersion: string): Pro
     if (error instanceof Error && error.message.includes('404')) {
       // Not Found
       throw new Error(
-        `Failed to download ${basename(downloadUrl)}. Are you sure java-version: '${javaVersion}' is correct?`
+        `Failed to download ${basename(downloadUrl)}. Are you sure java-version: '${javaVersion}' is correct?`,
+        { cause: error }
       )
     }
-    throw new Error(`Failed to download ${basename(downloadUrl)} (error: ${error}).`)
+    throw new Error(`Failed to download ${basename(downloadUrl)}.`, { cause: error })
   }
 }
 
@@ -286,9 +288,10 @@ async function downloadGraalVMCELegacy(version: string, javaVersion: string): Pr
     if (error instanceof Error && error.message.includes('404')) {
       // Not Found
       throw new Error(
-        `Failed to download ${graalVMIdentifier}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`
+        `Failed to download ${graalVMIdentifier}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`,
+        { cause: error }
       )
     }
-    throw new Error(`Failed to download ${graalVMIdentifier} (error: ${error}).`)
+    throw new Error(`Failed to download ${graalVMIdentifier}.`, { cause: error })
   }
 }

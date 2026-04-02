@@ -95,7 +95,7 @@ async function expectLatestToFail(pattern: string) {
     throw new Error(`findLatest(${pattern}) should have failed but returned ${result}`)
   } catch (err) {
     if (!(err instanceof Error)) {
-      throw new Error(`Unexpected non-Error: ${err}`)
+      throw new Error('Unexpected non-Error', { cause: err })
     }
     expect(err.message).toContain(`Unable to find the latest version for JDK${pattern}`)
   }

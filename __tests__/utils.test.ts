@@ -22,7 +22,7 @@ test('convert invalid version', async () => {
       toSemVer(input)
     } catch (err) {
       if (!(err instanceof Error)) {
-        throw new Error(`Unexpected non-Error: ${err}`)
+        throw new Error('Unexpected non-Error', { cause: err })
       }
       error = err
     }

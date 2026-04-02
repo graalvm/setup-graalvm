@@ -41,7 +41,7 @@ function getTagFromURI(uri: string): string {
   try {
     return parts[parts.length - 2]
   } catch (error) {
-    throw new Error(`Failed to extract tag from URI ${uri}: ${error}`)
+    throw new Error(`Failed to extract tag from URI ${uri}`, { cause: error })
   }
 }
 
@@ -63,7 +63,8 @@ export async function getLatestMandrelReleaseUrl(javaVersion: string): Promise<s
     )
   } catch (error) {
     throw new Error(
-      `Failed to find latest Mandrel release for Java ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct? ${error}`
+      `Failed to find latest Mandrel release for Java ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct?`,
+      { cause: error }
     )
   }
 }
@@ -84,10 +85,11 @@ async function downloadMandrelJDK(version: string, javaVersion: string): Promise
       throw new Error(
         `Failed to download ${basename(
           downloadUrl
-        )}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`
+        )}. Are you sure version: '${version}' and java-version: '${javaVersion}' are correct?`,
+        { cause: error }
       )
     }
-    throw new Error(`Failed to download ${basename(downloadUrl)} (error: ${error}).`)
+    throw new Error(`Failed to download ${basename(downloadUrl)}.`, { cause: error })
   }
 }
 

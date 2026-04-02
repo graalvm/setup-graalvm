@@ -18,7 +18,7 @@ test('request invalid version/javaVersion combination', async () => {
       await mandrel.setUpMandrel(combination[0], combination[1])
     } catch (err) {
       if (!(err instanceof Error)) {
-        throw new Error(`Unexpected non-Error: ${err}`)
+        throw new Error(`Unexpected non-Error.`, { cause: err })
       }
       error = err
     }
@@ -38,7 +38,7 @@ test('request invalid version', async () => {
       await mandrel.setUpMandrel(combination[0], combination[1])
     } catch (err) {
       if (!(err instanceof Error)) {
-        throw new Error(`Unexpected non-Error: ${err}`)
+        throw new Error('Unexpected non-Error.', { cause: err })
       }
       error = err
     }
