@@ -5,7 +5,8 @@ import { VERSION_DEV } from './constants.js'
 
 // Keep in sync with https://github.com/actions/virtual-environments
 const KNOWN_VISUAL_STUDIO_INSTALLATIONS = [
-  'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise', // 'windows-2022' and 'windows-latest'
+  'C:\\Program Files\\Microsoft Visual Studio\\2026\\Enterprise', // 'windows-2025' and 'windows-latest'
+  'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise', // 'windows-2022'
   'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise', // 'windows-2019'
   'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise' // 'windows-2016' (deprecated and removed)
 ]
