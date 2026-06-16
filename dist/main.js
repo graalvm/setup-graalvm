@@ -83341,19 +83341,7 @@ function findVcvarsallPath() {
     }
     throw new Error('Failed to find vcvarsall.bat');
 }
-function needsWindowsEnvironmentSetup(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater) {
-    if (javaVersion === VERSION_DEV || graalVMVersion === VERSION_DEV) {
-        return false; // no longer required in dev builds
-    }
-    else if (isGraalVMforJDK17OrLater) {
-        return false; // no longer required in GraalVM for JDK 17 and later.
-    }
-    return true;
-}
-function setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater) {
-    if (!needsWindowsEnvironmentSetup(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater)) {
-        return;
-    }
+function setUpWindowsEnvironment() {
     startGroup('Updating Windows environment...');
     const vcvarsallPath = findVcvarsallPath();
     debug(`Calling "${vcvarsallPath}"...`);
@@ -83460,7 +83448,7 @@ async function run() {
         const enableNativeImageMusl = getInput(INPUT_NI_MUSL) === 'true';
         const isGraalVMforJDK17OrLater = distribution.length > 0 || graalVMVersion.length == 0;
         if (IS_WINDOWS$9) {
-            setUpWindowsEnvironment(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater);
+            setUpWindowsEnvironment();
         }
         await setUpDependencies(components);
         if (enableNativeImageMusl) {

@@ -1,8 +1,6 @@
 import * as core from '@actions/core'
 import { execSync } from 'child_process'
 import { existsSync } from 'fs'
-import { VERSION_DEV } from './constants.js'
-
 // Keep in sync with https://github.com/actions/virtual-environments
 const KNOWN_VISUAL_STUDIO_INSTALLATIONS = [
   'C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise', // 'windows-2025' and 'windows-latest'
@@ -26,28 +24,7 @@ function findVcvarsallPath(): string {
   throw new Error('Failed to find vcvarsall.bat')
 }
 
-export function needsWindowsEnvironmentSetup(
-  javaVersion: string,
-  graalVMVersion: string,
-  isGraalVMforJDK17OrLater: boolean
-): boolean {
-  if (javaVersion === VERSION_DEV || graalVMVersion === VERSION_DEV) {
-    return false // no longer required in dev builds
-  } else if (isGraalVMforJDK17OrLater) {
-    return false // no longer required in GraalVM for JDK 17 and later.
-  }
-  return true
-}
-
-export function setUpWindowsEnvironment(
-  javaVersion: string,
-  graalVMVersion: string,
-  isGraalVMforJDK17OrLater: boolean
-): void {
-  if (!needsWindowsEnvironmentSetup(javaVersion, graalVMVersion, isGraalVMforJDK17OrLater)) {
-    return
-  }
-
+export function setUpWindowsEnvironment(): void {
   core.startGroup('Updating Windows environment...')
 
   const vcvarsallPath = findVcvarsallPath()
