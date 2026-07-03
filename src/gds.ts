@@ -20,6 +20,13 @@ interface GDSArtifactsResponse {
 interface GDSArtifact {
   readonly id: string
   readonly checksum: string
+  readonly metadata: GDSMetadata[] | null
+}
+
+interface GDSMetadata {
+  readonly key: string
+  readonly value: string
+  readonly description: string
 }
 
 interface GDSErrorResponse {
@@ -27,26 +34,90 @@ interface GDSErrorResponse {
   readonly message: string
 }
 
-export async function downloadGraalVM(gdsToken: string, javaVersion: string): Promise<string> {
-  const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
-  const baseArtifact = await fetchArtifact(userAgent, 'isBase:True', javaVersion)
+// Support for Oracle GraalVM innovation releases
+
+export async function downloadGraalVMViaGDS(
+  gdsToken: string,
+  graalVMVersion: string,
+  jdkVersion: string
+): Promise<string> {
+  const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; jdk:${jdkVersion})`
+  const baseArtifact = await fetchArtifact(userAgent, graalVMVersion, jdkVersion)
   return downloadArtifact(gdsToken, userAgent, baseArtifact)
 }
 
-export async function downloadGraalVMEELegacy(gdsToken: string, version: string, javaVersion: string): Promise<string> {
+export async function fetchArtifact(
+  userAgent: string,
+  graalVMVersion: string,
+  jdkVersion: string
+): Promise<GDSArtifact> {
+  const http = new httpClient.HttpClient(userAgent)
+
+  let majorJavaVersion
+  if (semver.valid(jdkVersion)) {
+    majorJavaVersion = semver.major(jdkVersion)
+  } else {
+    majorJavaVersion = jdkVersion
+  }
+
+  const catalogOS = c.IS_MACOS ? 'macos' : c.GRAALVM_PLATFORM
+  const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum&sortBy=m:java&sortOrder=DESC`
+  core.debug(`Requesting ${requestUrl}`)
+  const response = await http.get(requestUrl, { accept: 'application/json' })
+  if (response.message.statusCode !== 200) {
+    throw new Error(`Unable to find GraalVM ${graalVMVersion}. Are you sure version: '${graalVMVersion}' is correct?`)
+  }
+  const artifactResponse = JSON.parse(await response.readBody()) as GDSArtifactsResponse
+
+  for (const artifact of artifactResponse.items) {
+    if (artifact.metadata === null) {
+      core.warning(`Artifact is missing metadata. ${c.ERROR_REQUEST}`)
+      continue
+    }
+    for (const metadata of artifact.metadata) {
+      if (metadata.key === 'version') {
+        if (metadata.value.includes(graalVMVersion)) {
+          return artifact
+        }
+        break
+      }
+    }
+  }
+  throw new Error(
+    `Unable to find GDS artifact. Are you sure version: '${graalVMVersion}' and java-version: '${jdkVersion}' are correct?`
+  )
+}
+
+// Support for GraalVM EE
+
+export async function downloadGraalVMViaGDSByJavaVersion(gdsToken: string, javaVersion: string): Promise<string> {
+  const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
+  const baseArtifact = await fetchArtifactByJavaVersion(userAgent, 'isBase:True', javaVersion)
+  return downloadArtifact(gdsToken, userAgent, baseArtifact)
+}
+
+export async function downloadGraalVMViaGDSByJavaVersionEELegacy(
+  gdsToken: string,
+  version: string,
+  javaVersion: string
+): Promise<string> {
   const userAgent = `GraalVMGitHubAction/${c.ACTION_VERSION} (arch:${c.GRAALVM_ARCH}; os:${c.GRAALVM_PLATFORM}; java:${javaVersion})`
   const baseArtifact = await fetchArtifactEE(userAgent, 'isBase:True', version, javaVersion)
   return downloadArtifact(gdsToken, userAgent, baseArtifact)
 }
 
-export async function fetchArtifact(userAgent: string, metadata: string, javaVersion: string): Promise<GDSArtifact> {
+export async function fetchArtifactByJavaVersion(
+  userAgent: string,
+  metadata: string,
+  javaVersion: string
+): Promise<GDSArtifact> {
   const http = new httpClient.HttpClient(userAgent)
 
   let filter
   if (javaVersion.includes('.')) {
     filter = `metadata=version:${javaVersion}`
   } else {
-    filter = `sortBy=timeCreated&sortOrder=DESC&limit=1` // latest and only one item
+    filter = `sortBy=m:java&sortOrder=DESC&limit=1` // latest and only one item
   }
 
   let majorJavaVersion

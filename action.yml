@@ -6,7 +6,7 @@ branding:
   color: 'blue'
 inputs:
   java-version:
-    required: true
+    required: false
     description: 'Java version. See examples of supported syntax in the README file.'
   java-package:
     description: 'The package type (jdk or jdk+fx). Currently applies to Liberica only.'
