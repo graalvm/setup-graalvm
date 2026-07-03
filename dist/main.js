@@ -38404,14 +38404,6 @@ async function getContents(repo, path) {
         path
     })).data;
 }
-async function getLastReleases(owner, repo) {
-    const octokit = getOctokit();
-    return (await octokit.request('GET /repos/{owner}/{repo}/releases', {
-        owner,
-        repo,
-        per_page: 100
-    })).data;
-}
 async function getTaggedRelease(owner, repo, tag) {
     const octokit = getOctokit();
     return (await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
@@ -38915,23 +38907,46 @@ async function setUpGraalVMJDKCE(graalVMVersionOrDev, javaVersionOrEmpty) {
     }
     const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semverExports.coerce(graalVMVersionOrDev)?.major;
     const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev);
-    const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion, jdkVersion);
+    const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion);
+    if (githubRelease.name?.includes(jdkVersion)) {
+        warning(`JDK version does not match GraalVM CE release. Are you sure java-version: '${jdkVersion}' is correct?`);
+    }
     const downloadUrl = findAssetDownloadUrl(githubRelease);
     const toolName = determineLegacyToolName(false, graalVMVersion, jdkVersion);
     const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion);
     return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion);
 }
-async function getGraalVMCEGitHubRelease(graalVMVersion, jdkVersion) {
-    if (semverExports.valid(graalVMVersion)) {
-        return await getTaggedRelease(GRAALVM_GH_USER, GRAALVM_RELEASES_REPO, GRAALVM_GRAAL_TAG_PREFIX + graalVMVersion);
+async function getGraalVMCEGitHubRelease(graalVMVersion) {
+    const releaseTag = await findReleaseTag(graalVMVersion);
+    return await getTaggedRelease(GRAALVM_GH_USER, GRAALVM_RELEASES_REPO, releaseTag);
+}
+async function findReleaseTag(graalVMVersion) {
+    let version = await findLatestGraalVMCEVersion(graalVMVersion, GRAALVM_GRAAL_TAG_PREFIX);
+    if (version !== null) {
+        return GRAALVM_GRAAL_TAG_PREFIX + version;
     }
-    const latestReleases = await getLastReleases(GRAALVM_GH_USER, GRAALVM_RELEASES_REPO);
-    for (const release of latestReleases) {
-        if (release.tag_name.includes(graalVMVersion)) {
-            return release;
+    version = await findLatestGraalVMCEVersion(graalVMVersion, GRAALVM_JDK_TAG_PREFIX);
+    if (version !== null) {
+        return GRAALVM_JDK_TAG_PREFIX + version;
+    }
+    throw new Error(`Unable to find the latest GraalVM version for '${graalVMVersion}'. Please make sure the version is set correctly. ${ERROR_HINT}`);
+}
+async function findLatestGraalVMCEVersion(graalVMVersion, tagPrefix) {
+    const matchingRefs = await getMatchingTags(GRAALVM_GH_USER, GRAALVM_RELEASES_REPO, `${tagPrefix}${graalVMVersion}`);
+    const lowestNonExistingVersion = '0.0.1';
+    let highestVersion = lowestNonExistingVersion;
+    const versionNumberStartIndex = `refs/tags/${tagPrefix}`.length;
+    for (const matchingRef of matchingRefs) {
+        const currentVersion = matchingRef.ref.substring(versionNumberStartIndex);
+        if (!semverExports.valid(currentVersion)) {
+            warning(`Skipping unexpected GraalVM CE release ${currentVersion}. ${ERROR_REQUEST}`);
+            continue;
+        }
+        if (semverExports.gt(currentVersion, highestVersion)) {
+            highestVersion = currentVersion;
         }
     }
-    throw new Error(`Unable to find GitHub release. Are you sure version: '${graalVMVersion}' and java-version: '${jdkVersion}' correct?`);
+    return highestVersion !== lowestNonExistingVersion ? highestVersion : null;
 }
 function findAssetDownloadUrl(release) {
     for (const asset of release.assets) {

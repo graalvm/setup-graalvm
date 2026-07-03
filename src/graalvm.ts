@@ -8,8 +8,7 @@ import {
   getContents,
   getLatestRelease,
   getMatchingTags,
-  getTaggedRelease,
-  getLastReleases
+  getTaggedRelease
 } from './utils.js'
 import {
   downloadGraalVMViaGDS,
@@ -60,29 +59,57 @@ export async function setUpGraalVMJDKCE(graalVMVersionOrDev: string, javaVersion
   const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semver.coerce(graalVMVersionOrDev)?.major
   const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev)
 
-  const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion, jdkVersion)
+  const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion)
+  if (githubRelease.name?.includes(jdkVersion)) {
+    core.warning(
+      `JDK version does not match GraalVM CE release. Are you sure java-version: '${jdkVersion}' is correct?`
+    )
+  }
   const downloadUrl = findAssetDownloadUrl(githubRelease)
   const toolName = determineLegacyToolName(false, graalVMVersion, jdkVersion)
   const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion)
   return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion)
 }
 
-async function getGraalVMCEGitHubRelease(
-  graalVMVersion: string,
-  jdkVersion: string
-): Promise<c.LatestReleaseResponseData> {
-  if (semver.valid(graalVMVersion)) {
-    return await getTaggedRelease(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO, GRAALVM_GRAAL_TAG_PREFIX + graalVMVersion)
+async function getGraalVMCEGitHubRelease(graalVMVersion: string): Promise<c.LatestReleaseResponseData> {
+  const releaseTag = await findReleaseTag(graalVMVersion)
+  return await getTaggedRelease(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO, releaseTag)
+}
+
+async function findReleaseTag(graalVMVersion: string) {
+  let version = await findLatestGraalVMCEVersion(graalVMVersion, GRAALVM_GRAAL_TAG_PREFIX)
+  if (version !== null) {
+    return GRAALVM_GRAAL_TAG_PREFIX + version
   }
-  const latestReleases = await getLastReleases(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO)
-  for (const release of latestReleases) {
-    if (release.tag_name.includes(graalVMVersion)) {
-      return release
-    }
+  version = await findLatestGraalVMCEVersion(graalVMVersion, GRAALVM_JDK_TAG_PREFIX)
+  if (version !== null) {
+    return GRAALVM_JDK_TAG_PREFIX + version
   }
   throw new Error(
-    `Unable to find GitHub release. Are you sure version: '${graalVMVersion}' and java-version: '${jdkVersion}' correct?`
+    `Unable to find the latest GraalVM version for '${graalVMVersion}'. Please make sure the version is set correctly. ${c.ERROR_HINT}`
   )
+}
+
+export async function findLatestGraalVMCEVersion(graalVMVersion: string, tagPrefix: string): Promise<string | null> {
+  const matchingRefs = await getMatchingTags(
+    c.GRAALVM_GH_USER,
+    c.GRAALVM_RELEASES_REPO,
+    `${tagPrefix}${graalVMVersion}`
+  )
+  const lowestNonExistingVersion = '0.0.1'
+  let highestVersion = lowestNonExistingVersion
+  const versionNumberStartIndex = `refs/tags/${tagPrefix}`.length
+  for (const matchingRef of matchingRefs) {
+    const currentVersion = matchingRef.ref.substring(versionNumberStartIndex)
+    if (!semver.valid(currentVersion)) {
+      core.warning(`Skipping unexpected GraalVM CE release ${currentVersion}. ${c.ERROR_REQUEST}`)
+      continue
+    }
+    if (semver.gt(currentVersion, highestVersion)) {
+      highestVersion = currentVersion
+    }
+  }
+  return highestVersion !== lowestNonExistingVersion ? highestVersion : null
 }
 
 function findAssetDownloadUrl(release: c.LatestReleaseResponseData) {
