@@ -35,7 +35,7 @@ jobs:
         env:
           INPUT_GITHUB_TOKEN: ${{ github.token }} # for core.getInput()
 
-  test-action:
+  test-action-graalvm-version:
     name: GraalVM
     runs-on: ${{ matrix.os }}
     env:
@@ -43,7 +43,79 @@ jobs:
       PASSES_GDS_TOKEN_CHECK: ${{ !matrix.set-gds-token || secrets.GDS_TOKEN != '' }}
     strategy:
       matrix:
-        java-version: ['25', '21', '17', 'dev']
+        version: [
+            '25.1',
+            '25i1', # innovation release
+            '25.1.3', # full version
+            '25.0' # LTS release
+          ]
+        distribution: ['graalvm', 'graalvm-community']
+        os: [
+            ubuntu-latest, # Linux on Intel
+            ubuntu-22.04-arm, # Linux on arm64
+            macos-latest, # macOS on Apple silicon
+            windows-latest
+          ]
+        set-gds-token: [false]
+        include:
+          # Latest EA build
+          - version: 'latest-ea'
+            distribution: 'graalvm'
+            os: ubuntu-latest
+          # Latest dev build
+          - version: 'dev'
+            distribution: 'graalvm-community'
+            os: ubuntu-latest
+          # with GDS token
+          - version: '25.0'
+            distribution: 'graalvm'
+            os: ubuntu-latest
+            set-gds-token: true
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Run setup-graalvm action
+        uses: ./
+        with:
+          version: ${{ matrix.version }}
+          distribution: ${{ matrix.distribution }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
+      - name: Check environment
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          if [[ "${{ matrix.version }}" == "dev" ]]; then
+            [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
+          else
+            [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
+          fi
+          echo "JAVA_HOME: $JAVA_HOME"
+          java --version
+          java --version | grep "GraalVM" || exit 34
+          native-image --version
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
+      - name: Check Windows environment
+        run: |
+          echo "GRAALVM_HOME: $env:GRAALVM_HOME"
+          echo "JAVA_HOME: $env:JAVA_HOME"
+          java --version
+          native-image --version
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
+
+  test-action-java-version:
+    name: GraalVM
+    runs-on: ${{ matrix.os }}
+    env:
+      # Skip builds that require a GDS token but have no access to one (e.g., secrets are unavailable in PR runs)
+      PASSES_GDS_TOKEN_CHECK: ${{ !matrix.set-gds-token || secrets.GDS_TOKEN != '' }}
+    strategy:
+      matrix:
+        java-version: [
+            '25',
+            '21',
+            '17', # LTS
+            'dev' # dev build
+          ]
         distribution: ['graalvm', 'graalvm-community']
         os: [
             ubuntu-latest, # Linux on Intel
@@ -99,6 +171,7 @@ jobs:
           components: ${{ matrix.components }}
           gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
         if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
+
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
@@ -121,7 +194,7 @@ jobs:
         if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
 
   test-action-ce: # make sure the action works on a clean machine without building
-    needs: test-action
+    needs: [test-action-graalvm-version, test-action-java-version]
     name: CE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -189,7 +262,7 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
 
   test-action-ee:
-    needs: test-action
+    needs: [test-action-graalvm-version, test-action-java-version]
     name: EE ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.os }}
@@ -242,7 +315,7 @@ jobs:
         if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os == 'Windows' }}
 
   test-action-mandrel:
-    needs: test-action
+    needs: [test-action-graalvm-version, test-action-java-version]
     name: ${{ matrix.version }} + JDK${{ matrix.java-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -299,7 +372,7 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
 
   test-action-liberica:
-    needs: test-action
+    needs: [test-action-graalvm-version, test-action-java-version]
     name: Liberica (${{ matrix.java-version }}, '${{ matrix.java-package }}', ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:

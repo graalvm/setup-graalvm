@@ -8,9 +8,14 @@ import {
   getContents,
   getLatestRelease,
   getMatchingTags,
-  getTaggedRelease
+  getTaggedRelease,
+  getLastReleases
 } from './utils.js'
-import { downloadGraalVM, downloadGraalVMEELegacy } from './gds.js'
+import {
+  downloadGraalVMViaGDS,
+  downloadGraalVMViaGDSByJavaVersion,
+  downloadGraalVMViaGDSByJavaVersionEELegacy
+} from './gds.js'
 import { basename } from 'path'
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm'
@@ -19,11 +24,88 @@ const ORACLE_GRAALVM_REPO_EA_BUILDS = 'oracle-graalvm-ea-builds'
 const ORACLE_GRAALVM_REPO_EA_BUILDS_LATEST_SYMBOL = 'latest-ea'
 const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds'
 const GRAALVM_JDK_TAG_PREFIX = 'jdk-'
-const GRAALVM_TAG_PREFIX = 'vm-'
+const GRAALVM_GRAAL_TAG_PREFIX = 'graal-'
+const GRAALVM_VM_TAG_PREFIX = 'vm-'
+
+// Support for GraalVM innovation releases and later
+
+export async function setUpGraalVMJDK(
+  graalVMVersionOrEA: string,
+  javaVersionOrEmpty: string,
+  gdsToken: string
+): Promise<string> {
+  const toolName = determineToolName(graalVMVersionOrEA, false)
+  if (graalVMVersionOrEA.endsWith('-ea')) {
+    // EA builds
+    const downloadUrl = await findLatestEABuildDownloadUrl(graalVMVersionOrEA)
+    const filename = basename(downloadUrl)
+    const resolvedVersion = semver.valid(semver.coerce(filename))
+    if (!resolvedVersion) {
+      throw new Error(`Unable to determine resolved version based on '${filename}'. ${c.ERROR_REQUEST}`)
+    }
+    const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, resolvedVersion)
+    return downloadExtractAndCacheJDK(downloader, toolName, resolvedVersion)
+  }
+  const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrEA)
+  const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semver.coerce(graalVMVersion)?.major
+  const downloader = async () => downloadGraalVMViaGDS(gdsToken, graalVMVersion, jdkVersion)
+  return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion)
+}
+
+export async function setUpGraalVMJDKCE(graalVMVersionOrDev: string, javaVersionOrEmpty: string): Promise<string> {
+  if (graalVMVersionOrDev === c.VERSION_DEV) {
+    // dev builds
+    return setUpGraalVMJDKDevBuild()
+  }
+  const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semver.coerce(graalVMVersionOrDev)?.major
+  const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev)
+
+  const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion, jdkVersion)
+  const downloadUrl = findAssetDownloadUrl(githubRelease)
+  const toolName = determineLegacyToolName(false, graalVMVersion, jdkVersion)
+  const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion)
+  return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion)
+}
+
+async function getGraalVMCEGitHubRelease(
+  graalVMVersion: string,
+  jdkVersion: string
+): Promise<c.LatestReleaseResponseData> {
+  if (semver.valid(graalVMVersion)) {
+    return await getTaggedRelease(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO, GRAALVM_GRAAL_TAG_PREFIX + graalVMVersion)
+  }
+  const latestReleases = await getLastReleases(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO)
+  for (const release of latestReleases) {
+    if (release.tag_name.includes(graalVMVersion)) {
+      return release
+    }
+  }
+  throw new Error(
+    `Unable to find GitHub release. Are you sure version: '${graalVMVersion}' and java-version: '${jdkVersion}' correct?`
+  )
+}
+
+function findAssetDownloadUrl(release: c.LatestReleaseResponseData) {
+  for (const asset of release.assets) {
+    if (asset.name.endsWith(`_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin${c.GRAALVM_FILE_EXTENSION}`)) {
+      return asset.browser_download_url
+    }
+  }
+  throw new Error(`Could not find GitHub assert. ${c.ERROR_REQUEST}`)
+}
+
+// Turns '25i1' into '25.1', keeps everything else
+function normalizeInnovationReleaseVersions(version: string): string {
+  if (version.length === 4 && version.indexOf('i') === 2) {
+    return version.replace('i', '.')
+  } else {
+    return version
+  }
+}
 
 // Support for GraalVM for JDK 17 and later
 
-export async function setUpGraalVMJDK(javaVersionOrDev: string, gdsToken: string): Promise<string> {
+export async function setUpGraalVMJDKByJavaVersion(javaVersionOrDev: string, gdsToken: string): Promise<string> {
   if (javaVersionOrDev === c.VERSION_DEV) {
     return setUpGraalVMJDKDevBuild()
   }
@@ -34,23 +116,23 @@ export async function setUpGraalVMJDK(javaVersionOrDev: string, gdsToken: string
     core.warning(
       'This build uses the last update of Oracle GraalVM for JDK 17 under the GFTC. More details: https://github.com/marketplace/actions/github-action-for-graalvm#notes-on-oracle-graalvm-for-jdk-17'
     )
-    return setUpGraalVMJDK('17.0.12', gdsToken)
+    return setUpGraalVMJDKByJavaVersion('17.0.12', gdsToken)
   }
   if (c.IS_MACOS && c.JDK_ARCH === 'x64') {
     if (javaVersionOrDev === '25') {
       core.warning('This build uses Oracle GraalVM for JDK 25.0.1, the last available JDK 25 build for macOS Intel.')
-      return setUpGraalVMJDK('25.0.1', gdsToken)
+      return setUpGraalVMJDKByJavaVersion('25.0.1', gdsToken)
     } else if (javaVersionOrDev === '21') {
       core.warning('This build uses Oracle GraalVM for JDK 21.0.9, the last available JDK 21 build for macOS Intel.')
-      return setUpGraalVMJDK('21.0.9', gdsToken)
+      return setUpGraalVMJDKByJavaVersion('21.0.9', gdsToken)
     } else if (javaVersionOrDev === '17') {
       core.warning('This build uses Oracle GraalVM for JDK 17.0.17, the last available JDK 17 build for macOS Intel.')
-      return setUpGraalVMJDK('17.0.17', gdsToken)
+      return setUpGraalVMJDKByJavaVersion('17.0.17', gdsToken)
     }
   }
   if (isTokenProvided) {
     // Download from GDS
-    const downloader = async () => downloadGraalVM(gdsToken, javaVersion)
+    const downloader = async () => downloadGraalVMViaGDSByJavaVersion(gdsToken, javaVersion)
     return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
   }
   // Download from oracle.com
@@ -83,7 +165,7 @@ export async function setUpGraalVMJDK(javaVersionOrDev: string, gdsToken: string
   } else {
     downloadUrl = `${GRAALVM_DL_BASE}/${javaVersion}/latest/${downloadName}${c.GRAALVM_FILE_EXTENSION}`
   }
-  const downloader = async () => downloadGraalVMJDK(downloadUrl, javaVersion)
+  const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, javaVersion)
   return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
 }
 
@@ -118,13 +200,13 @@ export async function findLatestEABuildDownloadUrl(javaEaVersion: string): Promi
   return `${latestVersion.download_base_url}${file.filename}`
 }
 
-export async function setUpGraalVMJDKCE(javaVersionOrDev: string): Promise<string> {
+export async function setUpGraalVMJDKCEByJavaVersion(javaVersionOrDev: string): Promise<string> {
   if (javaVersionOrDev === c.VERSION_DEV) {
     return setUpGraalVMJDKDevBuild()
   }
   if (c.IS_MACOS && c.JDK_ARCH === 'x64' && javaVersionOrDev === '25') {
     core.warning('This build uses GraalVM CE for JDK 25.0.1, the last available JDK 25 build for macOS Intel.')
-    return setUpGraalVMJDKCE('25.0.1')
+    return setUpGraalVMJDKCEByJavaVersion('25.0.1')
   }
   let javaVersion = javaVersionOrDev
   if (!javaVersion.includes('.')) {
@@ -137,7 +219,7 @@ export async function setUpGraalVMJDKCE(javaVersionOrDev: string): Promise<strin
   }
   const toolName = determineToolName(javaVersion, true)
   const downloadUrl = `${GRAALVM_CE_DL_BASE}/jdk-${javaVersion}/${toolName}${c.GRAALVM_FILE_EXTENSION}`
-  const downloader = async () => downloadGraalVMJDK(downloadUrl, javaVersion)
+  const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, javaVersion)
   return downloadExtractAndCacheJDK(downloader, toolName, javaVersion)
 }
 
@@ -168,7 +250,7 @@ function determineToolName(javaVersion: string, isCommunity: boolean) {
   return `graalvm${isCommunity ? '-community' : ''}-jdk-${javaVersion}_${c.JDK_PLATFORM}-${c.JDK_ARCH}_bin`
 }
 
-async function downloadGraalVMJDK(downloadUrl: string, javaVersion: string): Promise<string> {
+async function downloadGraalVMByJavaVersionJDK(downloadUrl: string, javaVersion: string): Promise<string> {
   try {
     return await downloadFile(downloadUrl)
   } catch (error) {
@@ -224,7 +306,7 @@ export async function setUpGraalVMLatest_22_X(gdsToken: string, javaVersion: str
   const latestRelease = await getTaggedRelease(
     c.GRAALVM_GH_USER,
     c.GRAALVM_RELEASES_REPO,
-    GRAALVM_TAG_PREFIX + lockedVersion
+    GRAALVM_VM_TAG_PREFIX + lockedVersion
   )
   const version = findGraalVMVersion(latestRelease)
   return setUpGraalVMRelease(gdsToken, version, javaVersion)
@@ -232,10 +314,10 @@ export async function setUpGraalVMLatest_22_X(gdsToken: string, javaVersion: str
 
 export function findGraalVMVersion(release: c.LatestReleaseResponseData) {
   const tag_name = release.tag_name
-  if (!tag_name.startsWith(GRAALVM_TAG_PREFIX)) {
+  if (!tag_name.startsWith(GRAALVM_VM_TAG_PREFIX)) {
     throw new Error(`Could not find latest GraalVM release: ${tag_name}`)
   }
-  return tag_name.substring(GRAALVM_TAG_PREFIX.length, tag_name.length)
+  return tag_name.substring(GRAALVM_VM_TAG_PREFIX.length, tag_name.length)
 }
 
 export async function setUpGraalVMRelease(gdsToken: string, version: string, javaVersion: string): Promise<string> {
@@ -243,9 +325,9 @@ export async function setUpGraalVMRelease(gdsToken: string, version: string, jav
   const toolName = determineLegacyToolName(isEE, version, javaVersion)
   let downloader: () => Promise<string>
   if (isEE) {
-    downloader = async () => downloadGraalVMEELegacy(gdsToken, version, javaVersion)
+    downloader = async () => downloadGraalVMViaGDSByJavaVersionEELegacy(gdsToken, version, javaVersion)
   } else {
-    downloader = async () => downloadGraalVMCELegacy(version, javaVersion)
+    downloader = async () => downloadGraalVMByJavaVersionCELegacy(version, javaVersion)
   }
   return downloadExtractAndCacheJDK(downloader, toolName, version)
 }
@@ -279,9 +361,9 @@ function determineLegacyToolName(isEE: boolean, version: string, javaVersion: st
   return `graalvm-${infix}-java${javaVersion}-${c.GRAALVM_PLATFORM}`
 }
 
-async function downloadGraalVMCELegacy(version: string, javaVersion: string): Promise<string> {
+async function downloadGraalVMByJavaVersionCELegacy(version: string, javaVersion: string): Promise<string> {
   const graalVMIdentifier = determineGraalVMLegacyIdentifier(false, version, javaVersion)
-  const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
+  const downloadUrl = `${GRAALVM_CE_DL_BASE}/${GRAALVM_VM_TAG_PREFIX}${version}/${graalVMIdentifier}${c.GRAALVM_FILE_EXTENSION}`
   try {
     return await downloadFile(downloadUrl)
   } catch (error) {

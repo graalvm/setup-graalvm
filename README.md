@@ -26,10 +26,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '25'      # See 'Options' for more details
+          version: '25.1'         # See 'Options' for more details
           distribution: 'graalvm' # See 'Supported distributions' for available options
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Example step
@@ -57,7 +57,7 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: graalvm/setup-graalvm@v1
         with:
@@ -80,6 +80,23 @@ jobs:
           path: helloworld*
 ```
 
+### Template for GraalVM innovation releases
+
+```yml
+name: Oracle GraalVM Innovation Release build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          version: '25.1'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
 ### Template for Oracle GraalVM Early Access (EA) builds
 
 ```yml
@@ -89,7 +106,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: graalvm/setup-graalvm@v1
         with:
           java-version: '25e1-ea' # or 'latest-ea' for the latest Java version available
@@ -127,7 +144,7 @@ jobs:
       build:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v4
+          - uses: actions/checkout@v6
           - uses: graalvm/setup-graalvm@v1
             with:
               distribution: 'graalvm'
@@ -159,7 +176,7 @@ jobs:
       build:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v4
+          - uses: actions/checkout@v6
           - uses: graalvm/setup-graalvm@v1
             with:
               version: '22.3.0'
@@ -194,7 +211,8 @@ This actions can be configured with the following options:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`<br>*(required)* | n/a | Java version <ul><li>major versions: `'25'`, `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'21.0.3'`, `'17.0.11'`</li><li>early access (EA) builds: `'25e1-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'` *(requires `distribution: 'graalvm-community'`)*</li></ul> |
+| `java-version`  | `''`     | Java version <ul><li>major versions: `'25'`, `'21'`, `'17'`, `'11'`, `'8'`</li><li>innovation releases: `'25i1'`</li><li>specific versions: `'25.0.3'`, `'21.0.3'`</li><li>early access (EA) builds: `'25e1-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'` *(requires `distribution: 'graalvm-community'`)*</li></ul> |
+| `version`       | `''`     | `X.Y` (e.g., `25.1`) for GraalVM innovation releases starting 25.1<br>`X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release. |
 | `distribution`  | `'graalvm'` | GraalVM distribution (see [supported distributions](#supported-distributions)) |
 | `java-package`  | `'jdk'` | The package type (`'jdk'` or `'jdk+fx'`). Currently applies to Liberica only. |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
@@ -207,7 +225,6 @@ This actions can be configured with the following options:
 | `native-image-pr-reports-update-existing` *) | `'false'` | Instead of posting another comment, update an existing PR comment with the latest Native Image build report. Requires `native-image-pr-reports` to be `true`. |
 | `native-image-enable-sbom` | `'false'` | If set to `'true'`, generate a minimal SBOM based on the Native Image static analysis and submit it to GitHub's dependency submission API. This enables the [dependency graph feature](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-the-dependency-graph) for dependency tracking and vulnerability analysis. Requires `write` permissions for the [`contents` scope][gha-permissions] and the dependency graph to be actived (on by default for public repositories - see [how to activate](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/configuring-the-dependency-graph#enabling-and-disabling-the-dependency-graph-for-a-private-repository)). Only available in Oracle GraalVM for JDK 24 or later. |
 | `components`    | `''`     | Comma-separated list of GraalVM components (e.g., `native-image` or `ruby,nodejs`) that will be installed by the [GraalVM Updater][gu]. |
-| `version` | `''` | `X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release. |
 | `gds-token`     | `''`     Download token for the GraalVM Download Service. If a non-empty token is provided, the action will set up Oracle GraalVM (see [Oracle GraalVM via GDS template](#template-for-oracle-graalvm-via-graalvm-download-service)) or GraalVM Enterprise Edition (see [GraalVM EE template](#template-for-graalvm-enterprise-edition)) via GDS. |
 
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*

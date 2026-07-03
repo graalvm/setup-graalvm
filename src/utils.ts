@@ -61,6 +61,17 @@ export async function getContents(repo: string, path: string): Promise<c.Content
   ).data
 }
 
+export async function getLastReleases(owner: string, repo: string): Promise<c.ListReleasesResponseData> {
+  const octokit = getOctokit()
+  return (
+    await octokit.request('GET /repos/{owner}/{repo}/releases', {
+      owner,
+      repo,
+      per_page: 100
+    })
+  ).data
+}
+
 export async function getTaggedRelease(owner: string, repo: string, tag: string): Promise<c.LatestReleaseResponseData> {
   const octokit = getOctokit()
   return (
@@ -69,7 +80,7 @@ export async function getTaggedRelease(owner: string, repo: string, tag: string)
       repo,
       tag
     })
-  ).data as c.LatestReleaseResponseData /** missing digest property */
+  ).data
 }
 
 export async function getMatchingTags(
