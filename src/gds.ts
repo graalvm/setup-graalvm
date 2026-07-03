@@ -163,7 +163,7 @@ export async function fetchArtifactEE(
   }
 
   const catalogOS = c.IS_MACOS ? 'macos' : c.GRAALVM_PLATFORM
-  const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&${filter}&metadata=java:jdk${javaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`
+  const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&${filter}&metadata=edition:ee&metadata=java:jdk${javaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`
   core.debug(`Requesting ${requestUrl}`)
   const response = await http.get(requestUrl, { accept: 'application/json' })
   if (response.message.statusCode !== 200) {
