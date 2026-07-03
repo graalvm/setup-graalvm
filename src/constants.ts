@@ -56,8 +56,6 @@ export const ERROR_HINT =
 export type LatestReleaseResponseData =
   otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']['data']
 
-export type ListReleasesResponseData = otypes.Endpoints['GET /repos/{owner}/{repo}/releases']['response']['data']
-
 export type MatchingRefsResponseData =
   otypes.Endpoints['GET /repos/{owner}/{repo}/git/matching-refs/{ref}']['response']['data']
 

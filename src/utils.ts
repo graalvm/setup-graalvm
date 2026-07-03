@@ -61,15 +61,13 @@ export async function getContents(repo: string, path: string): Promise<c.Content
   ).data
 }
 
-export async function getLastReleases(owner: string, repo: string): Promise<c.ListReleasesResponseData> {
+export async function getLastTags(owner: string, repo: string) {
   const octokit = getOctokit()
-  return (
-    await octokit.request('GET /repos/{owner}/{repo}/releases', {
-      owner,
-      repo,
-      per_page: 100
-    })
-  ).data
+  return octokit.paginate('GET /repos/{owner}/{repo}/tags', {
+    owner,
+    repo,
+    per_page: 100
+  })
 }
 
 export async function getTaggedRelease(owner: string, repo: string, tag: string): Promise<c.LatestReleaseResponseData> {
