@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: graalvm/setup-graalvm@v1
         with:
-          version: '25.1'         # See 'Options' for more details
+          version: '25.1'         # or '25.0' for LTS; See 'Options' for more details
           distribution: 'graalvm' # See 'Supported distributions' for available options
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Example step
@@ -61,7 +61,7 @@ jobs:
 
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '25'
+          version: '25.0'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -211,8 +211,8 @@ This actions can be configured with the following options:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `java-version`  | `''`     | Java version <ul><li>major versions: `'25'`, `'21'`, `'17'`, `'11'`, `'8'`</li><li>innovation releases: `'25i1'`</li><li>specific versions: `'25.0.3'`, `'21.0.3'`</li><li>early access (EA) builds: `'25e1-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'` *(requires `distribution: 'graalvm-community'`)*</li></ul> |
-| `version`       | `''`     | `X.Y` (e.g., `25.1`) for GraalVM innovation releases starting 25.1<br>`X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release. |
+| `version`       | `''`     | `X.Y` (e.g., `25.0`) for GraalVM releases starting 25.0<br>`X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release. |
+| `java-version`  | `''`     | Java version <ul><li>major versions: `'25'`, `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'25.0.3'`, `'21.0.3'`</li><li>early access (EA) builds: `'25e1-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'` *(requires `distribution: 'graalvm-community'`)*</li></ul> |
 | `distribution`  | `'graalvm'` | GraalVM distribution (see [supported distributions](#supported-distributions)) |
 | `java-package`  | `'jdk'` | The package type (`'jdk'` or `'jdk+fx'`). Currently applies to Liberica only. |
 | `github-token`  | `'${{ github.token }}'` | Token for communication with the GitHub API. Please set this to `${{ secrets.GITHUB_TOKEN }}` (see [templates](#templates)) to allow the action to authenticate with the GitHub API, which helps reduce rate-limiting issues. |
