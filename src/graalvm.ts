@@ -60,12 +60,13 @@ export async function setUpGraalVMJDKCE(graalVMVersionOrDev: string, javaVersion
   const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev)
 
   const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion)
-  if (githubRelease.name?.includes(jdkVersion)) {
+  const downloadUrl = findAssetDownloadUrl(githubRelease)
+  // Only a sanity check:
+  if (!downloadUrl.includes(`${jdkVersion}`)) {
     core.warning(
       `JDK version does not match GraalVM CE release. Are you sure java-version: '${jdkVersion}' is correct?`
     )
   }
-  const downloadUrl = findAssetDownloadUrl(githubRelease)
   const toolName = determineLegacyToolName(false, graalVMVersion, jdkVersion)
   const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion)
   return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion)
