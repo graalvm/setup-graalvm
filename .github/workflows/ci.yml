@@ -84,15 +84,17 @@ jobs:
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
+          echo "JAVA_HOME: $JAVA_HOME"
           if [[ "${{ matrix.version }}" == "dev" ]]; then
             [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
           else
             [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
           fi
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | grep "GraalVM" || exit 34
-          native-image --version
+          if [[ "${{ matrix.distribution }}" == "graalvm-community" ]]; then
+            java --version | grep "GraalVM CE" || exit 34
+          else
+            java --version | grep "Oracle GraalVM" || exit 45
+          fi
         if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
       - name: Check Windows environment
         run: |
@@ -171,19 +173,20 @@ jobs:
           components: ${{ matrix.components }}
           gds-token: ${{ matrix.set-gds-token && secrets.GDS_TOKEN || '' }}
         if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
-
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
+          echo "JAVA_HOME: $JAVA_HOME"
           if [[ "${{ matrix.java-version }}" == "dev" ]]; then
             [[ "$GRAALVM_HOME" == *"$RUNNER_TEMP"* ]] || exit 12
           else
             [[ "$GRAALVM_HOME" == *"$RUNNER_TOOL_CACHE"* ]] || exit 23
           fi
-          echo "JAVA_HOME: $JAVA_HOME"
-          java --version
-          java --version | grep "GraalVM" || exit 34
-          native-image --version
+          if [[ "${{ matrix.distribution }}" == "graalvm-community" || "${{ matrix.java-version }}" == "dev" ]]; then
+            java --version | grep "GraalVM CE" || exit 34
+          else
+            java --version | grep "Oracle GraalVM" || exit 45
+          fi
         if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' && runner.os != 'Windows' }}
       - name: Check Windows environment
         run: |
