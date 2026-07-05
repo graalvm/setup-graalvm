@@ -61,7 +61,7 @@ export async function fetchArtifact(
   }
 
   const catalogOS = c.IS_MACOS ? 'macos' : c.GRAALVM_PLATFORM
-  const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum&sortBy=m:java&sortOrder=DESC`
+  const requestUrl = `${c.GDS_BASE}/artifacts?productId=${c.GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${c.GRAALVM_ARCH}&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum&sortBy=m:version&sortOrder=DESC`
   core.debug(`Requesting ${requestUrl}`)
   const response = await http.get(requestUrl, { accept: 'application/json' })
   if (response.message.statusCode !== 200) {
