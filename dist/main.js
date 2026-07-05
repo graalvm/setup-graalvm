@@ -51,7 +51,7 @@ import require$$1$5 from 'tty';
 import { createHmac } from 'node:crypto';
 import fs$1 from 'node:fs';
 
-const ACTION_VERSION = '1.6.0';
+const ACTION_VERSION = '1.6.1';
 const INPUT_VERSION = 'version';
 const INPUT_GDS_TOKEN = 'gds-token';
 const INPUT_JAVA_VERSION = 'java-version';
@@ -38681,7 +38681,7 @@ async function fetchArtifact(userAgent, graalVMVersion, jdkVersion) {
         majorJavaVersion = jdkVersion;
     }
     const catalogOS = IS_MACOS ? 'macos' : GRAALVM_PLATFORM;
-    const requestUrl = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${GRAALVM_ARCH}&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum&sortBy=m:java&sortOrder=DESC`;
+    const requestUrl = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${GRAALVM_ARCH}&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum&sortBy=m:version&sortOrder=DESC`;
     debug(`Requesting ${requestUrl}`);
     const response = await http.get(requestUrl, { accept: 'application/json' });
     if (response.message.statusCode !== 200) {
@@ -38908,10 +38908,11 @@ async function setUpGraalVMJDKCE(graalVMVersionOrDev, javaVersionOrEmpty) {
     const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semverExports.coerce(graalVMVersionOrDev)?.major;
     const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev);
     const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion);
-    if (githubRelease.name?.includes(jdkVersion)) {
+    const downloadUrl = findAssetDownloadUrl(githubRelease);
+    // Only a sanity check:
+    if (!downloadUrl.includes(`${jdkVersion}`)) {
         warning(`JDK version does not match GraalVM CE release. Are you sure java-version: '${jdkVersion}' is correct?`);
     }
-    const downloadUrl = findAssetDownloadUrl(githubRelease);
     const toolName = determineLegacyToolName(false, graalVMVersion, jdkVersion);
     const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion);
     return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion);
