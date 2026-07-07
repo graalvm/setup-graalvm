@@ -85,6 +85,22 @@ const GRAALVM_RELEASES_REPO = 'graalvm-ce-builds';
 const MANDREL_NAMESPACE = 'mandrel-';
 const GDS_BASE = 'https://gds.oracle.com/api/20220101';
 const GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
+const GDS_ARTIFACTS_BASE = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&metadata=edition:ee&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum`;
+/* Latest is currently based on timeCreated. Eventually, we should sortBy=m:version when version sorting is fixed. */
+const GDS_LAST_FILTER = '&sortBy=timeCreated&sortOrder=DESC';
+const GDS_LATEST_FILTER = `${GDS_LAST_FILTER}&limit=1`;
+const GDS_USER_AGENT = `GraalVMGitHubAction/${ACTION_VERSION} (arch:${GRAALVM_ARCH}; os:${GRAALVM_PLATFORM})`;
+/**
+ * Target platform used for GDS artifact queries. The binding remains constant,
+ * while tests may temporarily replace these fields for fixture-specific IDs.
+ */
+const GDS_TARGET = {
+    arch: GRAALVM_ARCH,
+    os: IS_MACOS ? 'macos' : GRAALVM_PLATFORM
+};
+const gdsJDKFilter = (jdkMajorVersion) => `&metadata=java:jdk${jdkMajorVersion}&metadata=os:${GDS_TARGET.os}&metadata=arch:${GDS_TARGET.arch}`;
+const gdsArtifactQueryUrl = (jdkMajorVersion, filter) => `${GDS_ARTIFACTS_BASE}${gdsJDKFilter(jdkMajorVersion)}${filter}`;
+const gdsArtifactDownloadUrl = (artifactId) => `${GDS_BASE}/artifacts/${artifactId}/content`;
 const ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
 const EVENT_NAME_PULL_REQUEST = 'pull_request';
 const ERROR_REQUEST = 'Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.';
@@ -38667,9 +38683,8 @@ function _v4(options, buf, offset) {
 
 // Support for Oracle GraalVM innovation releases
 async function downloadGraalVMViaGDS(gdsToken, graalVMVersion, jdkVersion) {
-    const userAgent = `GraalVMGitHubAction/${ACTION_VERSION} (arch:${GRAALVM_ARCH}; os:${GRAALVM_PLATFORM}; jdk:${jdkVersion})`;
-    const baseArtifact = await fetchArtifact(userAgent, graalVMVersion, jdkVersion);
-    return downloadArtifact(gdsToken, userAgent, baseArtifact);
+    const baseArtifact = await fetchArtifact(GDS_USER_AGENT, graalVMVersion, jdkVersion);
+    return downloadArtifact(gdsToken, baseArtifact);
 }
 async function fetchArtifact(userAgent, graalVMVersion, jdkVersion) {
     const http = new HttpClient(userAgent);
@@ -38680,8 +38695,8 @@ async function fetchArtifact(userAgent, graalVMVersion, jdkVersion) {
     else {
         majorJavaVersion = jdkVersion;
     }
-    const catalogOS = IS_MACOS ? 'macos' : GRAALVM_PLATFORM;
-    const requestUrl = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${GRAALVM_ARCH}&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum&responseFields=metadata&sortBy=m:version&sortOrder=DESC`;
+    const filter = `&displayName=Oracle%20GraalVM${GDS_LAST_FILTER}&responseFields=metadata`;
+    const requestUrl = gdsArtifactQueryUrl(majorJavaVersion, filter);
     debug(`Requesting ${requestUrl}`);
     const response = await http.get(requestUrl, { accept: 'application/json' });
     if (response.message.statusCode !== 200) {
@@ -38706,24 +38721,15 @@ async function fetchArtifact(userAgent, graalVMVersion, jdkVersion) {
 }
 // Support for GraalVM EE
 async function downloadGraalVMViaGDSByJavaVersion(gdsToken, javaVersion) {
-    const userAgent = `GraalVMGitHubAction/${ACTION_VERSION} (arch:${GRAALVM_ARCH}; os:${GRAALVM_PLATFORM}; java:${javaVersion})`;
-    const baseArtifact = await fetchArtifactByJavaVersion(userAgent, 'isBase:True', javaVersion);
-    return downloadArtifact(gdsToken, userAgent, baseArtifact);
+    const baseArtifact = await fetchArtifactByJavaVersion(GDS_USER_AGENT, javaVersion);
+    return downloadArtifact(gdsToken, baseArtifact);
 }
 async function downloadGraalVMViaGDSByJavaVersionEELegacy(gdsToken, version, javaVersion) {
-    const userAgent = `GraalVMGitHubAction/${ACTION_VERSION} (arch:${GRAALVM_ARCH}; os:${GRAALVM_PLATFORM}; java:${javaVersion})`;
-    const baseArtifact = await fetchArtifactEE(userAgent, 'isBase:True', version, javaVersion);
-    return downloadArtifact(gdsToken, userAgent, baseArtifact);
+    const baseArtifact = await fetchArtifactEE(GDS_USER_AGENT, version, javaVersion);
+    return downloadArtifact(gdsToken, baseArtifact);
 }
-async function fetchArtifactByJavaVersion(userAgent, metadata, javaVersion) {
+async function fetchArtifactByJavaVersion(userAgent, javaVersion) {
     const http = new HttpClient(userAgent);
-    let filter;
-    if (javaVersion.includes('.')) {
-        filter = `metadata=version:${javaVersion}`;
-    }
-    else {
-        filter = `sortBy=m:java&sortOrder=DESC&limit=1`; // latest and only one item
-    }
     let majorJavaVersion;
     if (semverExports.valid(javaVersion)) {
         majorJavaVersion = semverExports.major(javaVersion);
@@ -38731,32 +38737,40 @@ async function fetchArtifactByJavaVersion(userAgent, metadata, javaVersion) {
     else {
         majorJavaVersion = javaVersion;
     }
-    const catalogOS = IS_MACOS ? 'macos' : GRAALVM_PLATFORM;
-    const requestUrl = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&displayName=Oracle%20GraalVM&${filter}&metadata=java:jdk${majorJavaVersion}&metadata=os:${catalogOS}&metadata=arch:${GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`;
+    let filter = '&displayName=Oracle%20GraalVM';
+    if (javaVersion.includes('.')) {
+        filter += `&metadata=version:${javaVersion}`;
+    }
+    else {
+        filter += GDS_LATEST_FILTER;
+    }
+    const requestUrl = gdsArtifactQueryUrl(majorJavaVersion, filter);
     debug(`Requesting ${requestUrl}`);
     const response = await http.get(requestUrl, { accept: 'application/json' });
     if (response.message.statusCode !== 200) {
-        throw new Error(`Unable to find GraalVM for JDK ${javaVersion}. Are you sure java-version: '${javaVersion}' is correct?`);
+        throw new Error(`Unable to find GDS artifact. Are you sure java-version: '${javaVersion}' is correct?`);
     }
     const artifactResponse = JSON.parse(await response.readBody());
     if (artifactResponse.items.length !== 1) {
-        throw new Error(artifactResponse.items.length > 1
-            ? `Found more than one GDS artifact. ${ERROR_HINT}`
-            : `Unable to find GDS artifact. Are you sure java-version: '${javaVersion}' is correct?`);
+        if (artifactResponse.items.length > 1) {
+            warning(`Found more than one GDS artifact. ${ERROR_HINT}`);
+        }
+        else {
+            throw new Error(`Unable to find GDS artifact. Are you sure java-version: '${javaVersion}' is correct?`);
+        }
     }
     return artifactResponse.items[0];
 }
-async function fetchArtifactEE(userAgent, metadata, version, javaVersion) {
+async function fetchArtifactEE(userAgent, version, javaVersion) {
     const http = new HttpClient(userAgent);
-    let filter;
+    let filter = '&displayName=GraalVM%20Enterprise%20Edition';
     if (version === VERSION_LATEST) {
-        filter = `sortBy=displayName&sortOrder=DESC&limit=1`; // latest and only one item
+        filter += GDS_LATEST_FILTER;
     }
     else {
-        filter = `metadata=version:${version}`;
+        filter += `&metadata=version:${version}`;
     }
-    const catalogOS = IS_MACOS ? 'macos' : GRAALVM_PLATFORM;
-    const requestUrl = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&${filter}&metadata=edition:ee&metadata=java:jdk${javaVersion}&metadata=os:${catalogOS}&metadata=arch:${GRAALVM_ARCH}&metadata=${metadata}&status=PUBLISHED&responseFields=id&responseFields=checksum`;
+    const requestUrl = gdsArtifactQueryUrl(javaVersion, filter);
     debug(`Requesting ${requestUrl}`);
     const response = await http.get(requestUrl, { accept: 'application/json' });
     if (response.message.statusCode !== 200) {
@@ -38770,10 +38784,10 @@ async function fetchArtifactEE(userAgent, metadata, version, javaVersion) {
     }
     return artifactResponse.items[0];
 }
-async function downloadArtifact(gdsToken, userAgent, artifact) {
+async function downloadArtifact(gdsToken, artifact) {
     let downloadPath;
     try {
-        downloadPath = await downloadTool(`${GDS_BASE}/artifacts/${artifact.id}/content`, userAgent, {
+        downloadPath = await downloadTool(gdsArtifactDownloadUrl(artifact.id), GDS_USER_AGENT, {
             accept: 'application/x-yaml',
             'x-download-token': gdsToken
         });
