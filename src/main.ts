@@ -32,7 +32,17 @@ async function run(): Promise<void> {
     const isGraalVMforJDK17OrLater = distribution.length > 0 || graalVMVersion.length == 0
 
     if (c.IS_WINDOWS) {
-      setUpWindowsEnvironment()
+      try {
+        setUpWindowsEnvironment()
+      } catch (error) {
+        if (isGraalVMforJDK17OrLater) {
+          core.warning(
+            `${error instanceof Error ? error.message : error}. Native Image on JDK 17+ can detect the Windows environment automatically.`
+          )
+        } else {
+          throw error
+        }
+      }
     }
     await setUpDependencies(components)
     if (enableNativeImageMusl) {
