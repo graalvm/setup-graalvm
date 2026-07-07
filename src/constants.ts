@@ -42,8 +42,28 @@ export const GRAALVM_RELEASES_REPO = 'graalvm-ce-builds'
 
 export const MANDREL_NAMESPACE = 'mandrel-'
 
-export const GDS_BASE = 'https://gds.oracle.com/api/20220101'
-export const GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6'
+const GDS_BASE = 'https://gds.oracle.com/api/20220101'
+const GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6'
+const GDS_ARTIFACTS_BASE = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&metadata=edition:ee&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum`
+/* Latest is currently based on timeCreated. Eventually, we should sortBy=m:version when version sorting is fixed. */
+export const GDS_LAST_FILTER = '&sortBy=timeCreated&sortOrder=DESC'
+export const GDS_LATEST_FILTER = `${GDS_LAST_FILTER}&limit=1`
+export const GDS_USER_AGENT = `GraalVMGitHubAction/${ACTION_VERSION} (arch:${GRAALVM_ARCH}; os:${GRAALVM_PLATFORM})`
+
+/**
+ * Target platform used for GDS artifact queries. The binding remains constant,
+ * while tests may temporarily replace these fields for fixture-specific IDs.
+ */
+export const GDS_TARGET = {
+  arch: GRAALVM_ARCH,
+  os: IS_MACOS ? 'macos' : GRAALVM_PLATFORM
+}
+
+const gdsJDKFilter = (jdkMajorVersion: string | number) =>
+  `&metadata=java:jdk${jdkMajorVersion}&metadata=os:${GDS_TARGET.os}&metadata=arch:${GDS_TARGET.arch}`
+export const gdsArtifactQueryUrl = (jdkMajorVersion: string | number, filter: string) =>
+  `${GDS_ARTIFACTS_BASE}${gdsJDKFilter(jdkMajorVersion)}${filter}`
+export const gdsArtifactDownloadUrl = (artifactId: string) => `${GDS_BASE}/artifacts/${artifactId}/content`
 
 export const ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME'
 export const EVENT_NAME_PULL_REQUEST = 'pull_request'
