@@ -30134,7 +30134,7 @@ function getState(name) {
     return process.env[`STATE_${name}`] || '';
 }
 
-const ACTION_VERSION = '1.6.2';
+const ACTION_VERSION = '1.6.3';
 const INPUT_GITHUB_TOKEN = 'github-token';
 const INPUT_CACHE = 'cache';
 process.platform === 'linux';
