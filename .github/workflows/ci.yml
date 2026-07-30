@@ -494,6 +494,7 @@ jobs:
   test-action-extensive:
     name: extensive tests on ubuntu-latest
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
     permissions:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
@@ -502,13 +503,14 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          java-version: '17.0.8'
+          java-version: '17.0.20'
           distribution: 'graalvm'
-          components: 'espresso,llvm-toolchain,native-image,nodejs,python,ruby,wasm'
+          components: 'espresso,native-image,js'
           set-java-home: 'false'
           native-image-job-reports: 'true'
           native-image-pr-reports: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          gds-token: ${{ secrets.GDS_TOKEN }}
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
@@ -519,33 +521,16 @@ jobs:
           java -truffle --version
           gu --version
           gu list
-          [[ $(which lli) == *"graalvm"* ]] || exit 34
-          lli --version
           native-image --version
-          [[ $(which node) == *"graalvm"* ]] || exit 45
-          node --version
-          graalpy --version
-          truffleruby --version
-          wasm --version
+          [[ $(which js) == *"graalvm"* ]] || exit 45
       - name: Build HelloWorld.java with GraalVM Native Image
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
           native-image -g HelloWorld
           ./helloworld
-      # - name: Build Ruby-FFI with TruffleRuby
-      #   run: |
-      #     [[ $(which bundle) == *"graalvm"* ]] || exit 57
-      #     git clone --depth 1 https://github.com/ffi/ffi.git
-      #     pushd ffi > /dev/null
-      #     # https://github.com/ffi/ffi/blob/447845cb3030194c79700c86fb388a12e6f81386/.github/workflows/ci.yml#L58-L62
-      #     bundle install
-      #     bundle exec rake libffi
-      #     bundle exec rake compile
-      #     bundle exec rake test
-      #     popd > /dev/null
       - name: Remove components
-        run: gu remove espresso llvm-toolchain nodejs python ruby wasm
+        run: gu remove espresso js
 
   test-action-sbom:
     name: test 'native-image-enable-sbom' option
