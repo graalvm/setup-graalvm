@@ -265,15 +265,6 @@ jobs:
         java-version: ['17']
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
-        include:
-          - version: '22.3.3'
-            java-version: '11'
-            components: 'native-image'
-            os: ubuntu-latest
-          - version: '22.3.3'
-            java-version: '17'
-            components: 'native-image'
-            os: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Run setup-graalvm action
