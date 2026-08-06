@@ -2637,7 +2637,13 @@ function requireRequest$1 () {
 	      } else if (typeof val[i] === 'object') {
 	        throw new InvalidArgumentError(`invalid ${key} header`)
 	      } else {
-	        arr.push(`${val[i]}`);
+	        // Coerce primitives (and reject unsafe coercions such as functions
+	        // with a crafted toString/Symbol.toPrimitive).
+	        const str = `${val[i]}`;
+	        if (!isValidHeaderValue(str)) {
+	          throw new InvalidArgumentError(`invalid ${key} header`)
+	        }
+	        arr.push(str);
 	      }
 	    }
 	    val = arr;
@@ -2648,7 +2654,12 @@ function requireRequest$1 () {
 	  } else if (val === null) {
 	    val = '';
 	  } else {
+	    // Coerce primitives (and reject unsafe coercions such as functions
+	    // with a crafted toString/Symbol.toPrimitive).
 	    val = `${val}`;
+	    if (!isValidHeaderValue(val)) {
+	      throw new InvalidArgumentError(`invalid ${key} header`)
+	    }
 	  }
 
 	  if (headerName === 'host') {
@@ -8704,6 +8715,7 @@ function requireClientH1 () {
 	  RequestContentLengthMismatchError,
 	  ResponseContentLengthMismatchError,
 	  RequestAbortedError,
+	  InvalidArgumentError,
 	  HeadersTimeoutError,
 	  HeadersOverflowError,
 	  SocketError,
@@ -9687,8 +9699,16 @@ function requireClientH1 () {
 	    }
 	    body = bodyStream.stream;
 	    contentLength = bodyStream.length;
-	  } else if (util.isBlobLike(body) && request.contentType == null && body.type) {
-	    headers.push('content-type', body.type);
+	  } else if (util.isBlobLike(body) && request.contentType == null) {
+	    const contentType = body.type;
+	    if (contentType) {
+	      const contentTypeValue = `${contentType}`;
+	      if (!util.isValidHeaderValue(contentTypeValue)) {
+	        util.errorRequest(client, request, new InvalidArgumentError('invalid content-type header'));
+	        return false
+	      }
+	      headers.push('content-type', contentTypeValue);
+	    }
 	  }
 
 	  if (body && typeof body.read === 'function') {
@@ -13123,6 +13143,28 @@ function requireRetryHandler () {
 	  return new Date(retryAfter).getTime() - current
 	}
 
+	function validatePartialResponseContentLength (headers, range, statusCode, retryCount) {
+	  const contentLength = headers['content-length'];
+	  if (contentLength == null) {
+	    return null
+	  }
+
+	  if (!Number.isFinite(range.start) || !Number.isFinite(range.end)) {
+	    return null
+	  }
+
+	  const length = Number(contentLength);
+	  const expectedLength = range.end - range.start + 1;
+	  if (!Number.isFinite(length) || length !== expectedLength) {
+	    return new RequestRetryError('Content-Length mismatch', statusCode, {
+	      headers,
+	      data: { count: retryCount }
+	    })
+	  }
+
+	  return null
+	}
+
 	class RetryHandler {
 	  constructor (opts, handlers) {
 	    const { retryOptions, ...dispatchOpts } = opts;
@@ -13337,6 +13379,12 @@ function requireRetryHandler () {
 	        return false
 	      }
 
+	      const contentLengthError = validatePartialResponseContentLength(headers, contentRange, statusCode, this.retryCount);
+	      if (contentLengthError != null) {
+	        this.abort(contentLengthError);
+	        return false
+	      }
+
 	      const { start, size, end = size - 1 } = contentRange;
 
 	      assert(this.start === start, 'content-range mismatch');
@@ -13358,6 +13406,12 @@ function requireRetryHandler () {
 	            resume,
 	            statusMessage
 	          )
+	        }
+
+	        const contentLengthError = validatePartialResponseContentLength(headers, range, statusCode, this.retryCount);
+	        if (contentLengthError != null) {
+	          this.abort(contentLengthError);
+	          return false
 	        }
 
 	        const { start, size, end = size - 1 } = range;
@@ -23748,7 +23802,7 @@ function requireUtil$2 () {
 
 	    if (
 	      code < 0x20 || // exclude CTLs (0-31)
-	      code === 0x7F || // DEL
+	      code > 0x7E || // exclude DEL and non-ascii
 	      code === 0x3B // ;
 	    ) {
 	      throw new Error('Invalid cookie path')
@@ -23757,16 +23811,80 @@ function requireUtil$2 () {
 	}
 
 	/**
-	 * I have no idea why these values aren't allowed to be honest,
-	 * but Deno tests these. - Khafra
+	 * <let-dig> ::= <letter> | <digit>
+	 *
+	 * <letter> ::= any one of the 52 alphabetic characters A through Z in
+	 * upper case and a through z in lower case
+	 *
+	 * <digit> ::= any one of the ten digits 0 through 9r
+	 *
+	 * @see https://www.rfc-editor.org/rfc/rfc1034#section-3.5
+	 * @param {number} code
+	 */
+	function isLetterOrDigit (code) {
+	  return (
+	    (code >= 0x30 && code <= 0x39) || // 0-9
+	    (code >= 0x41 && code <= 0x5A) || // A-Z
+	    (code >= 0x61 && code <= 0x7A) // a-z
+	  )
+	}
+
+	/**
+	 * Validates a cookie domain against the "preferred name syntax".
+	 *
+	 * <domain>      ::= <subdomain> | " "
+	 * <subdomain>   ::= <label> | <subdomain> "." <label>
+	 * <label>       ::= <let-dig> [ [ <ldh-str> ] <let-dig> ]
+	 * <ldh-str>     ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
+	 * <let-dig-hyp> ::= <let-dig> | "-"
+	 *
+	 * @see https://www.rfc-editor.org/rfc/rfc1034#section-3.5
+	 * @see https://www.rfc-editor.org/rfc/rfc1123#section-2.1
+	 * @see https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4
 	 * @param {string} domain
 	 */
 	function validateCookieDomain (domain) {
-	  if (
-	    domain.startsWith('-') ||
-	    domain.endsWith('.') ||
-	    domain.endsWith('-')
-	  ) {
+	  // <domain> ::= <subdomain> | " "
+	  if (domain === ' ') {
+	    return
+	  }
+
+	  if (domain.length > 255) {
+	    throw new Error('Invalid cookie domain')
+	  }
+
+	  let labelLength = 0;
+
+	  for (let i = 0; i < domain.length; ++i) {
+	    const code = domain.charCodeAt(i);
+
+	    if (code === 0x2E) {
+	      if (labelLength === 0) {
+	        throw new Error('Invalid cookie domain')
+	      }
+
+	      if (domain.charCodeAt(i - 1) === 0x2D) { // "-"
+	        throw new Error('Invalid cookie domain')
+	      }
+
+	      labelLength = 0;
+	      continue
+	    }
+
+	    if (labelLength === 0 && !isLetterOrDigit(code)) {
+	      throw new Error('Invalid cookie domain')
+	    }
+
+	    if (!isLetterOrDigit(code) && code !== 0x2D) { // "-"
+	      throw new Error('Invalid cookie domain')
+	    }
+
+	    if (++labelLength > 63) {
+	      throw new Error('Invalid cookie domain')
+	    }
+	  }
+
+	  if (labelLength === 0 || domain.charCodeAt(domain.length - 1) === 0x2D) { // "-"
 	    throw new Error('Invalid cookie domain')
 	  }
 	}
@@ -23909,7 +24027,13 @@ function requireUtil$2 () {
 
 	    const [key, ...value] = part.split('=');
 
-	    out.push(`${key.trim()}=${value.join('=')}`);
+	    const trimmedKey = key.trim();
+	    const joinedValue = value.join('=');
+
+	    validateCookieName(trimmedKey);
+	    validateCookieValue(joinedValue);
+
+	    out.push(`${trimmedKey}=${joinedValue}`);
 	  }
 
 	  return out.join('; ')
@@ -72531,6 +72655,18 @@ function getCacheServiceVersion() {
         return 'v1';
     return process.env['ACTIONS_CACHE_SERVICE_V2'] ? 'v2' : 'v1';
 }
+// The cache-mode lattice: readable = {read, write}, writable = {write,
+// write-only}, none = neither.
+const KNOWN_CACHE_MODES = ['none', 'read', 'write', 'write-only'];
+// The effective cache-mode exported by the runner, or '' when not set.
+function getCacheMode() {
+    return (process.env['ACTIONS_CACHE_MODE'] || '').trim().toLowerCase();
+}
+function isCacheWritable(mode) {
+    if (!KNOWN_CACHE_MODES.includes(mode))
+        return true;
+    return mode === 'write' || mode === 'write-only';
+}
 function getCacheServiceURL() {
     const version = getCacheServiceVersion();
     // Based on the version of the cache service, we will determine which
@@ -72547,7 +72683,7 @@ function getCacheServiceURL() {
     }
 }
 
-var version = "6.1.0";
+var version = "6.2.0";
 var require$$0 = {
 	version: version};
 
@@ -76720,19 +76856,20 @@ class ReserveCacheError extends Error {
     }
 }
 /**
- * Stable prefix the receiver writes into the cache reservation response when
- * the issuer downgraded the cache token to read-only (for example, because
+ * Stable prefix the cache service writes into the cache reservation response
+ * when the issuer downgraded the cache token to read-only (for example, because
  * the run was triggered by an untrusted event). saveCacheV1 / saveCacheV2
- * dispatch on this prefix to re-classify the failure as a
- * CacheWriteDeniedError so consumers (and the outer catch arm) can
- * distinguish a policy denial from other reservation failures.
+ * dispatch on this prefix to re-classify the failure as a CacheWriteDeniedError
+ * so consumers and tests can distinguish a policy denial from other reservation
+ * failures. Internally it is logged as a non-fatal warning like other
+ * best-effort save failures.
  */
 const CACHE_WRITE_DENIED_PREFIX = 'cache write denied:';
 /**
  * Raised when the cache backend refuses to reserve a writable cache entry
  * because the JWT issued for this run was scoped read-only (for example, the
  * run was triggered by an event the repository administrator classified as
- * untrusted). The receiver-supplied detail message always begins with
+ * untrusted). The service-supplied detail message always begins with
  * `cache write denied:` (the full error message includes additional context
  * like the cache key).
  *
@@ -76784,6 +76921,12 @@ function saveCache$1(paths_1, key_1, options_1) {
         debug(`Cache service version: ${cacheServiceVersion}`);
         checkPaths(paths);
         checkKey(key);
+        const cacheMode = getCacheMode();
+        if (!isCacheWritable(cacheMode)) {
+            info(`Cache save skipped: the effective cache-mode '${cacheMode}' does not permit writes.`);
+            debug(`Skipped save for paths [${paths.join(', ')}] with key '${key}'.`);
+            return -1;
+        }
         switch (cacheServiceVersion) {
             case 'v2':
                 return yield saveCacheV2(paths, key, options, enableCrossOsArchive);
@@ -76861,17 +77004,14 @@ function saveCacheV1(paths_1, key_1, options_1) {
             if (typedError.name === ValidationError.name) {
                 throw error$1;
             }
-            else if (typedError.name === CacheWriteDeniedError.name) {
-                // Cache write was denied by policy (read-only token). Surface to the
-                // customer at warning level so it is visible in the workflow log
-                // without failing the run.
-                warning(`Failed to save: ${typedError.message}`);
-            }
             else if (typedError.name === ReserveCacheError.name) {
                 info(`Failed to save: ${typedError.message}`);
             }
             else {
-                // Log server errors (5xx) as errors, all other errors as warnings
+                // Log server errors (5xx) as errors, all other errors as warnings.
+                // A write denied by policy (CacheWriteDeniedError) is not an
+                // HttpClientError and its name does not match the ReserveCacheError arm,
+                // so it falls here and is warned without failing the run.
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
@@ -76982,12 +77122,6 @@ function saveCacheV2(paths_1, key_1, options_1) {
             if (typedError.name === ValidationError.name) {
                 throw error$1;
             }
-            else if (typedError.name === CacheWriteDeniedError.name) {
-                // Cache write was denied by policy (read-only token). Surface to the
-                // customer at warning level so it is visible in the workflow log
-                // without failing the run.
-                warning(`Failed to save: ${typedError.message}`);
-            }
             else if (typedError.name === ReserveCacheError.name) {
                 info(`Failed to save: ${typedError.message}`);
             }
@@ -76995,7 +77129,10 @@ function saveCacheV2(paths_1, key_1, options_1) {
                 warning(typedError.message);
             }
             else {
-                // Log server errors (5xx) as errors, all other errors as warnings
+                // Log server errors (5xx) as errors, all other errors as warnings.
+                // A write denied by policy (CacheWriteDeniedError) is not an
+                // HttpClientError and its name does not match the ReserveCacheError arm,
+                // so it falls here and is warned without failing the run.
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {

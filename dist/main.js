@@ -2771,7 +2771,13 @@ function requireRequest$1 () {
 	      } else if (typeof val[i] === 'object') {
 	        throw new InvalidArgumentError(`invalid ${key} header`)
 	      } else {
-	        arr.push(`${val[i]}`);
+	        // Coerce primitives (and reject unsafe coercions such as functions
+	        // with a crafted toString/Symbol.toPrimitive).
+	        const str = `${val[i]}`;
+	        if (!isValidHeaderValue(str)) {
+	          throw new InvalidArgumentError(`invalid ${key} header`)
+	        }
+	        arr.push(str);
 	      }
 	    }
 	    val = arr;
@@ -2782,7 +2788,12 @@ function requireRequest$1 () {
 	  } else if (val === null) {
 	    val = '';
 	  } else {
+	    // Coerce primitives (and reject unsafe coercions such as functions
+	    // with a crafted toString/Symbol.toPrimitive).
 	    val = `${val}`;
+	    if (!isValidHeaderValue(val)) {
+	      throw new InvalidArgumentError(`invalid ${key} header`)
+	    }
 	  }
 
 	  if (headerName === 'host') {
@@ -8838,6 +8849,7 @@ function requireClientH1 () {
 	  RequestContentLengthMismatchError,
 	  ResponseContentLengthMismatchError,
 	  RequestAbortedError,
+	  InvalidArgumentError,
 	  HeadersTimeoutError,
 	  HeadersOverflowError,
 	  SocketError,
@@ -9821,8 +9833,16 @@ function requireClientH1 () {
 	    }
 	    body = bodyStream.stream;
 	    contentLength = bodyStream.length;
-	  } else if (util.isBlobLike(body) && request.contentType == null && body.type) {
-	    headers.push('content-type', body.type);
+	  } else if (util.isBlobLike(body) && request.contentType == null) {
+	    const contentType = body.type;
+	    if (contentType) {
+	      const contentTypeValue = `${contentType}`;
+	      if (!util.isValidHeaderValue(contentTypeValue)) {
+	        util.errorRequest(client, request, new InvalidArgumentError('invalid content-type header'));
+	        return false
+	      }
+	      headers.push('content-type', contentTypeValue);
+	    }
 	  }
 
 	  if (body && typeof body.read === 'function') {
@@ -13257,6 +13277,28 @@ function requireRetryHandler () {
 	  return new Date(retryAfter).getTime() - current
 	}
 
+	function validatePartialResponseContentLength (headers, range, statusCode, retryCount) {
+	  const contentLength = headers['content-length'];
+	  if (contentLength == null) {
+	    return null
+	  }
+
+	  if (!Number.isFinite(range.start) || !Number.isFinite(range.end)) {
+	    return null
+	  }
+
+	  const length = Number(contentLength);
+	  const expectedLength = range.end - range.start + 1;
+	  if (!Number.isFinite(length) || length !== expectedLength) {
+	    return new RequestRetryError('Content-Length mismatch', statusCode, {
+	      headers,
+	      data: { count: retryCount }
+	    })
+	  }
+
+	  return null
+	}
+
 	class RetryHandler {
 	  constructor (opts, handlers) {
 	    const { retryOptions, ...dispatchOpts } = opts;
@@ -13471,6 +13513,12 @@ function requireRetryHandler () {
 	        return false
 	      }
 
+	      const contentLengthError = validatePartialResponseContentLength(headers, contentRange, statusCode, this.retryCount);
+	      if (contentLengthError != null) {
+	        this.abort(contentLengthError);
+	        return false
+	      }
+
 	      const { start, size, end = size - 1 } = contentRange;
 
 	      assert(this.start === start, 'content-range mismatch');
@@ -13492,6 +13540,12 @@ function requireRetryHandler () {
 	            resume,
 	            statusMessage
 	          )
+	        }
+
+	        const contentLengthError = validatePartialResponseContentLength(headers, range, statusCode, this.retryCount);
+	        if (contentLengthError != null) {
+	          this.abort(contentLengthError);
+	          return false
 	        }
 
 	        const { start, size, end = size - 1 } = range;
@@ -23882,7 +23936,7 @@ function requireUtil$2 () {
 
 	    if (
 	      code < 0x20 || // exclude CTLs (0-31)
-	      code === 0x7F || // DEL
+	      code > 0x7E || // exclude DEL and non-ascii
 	      code === 0x3B // ;
 	    ) {
 	      throw new Error('Invalid cookie path')
@@ -23891,16 +23945,80 @@ function requireUtil$2 () {
 	}
 
 	/**
-	 * I have no idea why these values aren't allowed to be honest,
-	 * but Deno tests these. - Khafra
+	 * <let-dig> ::= <letter> | <digit>
+	 *
+	 * <letter> ::= any one of the 52 alphabetic characters A through Z in
+	 * upper case and a through z in lower case
+	 *
+	 * <digit> ::= any one of the ten digits 0 through 9r
+	 *
+	 * @see https://www.rfc-editor.org/rfc/rfc1034#section-3.5
+	 * @param {number} code
+	 */
+	function isLetterOrDigit (code) {
+	  return (
+	    (code >= 0x30 && code <= 0x39) || // 0-9
+	    (code >= 0x41 && code <= 0x5A) || // A-Z
+	    (code >= 0x61 && code <= 0x7A) // a-z
+	  )
+	}
+
+	/**
+	 * Validates a cookie domain against the "preferred name syntax".
+	 *
+	 * <domain>      ::= <subdomain> | " "
+	 * <subdomain>   ::= <label> | <subdomain> "." <label>
+	 * <label>       ::= <let-dig> [ [ <ldh-str> ] <let-dig> ]
+	 * <ldh-str>     ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
+	 * <let-dig-hyp> ::= <let-dig> | "-"
+	 *
+	 * @see https://www.rfc-editor.org/rfc/rfc1034#section-3.5
+	 * @see https://www.rfc-editor.org/rfc/rfc1123#section-2.1
+	 * @see https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4
 	 * @param {string} domain
 	 */
 	function validateCookieDomain (domain) {
-	  if (
-	    domain.startsWith('-') ||
-	    domain.endsWith('.') ||
-	    domain.endsWith('-')
-	  ) {
+	  // <domain> ::= <subdomain> | " "
+	  if (domain === ' ') {
+	    return
+	  }
+
+	  if (domain.length > 255) {
+	    throw new Error('Invalid cookie domain')
+	  }
+
+	  let labelLength = 0;
+
+	  for (let i = 0; i < domain.length; ++i) {
+	    const code = domain.charCodeAt(i);
+
+	    if (code === 0x2E) {
+	      if (labelLength === 0) {
+	        throw new Error('Invalid cookie domain')
+	      }
+
+	      if (domain.charCodeAt(i - 1) === 0x2D) { // "-"
+	        throw new Error('Invalid cookie domain')
+	      }
+
+	      labelLength = 0;
+	      continue
+	    }
+
+	    if (labelLength === 0 && !isLetterOrDigit(code)) {
+	      throw new Error('Invalid cookie domain')
+	    }
+
+	    if (!isLetterOrDigit(code) && code !== 0x2D) { // "-"
+	      throw new Error('Invalid cookie domain')
+	    }
+
+	    if (++labelLength > 63) {
+	      throw new Error('Invalid cookie domain')
+	    }
+	  }
+
+	  if (labelLength === 0 || domain.charCodeAt(domain.length - 1) === 0x2D) { // "-"
 	    throw new Error('Invalid cookie domain')
 	  }
 	}
@@ -24043,7 +24161,13 @@ function requireUtil$2 () {
 
 	    const [key, ...value] = part.split('=');
 
-	    out.push(`${key.trim()}=${value.join('=')}`);
+	    const trimmedKey = key.trim();
+	    const joinedValue = value.join('=');
+
+	    validateCookieName(trimmedKey);
+	    validateCookieValue(joinedValue);
+
+	    out.push(`${trimmedKey}=${joinedValue}`);
 	  }
 
 	  return out.join('; ')
@@ -40920,6 +41044,10 @@ const GnuTarPathOnWindows = `${process.env['PROGRAMFILES']}\\Git\\usr\\bin\\tar.
 const SystemTarPathOnWindows = `${process.env['SYSTEMDRIVE']}\\Windows\\System32\\tar.exe`;
 const TarFilename = 'cache.tar';
 const ManifestFilename = 'manifest.txt';
+// Prefix the cache backend embeds in a read-denial message (v2 twirp
+// GetCacheEntryDownloadURL error or the GHES v1 `_apis/artifactcache` 403 body).
+// Shared so cache.ts and cacheHttpClient.ts match the same contract value.
+const CacheReadDeniedMessagePrefix = 'cache read denied:';
 
 var __awaiter$9 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -78149,6 +78277,19 @@ function getCacheServiceVersion() {
         return 'v1';
     return process.env['ACTIONS_CACHE_SERVICE_V2'] ? 'v2' : 'v1';
 }
+// The cache-mode lattice: readable = {read, write}, writable = {write,
+// write-only}, none = neither.
+const KNOWN_CACHE_MODES = ['none', 'read', 'write', 'write-only'];
+// The effective cache-mode exported by the runner, or '' when not set.
+function getCacheMode() {
+    return (process.env['ACTIONS_CACHE_MODE'] || '').trim().toLowerCase();
+}
+// Unset or unrecognized modes are permissive so behavior matches today.
+function isCacheReadable(mode) {
+    if (!KNOWN_CACHE_MODES.includes(mode))
+        return true;
+    return mode === 'read' || mode === 'write';
+}
 function getCacheServiceURL() {
     const version = getCacheServiceVersion();
     // Based on the version of the cache service, we will determine which
@@ -78165,7 +78306,7 @@ function getCacheServiceURL() {
     }
 }
 
-var version = "6.1.0";
+var version = "6.2.0";
 var require$$0 = {
 	version: version};
 
@@ -78230,6 +78371,7 @@ function createHttpClient() {
 }
 function getCacheEntry(keys, paths, options) {
     return __awaiter$6(this, void 0, void 0, function* () {
+        var _a;
         const httpClient = createHttpClient();
         const version = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
         const resource = `cache?keys=${encodeURIComponent(keys.join(','))}&version=${version}`;
@@ -78243,6 +78385,12 @@ function getCacheEntry(keys, paths, options) {
             return null;
         }
         if (!isSuccessStatusCode(response.statusCode)) {
+            // Only surface the receiver's body for a `cache read denied:` policy denial
+            // so callers can dispatch on it; keep the generic message otherwise.
+            const errorMessage = (_a = response.error) === null || _a === void 0 ? void 0 : _a.message;
+            if (errorMessage === null || errorMessage === void 0 ? void 0 : errorMessage.includes(CacheReadDeniedMessagePrefix)) {
+                throw new Error(errorMessage);
+            }
             throw new Error(`Cache service responded with ${response.statusCode}`);
         }
         const cacheResult = response.result;
@@ -82288,6 +82436,19 @@ class ValidationError extends Error {
         Object.setPrototypeOf(this, ValidationError.prototype);
     }
 }
+// Re-exported from constants so consumers keep referencing it here; the shared
+// value also drives detection in cacheHttpClient without duplicating the string.
+const CACHE_READ_DENIED_PREFIX = CacheReadDeniedMessagePrefix;
+// Raised when the cache backend denies a download URL because the run's token
+// has no readable cache scopes. Caching is best-effort, so restoreCache logs a
+// warning and reports a cache miss rather than rethrowing this.
+class CacheReadDeniedError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'CacheReadDeniedError';
+        Object.setPrototypeOf(this, CacheReadDeniedError.prototype);
+    }
+}
 function checkPaths(paths) {
     if (!paths || paths.length === 0) {
         throw new ValidationError(`Path Validation Error: At least one directory or file path is required`);
@@ -82335,6 +82496,12 @@ function restoreCache(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         const cacheServiceVersion = getCacheServiceVersion();
         debug(`Cache service version: ${cacheServiceVersion}`);
         checkPaths(paths);
+        const cacheMode = getCacheMode();
+        if (!isCacheReadable(cacheMode)) {
+            info(`Cache restore skipped: the effective cache-mode '${cacheMode}' does not permit reads.`);
+            debug(`Skipped restore for paths [${paths.join(', ')}] with primary key '${primaryKey}'.`);
+            return undefined;
+        }
         switch (cacheServiceVersion) {
             case 'v2':
                 return yield restoreCacheV2(paths, primaryKey, restoreKeys, options, enableCrossOsArchive);
@@ -82356,6 +82523,7 @@ function restoreCache(paths_1, primaryKey_1, restoreKeys_1, options_1) {
  */
 function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
     return __awaiter$3(this, arguments, void 0, function* (paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false) {
+        var _a;
         restoreKeys = restoreKeys || [];
         const keys = [primaryKey, ...restoreKeys];
         debug('Resolved Keys:');
@@ -82370,10 +82538,26 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         let archivePath = '';
         try {
             // path are needed to compute version
-            const cacheEntry = yield getCacheEntry(keys, paths, {
-                compressionMethod,
-                enableCrossOsArchive
-            });
+            let cacheEntry;
+            try {
+                cacheEntry = yield getCacheEntry(keys, paths, {
+                    compressionMethod,
+                    enableCrossOsArchive
+                });
+            }
+            catch (error) {
+                // The v1 artifact cache service returns HTTP 403 with a
+                // `cache read denied:` body when the run's token has no readable cache
+                // scopes. getCacheEntry lives in a dependency-free internal module and
+                // cannot import CacheReadDeniedError without a circular dependency, so it
+                // only surfaces the raw denial message; we classify it into the typed
+                // error here so the outer catch and consumers can dispatch on it.
+                const errorMessage = (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : '';
+                if (errorMessage.includes(CACHE_READ_DENIED_PREFIX)) {
+                    throw new CacheReadDeniedError(errorMessage);
+                }
+                throw error;
+            }
             if (!(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.archiveLocation)) {
                 // Cache not found
                 return undefined;
@@ -82402,7 +82586,9 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
             }
             else {
                 // warn on cache restore failure and continue build
-                // Log server errors (5xx) as errors, all other errors as warnings
+                // Log server errors (5xx) as errors, all other errors as warnings.
+                // A read denied by policy (CacheReadDeniedError) is not an HttpClientError
+                // so it falls here and is warned, treated as a cache miss.
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
@@ -82437,6 +82623,7 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
  */
 function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
     return __awaiter$3(this, arguments, void 0, function* (paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false) {
+        var _a;
         // Override UploadOptions to force the use of Azure
         options = Object.assign(Object.assign({}, options), { useAzureSdk: true });
         restoreKeys = restoreKeys || [];
@@ -82458,7 +82645,20 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 restoreKeys,
                 version: getCacheVersion(paths, compressionMethod, enableCrossOsArchive)
             };
-            const response = yield twirpClient.GetCacheEntryDownloadURL(request);
+            let response;
+            try {
+                response = yield twirpClient.GetCacheEntryDownloadURL(request);
+            }
+            catch (error) {
+                // The receiver returns twirp PermissionDenied (403) when the run's token
+                // has no readable cache scopes. The client wraps that 403, so the stable
+                // prefix is embedded in the message rather than leading it.
+                const errorMessage = (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : '';
+                if (errorMessage.includes(CACHE_READ_DENIED_PREFIX)) {
+                    throw new CacheReadDeniedError(errorMessage);
+                }
+                throw error;
+            }
             if (!response.ok) {
                 debug(`Cache not found for version ${request.version} of keys: ${keys.join(', ')}`);
                 return undefined;
@@ -82493,8 +82693,10 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 throw error$1;
             }
             else {
-                // Supress all non-validation cache related errors because caching should be optional
-                // Log server errors (5xx) as errors, all other errors as warnings
+                // Suppress all non-validation cache related errors because caching should be optional
+                // Log server errors (5xx) as errors, all other errors as warnings.
+                // A read denied by policy (CacheReadDeniedError) is not an HttpClientError
+                // so it falls here and is warned, treated as a cache miss.
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
