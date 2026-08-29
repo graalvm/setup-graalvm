@@ -78,11 +78,14 @@ async function getGraalVMCEGitHubRelease(graalVMVersion: string): Promise<c.Late
 }
 
 async function findReleaseTag(graalVMVersion: string) {
-  let version = await findLatestGraalVMCEVersion(graalVMVersion, GRAALVM_GRAAL_TAG_PREFIX)
+  const findLatestVersion = usesNewInnovationReleaseTagging(graalVMVersion)
+    ? findLatestGraalVMInnovationCEVersion
+    : findLatestGraalVMCEVersion
+  let version = await findLatestVersion(graalVMVersion, GRAALVM_GRAAL_TAG_PREFIX)
   if (version !== null) {
     return GRAALVM_GRAAL_TAG_PREFIX + version
   }
-  version = await findLatestGraalVMCEVersion(graalVMVersion, GRAALVM_JDK_TAG_PREFIX)
+  version = await findLatestVersion(graalVMVersion, GRAALVM_JDK_TAG_PREFIX)
   if (version !== null) {
     return GRAALVM_JDK_TAG_PREFIX + version
   }
@@ -111,6 +114,50 @@ export async function findLatestGraalVMCEVersion(graalVMVersion: string, tagPref
     }
   }
   return highestVersion !== lowestNonExistingVersion ? highestVersion : null
+}
+
+// 25i3+ innovation releases are tagged with 4 version components (graal-25.3.4.1)
+function usesNewInnovationReleaseTagging(graalVMVersion: string): boolean {
+  const version = semver.coerce(graalVMVersion)
+  return version !== null && semver.gte(version, '25.3.0')
+}
+
+// variant of findLatestGraalVMCEVersion() for new innovation releases (just to be conservative)
+export async function findLatestGraalVMInnovationCEVersion(
+  graalVMVersion: string,
+  tagPrefix: string
+): Promise<string | null> {
+  const matchingRefs = await getMatchingTags(
+    c.GRAALVM_GH_USER,
+    c.GRAALVM_RELEASES_REPO,
+    `${tagPrefix}${graalVMVersion}`
+  )
+  const lowestNonExistingVersion = '0.0.1'
+  let highestVersion = lowestNonExistingVersion
+  let highestSemVer = lowestNonExistingVersion
+  const versionNumberStartIndex = `refs/tags/${tagPrefix}`.length
+  for (const matchingRef of matchingRefs) {
+    const currentVersion = matchingRef.ref.substring(versionNumberStartIndex)
+    const currentSemVer = semver.valid(currentVersion) ?? innovationVersionToSemVer(currentVersion)
+    if (!currentSemVer) {
+      core.warning(`Skipping unexpected GraalVM CE release ${currentVersion}. ${c.ERROR_REQUEST}`)
+      continue
+    }
+    if (semver.gt(currentSemVer, highestSemVer)) {
+      highestSemVer = currentSemVer
+      highestVersion = currentVersion
+    }
+  }
+  return highestVersion !== lowestNonExistingVersion ? highestVersion : null
+}
+
+// turn 'a.b.c.d' into 'a.b.c-d'
+function innovationVersionToSemVer(version: string): string | null {
+  const parts = version.split('.')
+  if (parts.length !== 4 || parts.some((part) => !/^\d+$/.test(part))) {
+    return null
+  }
+  return semver.valid(`${parts[0]}.${parts[1]}.${parts[2]}-${parts[3]}`)
 }
 
 function findAssetDownloadUrl(release: c.LatestReleaseResponseData) {

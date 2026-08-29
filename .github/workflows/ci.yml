@@ -66,6 +66,10 @@ jobs:
           - version: 'dev'
             distribution: 'graalvm-community'
             os: ubuntu-latest
+          # New innovation releases with 4 version components
+          - version: '25i3'
+            distribution: 'graalvm-community'
+            os: ubuntu-latest
           # with GDS token
           - version: '25.0'
             distribution: 'graalvm'

@@ -96,3 +96,14 @@ test('find EA version/javaVersion', async () => {
   }
   expect(error.message).toContain('Unable to resolve download URL for')
 })
+
+test('find version of new innovation releases (25i3+)', async () => {
+  // 25i3+ releases are tagged with 4 version components (graal-25.3.4.1')
+  const version = await graalvm.findLatestGraalVMInnovationCEVersion('25.3', 'graal-')
+  expect(version).not.toBeNull()
+  expect(version).toMatch(/^25\.3(\.\d+)+$/)
+
+  // previous innovation releases with 3 version components
+  expect(await graalvm.findLatestGraalVMCEVersion('25.1', 'graal-')).toBe('25.1.3')
+  expect(await graalvm.findLatestGraalVMCEVersion('25.2', 'graal-')).toBe('25.2.4')
+})
