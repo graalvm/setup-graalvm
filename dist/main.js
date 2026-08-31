@@ -39077,11 +39077,7 @@ async function findLatestGraalVMCEVersion(graalVMVersion, tagPrefix) {
     const versionNumberStartIndex = `refs/tags/${tagPrefix}`.length;
     for (const matchingRef of matchingRefs) {
         const currentVersion = matchingRef.ref.substring(versionNumberStartIndex);
-        if (!semverExports.valid(currentVersion)) {
-            warning(`Skipping unexpected GraalVM CE release ${currentVersion}. ${ERROR_REQUEST}`);
-            continue;
-        }
-        if (semverExports.gt(currentVersion, highestVersion)) {
+        if (semverExports.gt(semverExports.coerce(currentVersion) || lowestNonExistingVersion, highestVersion)) {
             highestVersion = currentVersion;
         }
     }

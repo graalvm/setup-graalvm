@@ -28,10 +28,10 @@ afterAll(() => {
 test('fetch artifacts', async () => {
   let artifact
   // Test innovation releases
-  for (const version of ['25.1', '25.1.3']) {
+  for (const version of ['25.3', '25.3.4.1']) {
     artifact = await fetchArtifact(TEST_USER_AGENT, version, '25')
-    expect(artifact.id).toBe('FE09EC0A4D9244CA834F1777BCA30041')
-    expect(artifact.checksum).toBe('efcb8984be5f72ecf8615641bec720c825a6889957f0b98d95123f563ff77c86')
+    expect(artifact.id).toBe('47B3692F0EC54D22A1DAC450AD7225D1')
+    expect(artifact.checksum).toBe('814deac144a912035c4e824e05fa06a2e0c83821f0fb9d1084bc916e5eeef247')
   }
   // Test 25 LTS
   artifact = await fetchArtifact(TEST_USER_AGENT, '25.0', '25')
