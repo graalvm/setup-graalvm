@@ -32,6 +32,15 @@ test('request invalid version/javaVersion', async () => {
   }
 })
 
+test('find innovation release', async () => {
+  const ghRelease = await graalvm.getGraalVMCEGitHubRelease('25.3.4.1')
+  expect(ghRelease.tag_name).toBe('graal-25.3.4.1')
+  expect(ghRelease.assets.length).toBe(8)
+  for (const asset of ghRelease.assets) {
+    expect(asset.name.includes('-25i3-')).toBe(true)
+  }
+})
+
 test('find version/javaVersion', async () => {
   // Make sure the action can find the latest Java version for known major versions
   for (const majorJavaVersion of ['17', '20']) {

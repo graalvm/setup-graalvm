@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: graalvm/setup-graalvm@v1
         with:
-          version: '25.1'         # or '25.0' for LTS; See 'Options' for more details
+          version: '25.3'         # or '25.0' for LTS; See 'Options' for more details
           distribution: 'graalvm' # See 'Supported distributions' for available options
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Example step
@@ -92,7 +92,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: graalvm/setup-graalvm@v1
         with:
-          version: '25.1'
+          version: '25.3'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```

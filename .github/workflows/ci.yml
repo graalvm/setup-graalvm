@@ -44,9 +44,9 @@ jobs:
     strategy:
       matrix:
         version: [
-            '25.1',
-            '25i1', # innovation release
-            '25.1.3', # full version
+            '25.3',
+            '25i3', # innovation release
+            '25.3.4.1', # full version
             '25.0' # LTS release
           ]
         distribution: ['graalvm', 'graalvm-community']

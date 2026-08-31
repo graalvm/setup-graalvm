@@ -72,7 +72,7 @@ export async function setUpGraalVMJDKCE(graalVMVersionOrDev: string, javaVersion
   return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion)
 }
 
-async function getGraalVMCEGitHubRelease(graalVMVersion: string): Promise<c.LatestReleaseResponseData> {
+export async function getGraalVMCEGitHubRelease(graalVMVersion: string): Promise<c.LatestReleaseResponseData> {
   const releaseTag = await findReleaseTag(graalVMVersion)
   return await getTaggedRelease(c.GRAALVM_GH_USER, c.GRAALVM_RELEASES_REPO, releaseTag)
 }
@@ -102,11 +102,7 @@ export async function findLatestGraalVMCEVersion(graalVMVersion: string, tagPref
   const versionNumberStartIndex = `refs/tags/${tagPrefix}`.length
   for (const matchingRef of matchingRefs) {
     const currentVersion = matchingRef.ref.substring(versionNumberStartIndex)
-    if (!semver.valid(currentVersion)) {
-      core.warning(`Skipping unexpected GraalVM CE release ${currentVersion}. ${c.ERROR_REQUEST}`)
-      continue
-    }
-    if (semver.gt(currentVersion, highestVersion)) {
+    if (semver.gt(semver.coerce(currentVersion) || lowestNonExistingVersion, highestVersion)) {
       highestVersion = currentVersion
     }
   }
