@@ -15,3 +15,7 @@ updates:
     directory: '/'
     patterns: ['*']
     multi-ecosystem-group: 'all'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types:
+          - 'version-update:semver-major'
