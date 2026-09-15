@@ -481,7 +481,7 @@ jobs:
       - name: Run setup-graalvm action
         uses: ./
         with:
-          java-version: '17.0.20'
+          java-version: ${{ secrets.GDS_TOKEN != '' && '17.0.20' || '17.0.12' }}
           distribution: 'graalvm'
           components: 'espresso,native-image,js'
           set-java-home: 'false'
