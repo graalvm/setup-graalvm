@@ -13,7 +13,8 @@ import {
 import {
   downloadGraalVMViaGDS,
   downloadGraalVMViaGDSByJavaVersion,
-  downloadGraalVMViaGDSByJavaVersionEELegacy
+  downloadGraalVMViaGDSByJavaVersionEELegacy,
+  downloadLatestInnovationRelease
 } from './gds.js'
 import { basename } from 'path'
 
@@ -25,6 +26,7 @@ const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds'
 const GRAALVM_JDK_TAG_PREFIX = 'jdk-'
 const GRAALVM_GRAAL_TAG_PREFIX = 'graal-'
 const GRAALVM_VM_TAG_PREFIX = 'vm-'
+const GRAALVM_INNOVATION_LATEST_PATTERN = /^(\d+)i-latest$/
 
 // Support for GraalVM innovation releases and later
 
@@ -45,9 +47,18 @@ export async function setUpGraalVMJDK(
     const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, resolvedVersion)
     return downloadExtractAndCacheJDK(downloader, toolName, resolvedVersion)
   }
-  const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrEA)
-  const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semver.coerce(graalVMVersion)?.major
-  const downloader = async () => downloadGraalVMViaGDS(gdsToken, graalVMVersion, jdkVersion)
+  const innovationLatestMatch = graalVMVersionOrEA.match(GRAALVM_INNOVATION_LATEST_PATTERN)
+  let graalVMVersion: string
+  let downloader
+  if (innovationLatestMatch) {
+    graalVMVersion = graalVMVersionOrEA
+    downloader = async () => downloadLatestInnovationRelease(gdsToken, false, graalVMVersion, innovationLatestMatch[1])
+  } else {
+    graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrEA)
+    const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semver.coerce(graalVMVersion)?.major
+    downloader = async () => downloadGraalVMViaGDS(gdsToken, graalVMVersion, jdkVersion)
+  }
+
   return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion)
 }
 
@@ -56,19 +67,28 @@ export async function setUpGraalVMJDKCE(graalVMVersionOrDev: string, javaVersion
     // dev builds
     return setUpGraalVMJDKDevBuild()
   }
-  const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semver.coerce(graalVMVersionOrDev)?.major
-  const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev)
+  const innovationLatestMatch = graalVMVersionOrDev.match(GRAALVM_INNOVATION_LATEST_PATTERN)
+  let graalVMVersion: string
+  let downloader
+  if (innovationLatestMatch) {
+    graalVMVersion = graalVMVersionOrDev
+    downloader = async () => downloadLatestInnovationRelease('', true, graalVMVersion, innovationLatestMatch[1])
+  } else {
+    const jdkVersion =
+      javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semver.coerce(graalVMVersionOrDev)?.major
+    graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev)
 
-  const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion)
-  const downloadUrl = findAssetDownloadUrl(githubRelease)
-  // Only a sanity check:
-  if (!downloadUrl.includes(`${jdkVersion}`)) {
-    core.warning(
-      `JDK version does not match GraalVM CE release. Are you sure java-version: '${jdkVersion}' is correct?`
-    )
+    const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion)
+    const downloadUrl = findAssetDownloadUrl(githubRelease)
+    // Only a sanity check:
+    if (!downloadUrl.includes(`${jdkVersion}`)) {
+      core.warning(
+        `JDK version does not match GraalVM CE release. Are you sure java-version: '${jdkVersion}' is correct?`
+      )
+    }
+    downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion)
   }
-  const toolName = determineLegacyToolName(false, graalVMVersion, jdkVersion)
-  const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion)
+  const toolName = determineToolName(graalVMVersion, true)
   return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion)
 }
 

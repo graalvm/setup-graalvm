@@ -11,6 +11,7 @@ import { createHash } from 'crypto'
 import { extname, join } from 'path'
 import { tmpdir } from 'os'
 import { GitHub } from '@actions/github/lib/utils'
+import { HttpClient } from '@actions/http-client'
 
 export async function exec(commandLine: string, args?: string[], options?: ExecOptions | undefined): Promise<void> {
   const exitCode = await e(commandLine, args, options)
@@ -156,6 +157,12 @@ function findJavaHomeInSubfolder(searchPath: string): string {
   } else {
     throw new Error(`Unexpected amount of directory items found: ${baseContents.length}`)
   }
+}
+
+export function httpGetJSON(requestUrl: string) {
+  const http = new HttpClient(c.GDS_USER_AGENT)
+  core.debug(`Requesting ${requestUrl}`)
+  return http.get(requestUrl, { accept: 'application/json' })
 }
 
 export function toSemVer(version: string): string {

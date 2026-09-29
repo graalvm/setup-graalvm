@@ -9,7 +9,7 @@ import * as util from 'util'
 import * as semver from 'semver'
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http'
 import { RetryHelper } from './utils/retry-helper.js'
-import { calculateSHA256 } from './utils.js'
+import { calculateSHA256, httpGetJSON } from './utils.js'
 import { ok } from 'assert'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -36,22 +36,36 @@ interface GDSErrorResponse {
 
 // Support for Oracle GraalVM innovation releases
 
+export async function downloadLatestInnovationRelease(
+  gdsToken: string,
+  isCE: boolean,
+  graalVMVersionOrEA: string,
+  majorJavaVersion: string
+): Promise<string> {
+  const artifact = await findLatestInnovationRelease(isCE, graalVMVersionOrEA, majorJavaVersion)
+  return downloadArtifact(gdsToken, artifact)
+}
+
+export async function findLatestInnovationRelease(
+  isCE: boolean,
+  graalVMVersionOrEA: string,
+  majorJavaVersion: string
+): Promise<GDSArtifact> {
+  const displayName = `Oracle GraalVM${isCE ? ' Community ' : ' '}${majorJavaVersion} Innovation`
+  const filter = `&${new URLSearchParams({ displayName })}${c.GDS_LATEST_FILTER}&responseFields=metadata`
+  return fetchGDSArtifact(isCE, graalVMVersionOrEA, majorJavaVersion, majorJavaVersion, filter)
+}
+
 export async function downloadGraalVMViaGDS(
   gdsToken: string,
   graalVMVersion: string,
   jdkVersion: string
 ): Promise<string> {
-  const baseArtifact = await fetchArtifact(c.GDS_USER_AGENT, graalVMVersion, jdkVersion)
-  return downloadArtifact(gdsToken, baseArtifact)
+  const artifact = await fetchArtifact(graalVMVersion, jdkVersion)
+  return downloadArtifact(gdsToken, artifact)
 }
 
-export async function fetchArtifact(
-  userAgent: string,
-  graalVMVersion: string,
-  jdkVersion: string
-): Promise<GDSArtifact> {
-  const http = new httpClient.HttpClient(userAgent)
-
+export async function fetchArtifact(graalVMVersion: string, jdkVersion: string): Promise<GDSArtifact> {
   let majorJavaVersion
   if (semver.valid(jdkVersion)) {
     majorJavaVersion = semver.major(jdkVersion)
@@ -59,10 +73,18 @@ export async function fetchArtifact(
     majorJavaVersion = jdkVersion
   }
   const filter = `&displayName=Oracle%20GraalVM${c.GDS_LAST_FILTER}&responseFields=metadata`
+  return fetchGDSArtifact(false, graalVMVersion, majorJavaVersion, graalVMVersion, filter)
+}
 
-  const requestUrl = c.gdsArtifactQueryUrl(majorJavaVersion, filter)
-  core.debug(`Requesting ${requestUrl}`)
-  const response = await http.get(requestUrl, { accept: 'application/json' })
+async function fetchGDSArtifact(
+  isCE: boolean,
+  graalVMVersion: string,
+  majorJavaVersion: string | number,
+  matchVersion: string,
+  filter: string
+): Promise<GDSArtifact> {
+  const requestUrl = c.gdsArtifactQueryUrl(isCE, majorJavaVersion, filter)
+  const response = await httpGetJSON(requestUrl)
   if (response.message.statusCode !== 200) {
     throw new Error(`Unable to find GraalVM ${graalVMVersion}. Are you sure version: '${graalVMVersion}' is correct?`)
   }
@@ -75,22 +97,20 @@ export async function fetchArtifact(
     }
     for (const metadata of artifact.metadata) {
       if (metadata.key === 'version') {
-        if (metadata.value.includes(graalVMVersion)) {
+        if (metadata.value.includes(matchVersion)) {
           return artifact
         }
         break
       }
     }
   }
-  throw new Error(
-    `Unable to find GDS artifact. Are you sure version: '${graalVMVersion}' and java-version: '${jdkVersion}' are correct?`
-  )
+  throw new Error(`Unable to find GDS artifact. Are you sure version: '${graalVMVersion}' is correct?`)
 }
 
 // Support for GraalVM EE
 
 export async function downloadGraalVMViaGDSByJavaVersion(gdsToken: string, javaVersion: string): Promise<string> {
-  const baseArtifact = await fetchArtifactByJavaVersion(c.GDS_USER_AGENT, javaVersion)
+  const baseArtifact = await fetchArtifactByJavaVersion(javaVersion)
   return downloadArtifact(gdsToken, baseArtifact)
 }
 
@@ -99,13 +119,11 @@ export async function downloadGraalVMViaGDSByJavaVersionEELegacy(
   version: string,
   javaVersion: string
 ): Promise<string> {
-  const baseArtifact = await fetchArtifactEE(c.GDS_USER_AGENT, version, javaVersion)
+  const baseArtifact = await fetchArtifactEE(version, javaVersion)
   return downloadArtifact(gdsToken, baseArtifact)
 }
 
-export async function fetchArtifactByJavaVersion(userAgent: string, javaVersion: string): Promise<GDSArtifact> {
-  const http = new httpClient.HttpClient(userAgent)
-
+export async function fetchArtifactByJavaVersion(javaVersion: string): Promise<GDSArtifact> {
   const javaVersionCoerced = semver.coerce(javaVersion)
   const majorJavaVersion = javaVersionCoerced ? javaVersionCoerced.major : javaVersion
 
@@ -116,9 +134,8 @@ export async function fetchArtifactByJavaVersion(userAgent: string, javaVersion:
     filter += c.GDS_LATEST_FILTER
   }
 
-  const requestUrl = c.gdsArtifactQueryUrl(majorJavaVersion, filter)
-  core.debug(`Requesting ${requestUrl}`)
-  const response = await http.get(requestUrl, { accept: 'application/json' })
+  const requestUrl = c.gdsArtifactQueryUrl(false, majorJavaVersion, filter)
+  const response = await httpGetJSON(requestUrl)
   if (response.message.statusCode !== 200) {
     throw new Error(`Unable to find GDS artifact. Are you sure java-version: '${javaVersion}' is correct?`)
   }
@@ -133,9 +150,7 @@ export async function fetchArtifactByJavaVersion(userAgent: string, javaVersion:
   return artifactResponse.items[0]
 }
 
-export async function fetchArtifactEE(userAgent: string, version: string, javaVersion: string): Promise<GDSArtifact> {
-  const http = new httpClient.HttpClient(userAgent)
-
+export async function fetchArtifactEE(version: string, javaVersion: string): Promise<GDSArtifact> {
   let filter = '&displayName=GraalVM%20Enterprise%20Edition'
   if (version === c.VERSION_LATEST) {
     filter += c.GDS_LATEST_FILTER
@@ -143,9 +158,8 @@ export async function fetchArtifactEE(userAgent: string, version: string, javaVe
     filter += `&metadata=version:${version}`
   }
 
-  const requestUrl = c.gdsArtifactQueryUrl(javaVersion, filter)
-  core.debug(`Requesting ${requestUrl}`)
-  const response = await http.get(requestUrl, { accept: 'application/json' })
+  const requestUrl = c.gdsArtifactQueryUrl(false, javaVersion, filter)
+  const response = await httpGetJSON(requestUrl)
   if (response.message.statusCode !== 200) {
     throw new Error(`Unable to find JDK${javaVersion}-based GraalVM EE ${version}`)
   }
