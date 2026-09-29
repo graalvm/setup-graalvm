@@ -5,12 +5,12 @@ import {
   downloadGraalVMViaGDSByJavaVersionEELegacy,
   fetchArtifact,
   fetchArtifactByJavaVersion,
-  fetchArtifactEE
+  fetchArtifactEE,
+  findLatestInnovationRelease
 } from '../src/gds'
 import { afterAll, beforeAll, expect, test } from '@jest/globals'
 import { fileURLToPath } from 'url'
 
-const TEST_USER_AGENT = 'GraalVMGitHubActionTest/1.0.4'
 const originalGDSTarget = { ...c.GDS_TARGET }
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -25,24 +25,42 @@ afterAll(() => {
   Object.assign(c.GDS_TARGET, originalGDSTarget)
 })
 
+test('find latest innovation releases', async () => {
+  for (const isCE of [false, true]) {
+    const artifact = await findLatestInnovationRelease(isCE, '25i-latest', '25')
+    expect(artifact.metadata === null).toBe(false)
+    let version = 'unknown'
+    let edition = 'unknown'
+    for (const metadata of artifact.metadata || []) {
+      if (metadata.key === 'version') {
+        version = metadata.value
+      } else if (metadata.key === 'edition') {
+        edition = metadata.value
+      }
+    }
+    expect(version.startsWith('25.')).toBe(true)
+    expect(edition).toBe(isCE ? 'ce' : 'ee')
+  }
+})
+
 test('fetch artifacts', async () => {
   let artifact
   // Test innovation releases
   for (const version of ['25.3', '25.3.4.1']) {
-    artifact = await fetchArtifact(TEST_USER_AGENT, version, '25')
+    artifact = await fetchArtifact(version, '25')
     expect(artifact.id).toBe('47B3692F0EC54D22A1DAC450AD7225D1')
     expect(artifact.checksum).toBe('814deac144a912035c4e824e05fa06a2e0c83821f0fb9d1084bc916e5eeef247')
   }
   // Test 25 LTS
-  artifact = await fetchArtifact(TEST_USER_AGENT, '25.0', '25')
+  artifact = await fetchArtifact('25.0', '25')
   expect(artifact.checksum).toHaveLength('b6f3dace24cf1960ec790216f4c86f00d4f43df64e4e8b548f6382f04894713f'.length)
 })
 
 test('fetch artifacts by java version', async () => {
-  let artifact = await fetchArtifactByJavaVersion(TEST_USER_AGENT, '17.0.12')
+  let artifact = await fetchArtifactByJavaVersion('17.0.12')
   expect(artifact.id).toBe('1C351E8F41BB8E9EE0631518000AE5F2')
   expect(artifact.checksum).toBe('b6f3dace24cf1960ec790216f4c86f00d4f43df64e4e8b548f6382f04894713f')
-  artifact = await fetchArtifactByJavaVersion(TEST_USER_AGENT, '17')
+  artifact = await fetchArtifactByJavaVersion('17')
   expect(artifact.checksum).toHaveLength('b6f3dace24cf1960ec790216f4c86f00d4f43df64e4e8b548f6382f04894713f'.length)
 })
 
@@ -56,16 +74,14 @@ test('errors when downloading artifacts', async () => {
 })
 
 test('fetch legacy artifacts', async () => {
-  let artifact = await fetchArtifactEE(TEST_USER_AGENT, '22.1.0', '11')
+  let artifact = await fetchArtifactEE('22.1.0', '11')
   expect(artifact.id).toBe('DCECD1C1B0B5B8DBE0536E16000A5C74')
   expect(artifact.checksum).toBe('4280782f6c7fcabe0ba707e8389cbfaf7bbe6b0cf634d309e6efcd1b172e3ce6')
-  artifact = await fetchArtifactEE(TEST_USER_AGENT, '22.1.0', '17')
+  artifact = await fetchArtifactEE('22.1.0', '17')
   expect(artifact.id).toBe('DCECD2068882A0E9E0536E16000A9504')
   expect(artifact.checksum).toBe('e897add7d94bc456a61e6f927e831dff759efa3392a4b69c720dd3debc8f947d')
 
-  await expect(fetchArtifactEE(TEST_USER_AGENT, '1.0.0', '11')).rejects.toThrow(
-    'Unable to find JDK11-based GraalVM EE 1.0.0'
-  )
+  await expect(fetchArtifactEE('1.0.0', '11')).rejects.toThrow('Unable to find JDK11-based GraalVM EE 1.0.0')
 })
 
 test('errors when downloading legacy artifacts', async () => {

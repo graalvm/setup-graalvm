@@ -85,7 +85,9 @@ const GRAALVM_RELEASES_REPO = 'graalvm-ce-builds';
 const MANDREL_NAMESPACE = 'mandrel-';
 const GDS_BASE = 'https://gds.oracle.com/api/20220101';
 const GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6';
-const GDS_ARTIFACTS_BASE = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&metadata=edition:ee&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum`;
+const GDS_ARTIFACTS_BASE = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum`;
+const GDS_ARTIFACTS_CE_BASE = `${GDS_ARTIFACTS_BASE}&metadata=edition:ce`;
+const GDS_ARTIFACTS_ORACLE_BASE = `${GDS_ARTIFACTS_BASE}&metadata=edition:ee`;
 /* Latest is currently based on timeCreated. Eventually, we should sortBy=m:version when version sorting is fixed. */
 const GDS_LAST_FILTER = '&sortBy=timeCreated&sortOrder=DESC';
 const GDS_LATEST_FILTER = `${GDS_LAST_FILTER}&limit=1`;
@@ -99,7 +101,7 @@ const GDS_TARGET = {
     os: IS_MACOS ? 'macos' : GRAALVM_PLATFORM
 };
 const gdsJDKFilter = (jdkMajorVersion) => `&metadata=java:jdk${jdkMajorVersion}&metadata=os:${GDS_TARGET.os}&metadata=arch:${GDS_TARGET.arch}`;
-const gdsArtifactQueryUrl = (jdkMajorVersion, filter) => `${GDS_ARTIFACTS_BASE}${gdsJDKFilter(jdkMajorVersion)}${filter}`;
+const gdsArtifactQueryUrl = (isCE, jdkMajorVersion, filter) => `${isCE ? GDS_ARTIFACTS_CE_BASE : GDS_ARTIFACTS_ORACLE_BASE}${gdsJDKFilter(jdkMajorVersion)}${filter}`;
 const gdsArtifactDownloadUrl = (artifactId) => `${GDS_BASE}/artifacts/${artifactId}/content`;
 const ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
 const EVENT_NAME_PULL_REQUEST = 'pull_request';
@@ -38881,6 +38883,11 @@ function findJavaHomeInSubfolder(searchPath) {
         throw new Error(`Unexpected amount of directory items found: ${baseContents.length}`);
     }
 }
+function httpGetJSON(requestUrl) {
+    const http = new HttpClient(GDS_USER_AGENT);
+    debug(`Requesting ${requestUrl}`);
+    return http.get(requestUrl, { accept: 'application/json' });
+}
 function toSemVer(version) {
     const parts = version.split('.');
     if (parts.length === 4) {
@@ -39072,12 +39079,20 @@ function _v4(options, buf, offset) {
 }
 
 // Support for Oracle GraalVM innovation releases
-async function downloadGraalVMViaGDS(gdsToken, graalVMVersion, jdkVersion) {
-    const baseArtifact = await fetchArtifact(GDS_USER_AGENT, graalVMVersion, jdkVersion);
-    return downloadArtifact(gdsToken, baseArtifact);
+async function downloadLatestInnovationRelease(gdsToken, isCE, graalVMVersionOrEA, majorJavaVersion) {
+    const artifact = await findLatestInnovationRelease(isCE, graalVMVersionOrEA, majorJavaVersion);
+    return downloadArtifact(gdsToken, artifact);
 }
-async function fetchArtifact(userAgent, graalVMVersion, jdkVersion) {
-    const http = new HttpClient(userAgent);
+async function findLatestInnovationRelease(isCE, graalVMVersionOrEA, majorJavaVersion) {
+    const displayName = `Oracle GraalVM${isCE ? ' Community ' : ' '}${majorJavaVersion} Innovation`;
+    const filter = `&${new URLSearchParams({ displayName })}${GDS_LATEST_FILTER}&responseFields=metadata`;
+    return fetchGDSArtifact(isCE, graalVMVersionOrEA, majorJavaVersion, majorJavaVersion, filter);
+}
+async function downloadGraalVMViaGDS(gdsToken, graalVMVersion, jdkVersion) {
+    const artifact = await fetchArtifact(graalVMVersion, jdkVersion);
+    return downloadArtifact(gdsToken, artifact);
+}
+async function fetchArtifact(graalVMVersion, jdkVersion) {
     let majorJavaVersion;
     if (semverExports.valid(jdkVersion)) {
         majorJavaVersion = semverExports.major(jdkVersion);
@@ -39086,9 +39101,11 @@ async function fetchArtifact(userAgent, graalVMVersion, jdkVersion) {
         majorJavaVersion = jdkVersion;
     }
     const filter = `&displayName=Oracle%20GraalVM${GDS_LAST_FILTER}&responseFields=metadata`;
-    const requestUrl = gdsArtifactQueryUrl(majorJavaVersion, filter);
-    debug(`Requesting ${requestUrl}`);
-    const response = await http.get(requestUrl, { accept: 'application/json' });
+    return fetchGDSArtifact(false, graalVMVersion, majorJavaVersion, graalVMVersion, filter);
+}
+async function fetchGDSArtifact(isCE, graalVMVersion, majorJavaVersion, matchVersion, filter) {
+    const requestUrl = gdsArtifactQueryUrl(isCE, majorJavaVersion, filter);
+    const response = await httpGetJSON(requestUrl);
     if (response.message.statusCode !== 200) {
         throw new Error(`Unable to find GraalVM ${graalVMVersion}. Are you sure version: '${graalVMVersion}' is correct?`);
     }
@@ -39100,26 +39117,25 @@ async function fetchArtifact(userAgent, graalVMVersion, jdkVersion) {
         }
         for (const metadata of artifact.metadata) {
             if (metadata.key === 'version') {
-                if (metadata.value.includes(graalVMVersion)) {
+                if (metadata.value.includes(matchVersion)) {
                     return artifact;
                 }
                 break;
             }
         }
     }
-    throw new Error(`Unable to find GDS artifact. Are you sure version: '${graalVMVersion}' and java-version: '${jdkVersion}' are correct?`);
+    throw new Error(`Unable to find GDS artifact. Are you sure version: '${graalVMVersion}' is correct?`);
 }
 // Support for GraalVM EE
 async function downloadGraalVMViaGDSByJavaVersion(gdsToken, javaVersion) {
-    const baseArtifact = await fetchArtifactByJavaVersion(GDS_USER_AGENT, javaVersion);
+    const baseArtifact = await fetchArtifactByJavaVersion(javaVersion);
     return downloadArtifact(gdsToken, baseArtifact);
 }
 async function downloadGraalVMViaGDSByJavaVersionEELegacy(gdsToken, version, javaVersion) {
-    const baseArtifact = await fetchArtifactEE(GDS_USER_AGENT, version, javaVersion);
+    const baseArtifact = await fetchArtifactEE(version, javaVersion);
     return downloadArtifact(gdsToken, baseArtifact);
 }
-async function fetchArtifactByJavaVersion(userAgent, javaVersion) {
-    const http = new HttpClient(userAgent);
+async function fetchArtifactByJavaVersion(javaVersion) {
     const javaVersionCoerced = semverExports.coerce(javaVersion);
     const majorJavaVersion = javaVersionCoerced ? javaVersionCoerced.major : javaVersion;
     let filter = '&displayName=Oracle%20GraalVM';
@@ -39129,9 +39145,8 @@ async function fetchArtifactByJavaVersion(userAgent, javaVersion) {
     else {
         filter += GDS_LATEST_FILTER;
     }
-    const requestUrl = gdsArtifactQueryUrl(majorJavaVersion, filter);
-    debug(`Requesting ${requestUrl}`);
-    const response = await http.get(requestUrl, { accept: 'application/json' });
+    const requestUrl = gdsArtifactQueryUrl(false, majorJavaVersion, filter);
+    const response = await httpGetJSON(requestUrl);
     if (response.message.statusCode !== 200) {
         throw new Error(`Unable to find GDS artifact. Are you sure java-version: '${javaVersion}' is correct?`);
     }
@@ -39146,8 +39161,7 @@ async function fetchArtifactByJavaVersion(userAgent, javaVersion) {
     }
     return artifactResponse.items[0];
 }
-async function fetchArtifactEE(userAgent, version, javaVersion) {
-    const http = new HttpClient(userAgent);
+async function fetchArtifactEE(version, javaVersion) {
     let filter = '&displayName=GraalVM%20Enterprise%20Edition';
     if (version === VERSION_LATEST) {
         filter += GDS_LATEST_FILTER;
@@ -39155,9 +39169,8 @@ async function fetchArtifactEE(userAgent, version, javaVersion) {
     else {
         filter += `&metadata=version:${version}`;
     }
-    const requestUrl = gdsArtifactQueryUrl(javaVersion, filter);
-    debug(`Requesting ${requestUrl}`);
-    const response = await http.get(requestUrl, { accept: 'application/json' });
+    const requestUrl = gdsArtifactQueryUrl(false, javaVersion, filter);
+    const response = await httpGetJSON(requestUrl);
     if (response.message.statusCode !== 200) {
         throw new Error(`Unable to find JDK${javaVersion}-based GraalVM EE ${version}`);
     }
@@ -39280,6 +39293,7 @@ const GRAALVM_REPO_DEV_BUILDS = 'graalvm-ce-dev-builds';
 const GRAALVM_JDK_TAG_PREFIX = 'jdk-';
 const GRAALVM_GRAAL_TAG_PREFIX = 'graal-';
 const GRAALVM_VM_TAG_PREFIX = 'vm-';
+const GRAALVM_INNOVATION_LATEST_PATTERN = /^(\d+)i-latest$/;
 // Support for GraalVM innovation releases and later
 async function setUpGraalVMJDK(graalVMVersionOrEA, javaVersionOrEmpty, gdsToken) {
     const toolName = determineToolName$2(graalVMVersionOrEA, false);
@@ -39294,9 +39308,18 @@ async function setUpGraalVMJDK(graalVMVersionOrEA, javaVersionOrEmpty, gdsToken)
         const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, resolvedVersion);
         return downloadExtractAndCacheJDK(downloader, toolName, resolvedVersion);
     }
-    const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrEA);
-    const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semverExports.coerce(graalVMVersion)?.major;
-    const downloader = async () => downloadGraalVMViaGDS(gdsToken, graalVMVersion, jdkVersion);
+    const innovationLatestMatch = graalVMVersionOrEA.match(GRAALVM_INNOVATION_LATEST_PATTERN);
+    let graalVMVersion;
+    let downloader;
+    if (innovationLatestMatch) {
+        graalVMVersion = graalVMVersionOrEA;
+        downloader = async () => downloadLatestInnovationRelease(gdsToken, false, graalVMVersion, innovationLatestMatch[1]);
+    }
+    else {
+        graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrEA);
+        const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semverExports.coerce(graalVMVersion)?.major;
+        downloader = async () => downloadGraalVMViaGDS(gdsToken, graalVMVersion, jdkVersion);
+    }
     return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion);
 }
 async function setUpGraalVMJDKCE(graalVMVersionOrDev, javaVersionOrEmpty) {
@@ -39304,16 +39327,25 @@ async function setUpGraalVMJDKCE(graalVMVersionOrDev, javaVersionOrEmpty) {
         // dev builds
         return setUpGraalVMJDKDevBuild();
     }
-    const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semverExports.coerce(graalVMVersionOrDev)?.major;
-    const graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev);
-    const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion);
-    const downloadUrl = findAssetDownloadUrl(githubRelease);
-    // Only a sanity check:
-    if (!downloadUrl.includes(`${jdkVersion}`)) {
-        warning(`JDK version does not match GraalVM CE release. Are you sure java-version: '${jdkVersion}' is correct?`);
+    const innovationLatestMatch = graalVMVersionOrDev.match(GRAALVM_INNOVATION_LATEST_PATTERN);
+    let graalVMVersion;
+    let downloader;
+    if (innovationLatestMatch) {
+        graalVMVersion = graalVMVersionOrDev;
+        downloader = async () => downloadLatestInnovationRelease('', true, graalVMVersion, innovationLatestMatch[1]);
     }
-    const toolName = determineLegacyToolName(false, graalVMVersion, jdkVersion);
-    const downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion);
+    else {
+        const jdkVersion = javaVersionOrEmpty.length > 0 ? javaVersionOrEmpty : '' + semverExports.coerce(graalVMVersionOrDev)?.major;
+        graalVMVersion = normalizeInnovationReleaseVersions(graalVMVersionOrDev);
+        const githubRelease = await getGraalVMCEGitHubRelease(graalVMVersion);
+        const downloadUrl = findAssetDownloadUrl(githubRelease);
+        // Only a sanity check:
+        if (!downloadUrl.includes(`${jdkVersion}`)) {
+            warning(`JDK version does not match GraalVM CE release. Are you sure java-version: '${jdkVersion}' is correct?`);
+        }
+        downloader = async () => downloadGraalVMByJavaVersionJDK(downloadUrl, graalVMVersion);
+    }
+    const toolName = determineToolName$2(graalVMVersion, true);
     return downloadExtractAndCacheJDK(downloader, toolName, graalVMVersion);
 }
 async function getGraalVMCEGitHubRelease(graalVMVersion) {

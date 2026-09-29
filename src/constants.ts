@@ -44,7 +44,9 @@ export const MANDREL_NAMESPACE = 'mandrel-'
 
 const GDS_BASE = 'https://gds.oracle.com/api/20220101'
 const GDS_GRAALVM_PRODUCT_ID = 'D53FAE8052773FFAE0530F15000AA6C6'
-const GDS_ARTIFACTS_BASE = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&metadata=edition:ee&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum`
+const GDS_ARTIFACTS_BASE = `${GDS_BASE}/artifacts?productId=${GDS_GRAALVM_PRODUCT_ID}&metadata=isBase:True&status=PUBLISHED&responseFields=id&responseFields=checksum`
+const GDS_ARTIFACTS_CE_BASE = `${GDS_ARTIFACTS_BASE}&metadata=edition:ce`
+const GDS_ARTIFACTS_ORACLE_BASE = `${GDS_ARTIFACTS_BASE}&metadata=edition:ee`
 /* Latest is currently based on timeCreated. Eventually, we should sortBy=m:version when version sorting is fixed. */
 export const GDS_LAST_FILTER = '&sortBy=timeCreated&sortOrder=DESC'
 export const GDS_LATEST_FILTER = `${GDS_LAST_FILTER}&limit=1`
@@ -61,8 +63,8 @@ export const GDS_TARGET = {
 
 const gdsJDKFilter = (jdkMajorVersion: string | number) =>
   `&metadata=java:jdk${jdkMajorVersion}&metadata=os:${GDS_TARGET.os}&metadata=arch:${GDS_TARGET.arch}`
-export const gdsArtifactQueryUrl = (jdkMajorVersion: string | number, filter: string) =>
-  `${GDS_ARTIFACTS_BASE}${gdsJDKFilter(jdkMajorVersion)}${filter}`
+export const gdsArtifactQueryUrl = (isCE: boolean, jdkMajorVersion: string | number, filter: string) =>
+  `${isCE ? GDS_ARTIFACTS_CE_BASE : GDS_ARTIFACTS_ORACLE_BASE}${gdsJDKFilter(jdkMajorVersion)}${filter}`
 export const gdsArtifactDownloadUrl = (artifactId: string) => `${GDS_BASE}/artifacts/${artifactId}/content`
 
 export const ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME'
