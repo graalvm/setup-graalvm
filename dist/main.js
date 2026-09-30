@@ -39120,13 +39120,8 @@ async function downloadGraalVMViaGDSByJavaVersionEELegacy(gdsToken, version, jav
 }
 async function fetchArtifactByJavaVersion(userAgent, javaVersion) {
     const http = new HttpClient(userAgent);
-    let majorJavaVersion;
-    if (semverExports.valid(javaVersion)) {
-        majorJavaVersion = semverExports.major(javaVersion);
-    }
-    else {
-        majorJavaVersion = javaVersion;
-    }
+    const javaVersionCoerced = semverExports.coerce(javaVersion);
+    const majorJavaVersion = javaVersionCoerced ? javaVersionCoerced.major : javaVersion;
     let filter = '&displayName=Oracle%20GraalVM';
     if (javaVersion.includes('.')) {
         filter += `&metadata=version:${javaVersion}`;
