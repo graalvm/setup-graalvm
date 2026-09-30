@@ -472,16 +472,17 @@ jobs:
   test-action-extensive:
     name: extensive tests on ubuntu-latest
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
     permissions:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
+    env:
+      PASSES_GDS_TOKEN_CHECK: ${{ secrets.GDS_TOKEN != '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run setup-graalvm action
         uses: ./
         with:
-          java-version: ${{ secrets.GDS_TOKEN != '' && '17.0.20.1.1' || '17.0.12' }}
+          java-version: '17.0.20.1.1'
           distribution: 'graalvm'
           components: 'espresso,native-image,js'
           set-java-home: 'false'
@@ -489,6 +490,7 @@ jobs:
           native-image-pr-reports: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gds-token: ${{ secrets.GDS_TOKEN }}
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
       - name: Check environment
         run: |
           echo "GRAALVM_HOME: $GRAALVM_HOME"
@@ -501,14 +503,17 @@ jobs:
           gu list
           native-image --version
           [[ $(which js) == *"graalvm"* ]] || exit 45
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
       - name: Build HelloWorld.java with GraalVM Native Image
         run: |
           echo 'public class HelloWorld { public static void main(String[] args) { System.out.println("Hello, World!"); } }' > HelloWorld.java
           javac HelloWorld.java
           native-image -g HelloWorld
           ./helloworld
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
       - name: Remove components
         run: gu remove espresso js
+        if: ${{ env.PASSES_GDS_TOKEN_CHECK == 'true' }}
 
   test-action-sbom:
     name: test 'native-image-enable-sbom' option
