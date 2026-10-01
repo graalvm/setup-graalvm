@@ -230,46 +230,6 @@ This actions can be configured with the following options:
 **) Make sure that Native Image is used only once per build job. Otherwise, the report is only generated for the last Native Image build.*
 
 
-## Notes on Oracle GraalVM for JDK 17
-
-GraalVM for JDK 17.0.12 is the [last release of Oracle GraalVM for JDK 17 under the GFTC](https://blogs.oracle.com/java/post/jdk-17-approaches-endofpermissive-license).
-Updates after September 2024 will be licensed under the [GraalVM OTN License Including License for Early Adopter Versions](https://www.oracle.com/downloads/licenses/graalvm-otn-license.html) (GOTN) and production use beyond the limited free grants of the GraalVM OTN license will require a fee.
-
-As a user of `setup-graalvm`, you have the following options:
-
-- *Recommended*: Upgrade to Oracle GraalVM for JDK 21 or later to receive new updates.
-- *Not recommended*: Instead of `java-version: '17'`, use `java-version: '17.0.12'` in your workflow to keep using the last release under GFTC. This will also disable the warning. Note that switching to GraalVM Community Edition or other GraalVM distributions might provide you with even older releases of GraalVM.
-- Provide a `gds-token` to access Oracle GraalVM for JDK 17 under GOTN (see [Oracle GraalVM via GDS template](#template-for-oracle-graalvm-via-graalvm-download-service)).
-
-
-## Migrating from GraalVM 22.3 or Earlier to the New GraalVM for JDK 17 and Later
-
-The [GraalVM for JDK 17 and JDK 20 release](https://medium.com/graalvm/a-new-graalvm-release-and-new-free-license-4aab483692f5) aligns the GraalVM version scheme with OpenJDK.
-As a result, this action no longer requires the `version` option to select a specific GraalVM version.
-At the same time, it introduces a new `distribution` option to select a specific GraalVM distribution (`graalvm`, `graalvm-community`, or `mandrel`).
-Therefore, to migrate your workflow to use the latest GraalVM release, replace the `version` with the `distribution` option in the workflow `yml` config, for example:
-
-```yml
-# ...
-- uses: graalvm/setup-graalvm@v1
-  with:
-    java-version: '17'
-    version: '22.3.2' # Old 'version' option for the GraalVM version
-    # ...
-```
-
-can be replaced with:
-
-```yml
-# ...
-- uses: graalvm/setup-graalvm@v1
-  with:
-    java-version: '17.0.12' # for a specific JDK 17; or '17' for the latest JDK 17
-    distribution: 'graalvm' # New 'distribution' option
-    # ...
-```
-
-
 ## Contributing
 
 We welcome code contributions. To get started, you will need to sign the [Oracle Contributor Agreement][oca] (OCA).
