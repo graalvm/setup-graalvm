@@ -211,7 +211,7 @@ This actions can be configured with the following options:
 
 | Name            | Default  | Description |
 |-----------------|:--------:|-------------|
-| `version`       | `''`     | `X.Y` (e.g., `25.0`) for GraalVM releases starting 25.0<br>`25i-latest` for the latest GraalVM 25 innovation release<br>`X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release. |
+| `version`       | `''`     | `X.Y` (e.g., `25.0`, `25.4`) for [GraalVM releases][releases] starting 25.0<br>`25i-latest` for the latest GraalVM 25 innovation release<br>`X.Y.Z` (e.g., `22.3.0`) for a specific [GraalVM release][releases] up to `22.3.2`<br>`mandrel-X.Y.Z.W` or `X.Y.Z.W-Final` (e.g., `mandrel-21.3.0.0-Final` or `21.3.0.0-Final`) for a specific [Mandrel release][mandrel-releases],<br>`mandrel-latest` or `latest` for the latest Mandrel stable release. |
 | `java-version`  | `''`     | Java version <ul><li>major versions: `'25'`, `'21'`, `'17'`, `'11'`, `'8'`</li><li>specific versions: `'25.0.3'`, `'21.0.3'`</li><li>early access (EA) builds: `'25i5-ea'` *(requires `distribution: 'graalvm'`)*</li><li>latest EA build: `'latest-ea'` *(requires `distribution: 'graalvm'`)*</li><li>dev builds: `'dev'` *(requires `distribution: 'graalvm-community'`)*</li></ul> |
 | `distribution`  | `'graalvm'` | GraalVM distribution (see [supported distributions](#supported-distributions)) |
 | `java-package`  | `'jdk'` | The package type (`'jdk'` or `'jdk+fx'`). Currently applies to Liberica only. |
