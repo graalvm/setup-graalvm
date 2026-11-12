@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
       - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        uses: actions/setup-node@v7.1.0
         with:
           node-version-file: .node-version
           cache: npm
@@ -73,9 +73,9 @@ jobs:
             os: ubuntu-latest
             set-gds-token: true
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
@@ -164,9 +164,9 @@ jobs:
             os: ubuntu-latest
             set-gds-token: true
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           java-version: ${{ matrix.java-version }}
           distribution: ${{ matrix.distribution }}
@@ -223,9 +223,9 @@ jobs:
             java-version: 'dev'
             os: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           version: ${{ matrix.version }}
           java-version: ${{ matrix.java-version }}
@@ -267,9 +267,9 @@ jobs:
         components: ['native-image']
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           version: ${{ matrix.version }}
           gds-token: ${{ secrets.GDS_TOKEN }}
@@ -328,9 +328,9 @@ jobs:
             distribution: 'mandrel'
             os: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
@@ -363,9 +363,9 @@ jobs:
         java-package: ['', 'jdk', 'jdk+fx']
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           distribution: liberica
           java-version: ${{ matrix.java-version }}
@@ -403,9 +403,9 @@ jobs:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           java-version: 'dev'
           distribution: 'graalvm-community'
@@ -426,9 +426,9 @@ jobs:
       contents: read
       pull-requests: write # for `native-image-pr-reports` option
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           java-version: '17'
           distribution: 'graalvm'
@@ -453,9 +453,9 @@ jobs:
         java-version: ['21', '25']
         os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           java-version: ${{ matrix.java-version }}
           distribution: 'graalvm'
@@ -479,9 +479,9 @@ jobs:
     env:
       PASSES_GDS_TOKEN_CHECK: ${{ secrets.GDS_TOKEN != '' }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           java-version: '17.0.20.1.1'
           distribution: 'graalvm'
@@ -528,9 +528,9 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest, ubuntu-22.04-arm]
         components: ['']
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run setup-graalvm action
-        uses: ./
+        uses: $/
         with:
           java-version: ${{ matrix.java-version }}
           distribution: ${{ matrix.distribution }}
