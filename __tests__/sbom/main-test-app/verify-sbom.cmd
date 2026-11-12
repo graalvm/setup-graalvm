@@ -2,7 +2,7 @@
 set "SCRIPT_DIR=%~dp0"
 
 for %%p in (
-    "\"pkg:maven/org.json/json@20250517\""
+    "\"pkg:maven/org.json/json@20260719\""
     "\"main-test-app\""
     "\"svm\""
     "\"nativeimage\""

@@ -144,13 +144,13 @@ describe('sbom feature', () => {
           type: 'library',
           group: 'org.json',
           name: 'json',
-          version: '20250517',
-          purl: 'pkg:maven/org.json/json@20250517',
-          'bom-ref': 'pkg:maven/org.json/json@20250517',
+          version: '20260719',
+          purl: 'pkg:maven/org.json/json@20260719',
+          'bom-ref': 'pkg:maven/org.json/json@20260719',
           properties: [
             {
               name: 'syft:cpe23',
-              value: 'cpe:2.3:a:json:json:20250517:*:*:*:*:*:*:*'
+              value: 'cpe:2.3:a:json:json:20260719:*:*:*:*:*:*:*'
             }
           ]
         },
@@ -166,10 +166,10 @@ describe('sbom feature', () => {
       dependencies: [
         {
           ref: 'pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT',
-          dependsOn: ['pkg:maven/org.json/json@20250517']
+          dependsOn: ['pkg:maven/org.json/json@20260719']
         },
         {
-          ref: 'pkg:maven/org.json/json@20250517',
+          ref: 'pkg:maven/org.json/json@20260719',
           dependsOn: []
         }
       ]
@@ -184,9 +184,9 @@ describe('sbom feature', () => {
 
       expect(core.info).toHaveBeenCalledWith('Found SBOM: ' + join(workspace, 'test.sbom.json'))
       expect(core.info).toHaveBeenCalledWith('=== SBOM Content ===')
-      expect(core.info).toHaveBeenCalledWith('- pkg:maven/org.json/json@20250517')
+      expect(core.info).toHaveBeenCalledWith('- pkg:maven/org.json/json@20260719')
       expect(core.info).toHaveBeenCalledWith('- pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT')
-      expect(core.info).toHaveBeenCalledWith('   depends on: pkg:maven/org.json/json@20250517')
+      expect(core.info).toHaveBeenCalledWith('   depends on: pkg:maven/org.json/json@20260719')
       expect(core.warning).not.toHaveBeenCalled()
     })
 
@@ -253,12 +253,12 @@ describe('sbom feature', () => {
               name: 'test.sbom.json',
               resolved: expect.objectContaining({
                 json: expect.objectContaining({
-                  package_url: 'pkg:maven/org.json/json@20250517',
+                  package_url: 'pkg:maven/org.json/json@20260719',
                   dependencies: []
                 }),
                 'main-test-app': expect.objectContaining({
                   package_url: 'pkg:maven/com.oracle/main-test-app@1.0-SNAPSHOT',
-                  dependencies: ['pkg:maven/org.json/json@20250517']
+                  dependencies: ['pkg:maven/org.json/json@20260719']
                 })
               })
             })
