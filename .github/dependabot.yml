@@ -10,11 +10,15 @@ updates:
     directory: '/'
     patterns: ['*']
     multi-ecosystem-group: 'all'
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: 'npm'
     directory: '/'
     patterns: ['*']
     multi-ecosystem-group: 'all'
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: 'typescript'
         update-types:

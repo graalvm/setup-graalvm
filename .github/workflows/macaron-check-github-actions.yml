@@ -53,9 +53,9 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
       - name: Run Macaron action
-        uses: oracle/macaron@794eec32782979f577efb5ff71d585f683a3550f # v0.25.0
+        uses: oracle/macaron@v0.25.0
         with:
           repo_path: ./
           policy_file: check-github-actions
