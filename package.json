@@ -46,7 +46,7 @@
     "@actions/io": "^3.0.2",
     "@actions/tool-cache": "^4.0.0",
     "@octokit/types": "^18.0.0",
-    "semver": "^7.8.5",
+    "semver": "^7.8.6",
     "uuid": "^14.0.3"
   },
   "devDependencies": {
@@ -71,7 +71,7 @@
     "jest": "^30.5.2",
     "js-yaml": "^5.5.0",
     "prettier": "^3.9.10",
-    "rollup": "^4.66.0",
+    "rollup": "^4.68.1",
     "ts-jest": "^29.4.15",
     "ts-jest-resolver": "^2.0.1",
     "ts-node": "^10.9.2",
