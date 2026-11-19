@@ -107,6 +107,7 @@ const ENV_GITHUB_EVENT_NAME = 'GITHUB_EVENT_NAME';
 const EVENT_NAME_PULL_REQUEST = 'pull_request';
 const ERROR_REQUEST = 'Please file an issue at: https://github.com/graalvm/setup-graalvm/issues.';
 const ERROR_HINT = 'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.';
+const ERROR_HINT_WINDOWS_ARM64 = 'GraalVM is not available for Windows on ARM64 yet (see https://github.com/oracle/graal/issues/9215). Please use an x64 Windows runner instead. The native executables built there target x64 and can run emulated on Windows on ARM64.';
 function determineJDKArchitecture() {
     switch (process.arch) {
         case 'x64': {
@@ -39529,6 +39530,12 @@ function getNativeImageOptionsFile() {
         exportVariable(NATIVE_IMAGE_CONFIG_FILE_ENV, optionsFile);
     }
     return optionsFile;
+}
+function addPlatformHint(message, platform, arch) {
+    if (platform === 'win32' && arch === 'arm64') {
+        return `${message} ${ERROR_HINT_WINDOWS_ARM64}`;
+    }
+    return message;
 }
 
 /**
@@ -87191,7 +87198,7 @@ async function run() {
     }
     catch (error) {
         if (error instanceof Error)
-            setFailed(error.message);
+            setFailed(addPlatformHint(error.message, process.platform, process.arch));
     }
 }
 run();

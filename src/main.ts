@@ -15,6 +15,7 @@ import { setUpWindowsEnvironment } from './msvc.js'
 import { setUpNativeImageBuildReports } from './features/reports.js'
 import { exec } from '@actions/exec'
 import { setUpSBOMSupport } from './features/sbom.js'
+import { addPlatformHint } from './utils.js'
 
 async function run(): Promise<void> {
   try {
@@ -162,7 +163,7 @@ async function run(): Promise<void> {
     ])
     core.endGroup()
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) core.setFailed(addPlatformHint(error.message, process.platform, process.arch))
   }
 }
 

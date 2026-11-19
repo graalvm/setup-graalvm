@@ -297,3 +297,10 @@ function getNativeImageOptionsFile(): string {
   }
   return optionsFile
 }
+
+export function addPlatformHint(message: string, platform: string, arch: string): string {
+  if (platform === 'win32' && arch === 'arm64') {
+    return `${message} ${c.ERROR_HINT_WINDOWS_ARM64}`
+  }
+  return message
+}
