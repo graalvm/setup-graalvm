@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { toSemVer } from '../src/utils'
+import { addPlatformHint, toSemVer } from '../src/utils'
 
 test('convert version', async () => {
   for (const inputAndExpectedOutput of [
@@ -29,5 +29,19 @@ test('convert invalid version', async () => {
 
     expect(error).not.toBeUndefined()
     expect(error.message).toContain('Unable to convert')
+  }
+})
+
+test('add hint for Windows on ARM64', async () => {
+  const message =
+    "Failed to download graalvm-community-jdk-25.0.1_windows-aarch64_bin.zip. Are you sure java-version: '25.0.1' is correct?"
+  expect(addPlatformHint(message, 'win32', 'arm64')).toContain('GraalVM is not available for Windows on ARM64 yet')
+  expect(addPlatformHint(message, 'win32', 'arm64')).toContain(message)
+  for (const [platform, arch] of [
+    ['win32', 'x64'],
+    ['linux', 'arm64'],
+    ['darwin', 'arm64']
+  ]) {
+    expect(addPlatformHint(message, platform, arch)).toBe(message)
   }
 })

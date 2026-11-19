@@ -75,6 +75,9 @@ export const ERROR_REQUEST = 'Please file an issue at: https://github.com/graalv
 export const ERROR_HINT =
   'If you think this is a mistake, please file an issue at: https://github.com/graalvm/setup-graalvm/issues.'
 
+export const ERROR_HINT_WINDOWS_ARM64 =
+  'GraalVM is not available for Windows on ARM64 yet (see https://github.com/oracle/graal/issues/9215). Please use an x64 Windows runner instead. The native executables built there target x64 and can run emulated on Windows on ARM64.'
+
 export type LatestReleaseResponseData =
   otypes.Endpoints['GET /repos/{owner}/{repo}/releases/latest']['response']['data']
 
